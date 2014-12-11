@@ -203,7 +203,7 @@ aCommon.prototype = {
 /**  -------------------------------------------------------------------------------------------------------  */
     'sohu': {
       'object': aURI + '/sohu.inyy.Lite.swf',
-      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(?!live|sv)|[\d+\.]+\/).*\/(Main|PlayerShell)\.swf/i
+      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(?!live|sv|ap)|[\d+\.]+\/).*\/(Main|PlayerShell)\.swf/i
     },
     'sohu2': {
       'object': aURI + '/sohu.injs.Lite.swf',
