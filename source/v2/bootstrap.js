@@ -12,33 +12,36 @@ var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
 var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 if (aLocale == 'ja') {
   var aLang = {
-    needupdate: ' \u306E\u6700\u65B0\u7248\u767A\u898B',
+    needupdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
     filecorrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    fileready: ' \u6E96\u5099\u5B8C\u4E86',
+    fileready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
     filenotexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
     filedownloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    remotefailed: ' \u306E\u8AAD\u307F\u8FBC\u307F\u306B\u5931\u6557',
-    localfailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u306B\u5931\u6557',
+    remoteaccessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+    remotefailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    localfailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
   };
 } else if (aLocale == 'zh-CN') {
   var aLang = {
-    needupdate: ' \u9700\u8981\u66F4\u65B0',
-    filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u635F\u574F',
-    fileready: ' \u5DF2\u5C31\u4F4D',
-    filenotexist: ' \u4E0D\u5B58\u5728',
+    needupdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+    fileready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
     filedownloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-    remotefailed: ' \u52A0\u8F7D\u6587\u4EF6\u5931\u8D25',
-    localfailed: ' \u4FDD\u5B58\u6587\u4EF6\u5931\u8D25',
+    remoteaccessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+    remotefailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+    localfailed: ' \u65E0\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
   };
 } else if (aLocale == 'zh-TW') {
   var aLang = {
-    needupdate: ' \u9700\u8981\u66F4\u65B0',
+    needupdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
     filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-    fileready: ' \u5DF2\u5C31\u7DD2',
-    filenotexist: ' \u4E0D\u5B58\u5728',
+    fileready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
+    filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
     filedownloaded: ' \u4E0B\u8F09\u6210\u529F',
-    remotefailed: ' \u7121\u6CD5\u8B80\u53D6\u6587\u4EF6',
-    localfailed: ' \u7121\u6CD5\u7DE9\u5B58\u6587\u4EF6',
+    remoteaccessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
+    remotefailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
+    localfailed: ' \u7121\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
   };
 } else {
   var aLang = {
@@ -47,7 +50,8 @@ if (aLocale == 'ja') {
     fileready: ' is ready to serve',
     filenotexist: ' is not exist',
     filedownloaded: ' download session complete',
-    remotefailed: ' failed to load remote file',
+    remoteaccessfailed: ' failed to access remote file',
+    remotefailed: ' failed to download remote file',
     localfailed: ' failed to save local file',
   };
   if (aLocale !== 'en-US') {
@@ -103,9 +107,11 @@ function aCheck(aName) {
         if (aDate > info.lastModificationDate) {
           console.log(aName + aLang.needupdate);
           aDownload(aLink, aFile, aName);
-        } else if (aSize != info.size) {
+        } else if (aSize !== info.size) {
           console.log(aName + aLang.filecorrupted);
           aDownload(aLink, aFile, aName);
+        } else if (aSize == null || aSize < 10000) {
+          console.log(aLink + aLang.remoteaccessfailed);
         } else {
           console.log(aName + aLang.fileready);
         }
