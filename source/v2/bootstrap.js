@@ -12,7 +12,7 @@ var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
 var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 if (aLocale == 'ja') {
   var aLang = {
-    needupdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
     filecorrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
     fileready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
     filenotexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
@@ -23,7 +23,7 @@ if (aLocale == 'ja') {
   };
 } else if (aLocale == 'zh-CN') {
   var aLang = {
-    needupdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
     filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
     fileready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
     filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
@@ -34,7 +34,7 @@ if (aLocale == 'ja') {
   };
 } else if (aLocale == 'zh-TW') {
   var aLang = {
-    needupdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
+    outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
     filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
     fileready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
     filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
@@ -45,7 +45,7 @@ if (aLocale == 'ja') {
   };
 } else {
   var aLang = {
-    needupdate: ' is out of date',
+    outofdate: ' is out of date',
     filecorrupted: ' may be corrupted',
     fileready: ' is ready to serve',
     filenotexist: ' is not exist',
@@ -105,7 +105,7 @@ function aCheck(aName) {
         var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
         var aSize = aClient.getResponseHeader('Content-Length');
         if (aDate > info.lastModificationDate) {
-          console.log(aName + aLang.needupdate);
+          console.log(aName + aLang.outofdate);
           aDownload(aLink, aFile, aName);
         } else if (aSize == null || aSize < 10000) {
           console.log(aLink + aLang.remoteaccessfailed);
