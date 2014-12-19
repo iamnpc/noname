@@ -107,11 +107,11 @@ function aCheck(aName) {
         if (aDate > info.lastModificationDate) {
           console.log(aName + aLang.needupdate);
           aDownload(aLink, aFile, aName);
+        } else if (aSize == null || aSize < 10000) {
+          console.log(aLink + aLang.remoteaccessfailed);
         } else if (aSize !== info.size) {
           console.log(aName + aLang.filecorrupted);
           aDownload(aLink, aFile, aName);
-        } else if (aSize == null || aSize < 10000) {
-          console.log(aLink + aLang.remoteaccessfailed);
         } else {
           console.log(aName + aLang.fileready);
         }
