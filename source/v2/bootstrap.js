@@ -12,47 +12,47 @@ var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
 var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 if (aLocale == 'ja') {
   var aLang = {
-    outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    filecorrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    fileready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-    filenotexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    filedownloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    remoteaccessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-    remotefailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    localfailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
+    lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+    lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
+    lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
+    rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+    rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    lf_savefailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
   };
 } else if (aLocale == 'zh-CN') {
   var aLang = {
-    outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-    fileready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-    filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    filedownloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-    remoteaccessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    remotefailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    localfailed: ' \u65E0\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+    lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
+    rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+    rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+    lf_savefailed: ' \u65E0\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
   };
 } else if (aLocale == 'zh-TW') {
   var aLang = {
-    outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
-    filecorrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-    fileready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
-    filenotexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    filedownloaded: ' \u4E0B\u8F09\u6210\u529F',
-    remoteaccessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
-    remotefailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-    localfailed: ' \u7121\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
+    lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
+    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
+    rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
+    rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
+    lf_savefailed: ' \u7121\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
   };
 } else {
   var aLang = {
-    outofdate: ' is out of date',
-    filecorrupted: ' may be corrupted',
-    fileready: ' is ready to serve',
-    filenotexist: ' is not exist',
-    filedownloaded: ' download session complete',
-    remoteaccessfailed: ' failed to access remote file',
-    remotefailed: ' failed to download remote file',
-    localfailed: ' failed to save local file',
+    lf_outofdate: ' is out of date',
+    lf_corrupted: ' may be corrupted',
+    lf_ready: ' is ready to serve',
+    lf_notexist: ' is not exist',
+    lf_downloaded: ' download session complete',
+    rf_accessfailed: ' failed to access remote file',
+    rf_downfailed: ' failed to download remote file',
+    lf_savefailed: ' failed to save local file',
   };
   if (aLocale !== 'en-US') {
     console.log('Your locale is not supported');
@@ -105,39 +105,37 @@ function aCheck(aName) {
         var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
         var aSize = aClient.getResponseHeader('Content-Length');
         if (aDate > info.lastModificationDate) {
-          console.log(aName + aLang.outofdate);
+          console.log(aName + aLang.lf_outofdate);
           aDownload(aLink, aFile, aName);
         } else if (aSize == null || aSize < 10000) {
-          console.log(aLink + aLang.remoteaccessfailed);
+          console.log(aLink + aLang.rf_accessfailed);
         } else if (aSize !== info.size) {
-          console.log(aName + aLang.filecorrupted);
+          console.log(aName + aLang.lf_corrupted);
           aDownload(aLink, aFile, aName);
         } else {
-          console.log(aName + aLang.fileready);
+          console.log(aName + aLang.lf_ready);
         }
       }
     },
     function onFailure(reason) {
       if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-        console.log(aName + aLang.filenotexist);
+        console.log(aName + aLang.lf_notexist);
         aDownload(aLink, aFile, aName);
       }
     }
   );
 }
 
-//Download .swf files
-//下载 .swf 文件。
 function aDownload(aLink, aFile, aName) {
   Downloads.fetch(aLink, aFile, {isPrivate: true}).then(
     function onSuccess() {
-      console.log(aName + aLang.filedownloaded);
+      console.log(aName + aLang.lf_downloaded);
     },
     function onFailure(reason) {
       if (reason instanceof Downloads.Error && reason.becauseSourceFailed) {
-        console.log(aLink + aLang.remotefailed);
+        console.log(aLink + aLang.rf_downfailed);
       } else if (reason instanceof Downloads.Error && reason.becauseTargetFailed) {
-        console.log(aFile + aLang.localfailed);
+        console.log(aFile + aLang.lf_savefailed);
       }
     }
   );
