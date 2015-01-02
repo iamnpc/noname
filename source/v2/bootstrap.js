@@ -73,10 +73,7 @@ var aName = [
   'letv.swf',
   'pptv.in.Ikan.swf',
   'pptv.in.Live.swf',
-  'sohu.injs.Lite.swf',
-  'sohu.inyy.Lite.swf',
-  'sohu.inbj.Live.swf',
-  'sohu.inyy+injs.Lite.s1.swf',
+  'sohu_live.swf',
   '17173.in.Vod.swf',
   '17173.out.Vod.swf',
   '17173.in.Live.swf',
@@ -206,20 +203,8 @@ aCommon.prototype = {
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'sohu': {
-      'object': aURI + '/sohu.inyy.Lite.swf',
-      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(?!live|sv|ap)|[\d+\.]+\/).*\/(Main|PlayerShell)\.swf/i
-    },
-    'sohu2': {
-      'object': aURI + '/sohu.injs.Lite.swf',
-      'target': /http:\/\/tv\.sohu\.com\/upload\/swf\/sv\d+\/Main\.swf/i
-    },
-    'sohu_skin': {
-      'object': aURI + '/sohu.inyy+injs.Lite.s1.swf',
-      'target': /http\:\/\/tv\.sohu\.com\/upload\/swf(\/live)?\/\d+\/skins\/s1\.swf/i
-    },
-    'sohu_live': {
-      'object': aURI + '/sohu.inbj.Live.swf',
-      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/live\/\d+|[\d+\.]+:\d+\/test\/player)\/Main\.swf/i
+      'object': aURI + '/sohu_live.swf',
+      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     '17173': {
