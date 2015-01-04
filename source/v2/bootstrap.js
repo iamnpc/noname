@@ -80,8 +80,6 @@ var aName = [
   '17173.out.Live.swf',
   'ku6_in_player.swf',
   'ku6_out_player.swf',
-  '56.in.NM.swf',
-  '56.in.TM.swf',
   'baidu.call.swf'
   ];
 aName.forEach(aCheck);
@@ -231,15 +229,6 @@ aCommon.prototype = {
     'ku6_out': {
       'object': aURI + '/ku6_out_player.swf',
       'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-    },
-/**  -------------------------------------------------------------------------------------------------------  */
-    '56': {
-      'object': aURI + '/56.in.NM.swf',
-      'target': /http:\/\/(www|s1)\.56(img)?\.com\/flashApp\/v_player.(?!tm).*\.swf/i
-    },
-    '56_danmu': {
-      'object': aURI + '/56.in.TM.swf',
-      'target': /http:\/\/s1\.56img\.com\/flashApp\/v_player_tm.*\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'baidu': {
