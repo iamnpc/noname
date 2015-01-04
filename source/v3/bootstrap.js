@@ -106,17 +106,6 @@ aCommon.prototype = {
       'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
-/*
-    '56': {
-      'object': aURI + '/56.in.NM.swf',
-      'target': /http\:\/\/(s1|www)\.56(img)?\.com\/flashApp\/v_player.(?!tm).*\.swf/i
-    },
-    '56_danmu': {
-      'object': aURI + '/56.in.TM.swf',
-      'target': /http\:\/\/s1\.56img\.com\/flashApp\/v_player_tm.*\.swf/i
-    },
-*/
-/**  -------------------------------------------------------------------------------------------------------  */
     'baidu': {
       'object': aURI + '/baidu.call.swf',
       'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
