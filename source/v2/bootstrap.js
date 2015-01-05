@@ -20,6 +20,8 @@ if (aLocale == 'ja') {
     rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
     rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
     lf_savefailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    ext_install: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    ext_uninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
   };
 } else if (aLocale == 'zh-CN') {
   var aLang = {
@@ -31,6 +33,8 @@ if (aLocale == 'ja') {
     rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
     lf_savefailed: ' \u65E0\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    ext_install: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
+    ext_uninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
   };
 } else if (aLocale == 'zh-TW') {
   var aLang = {
@@ -42,6 +46,8 @@ if (aLocale == 'ja') {
     rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
     lf_savefailed: ' \u7121\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    ext_install: '\u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
+    ext_uninstall: '\u5DF2\u7D93\u6210\u529F\u6E05\u9664',
   };
 } else {
   var aLang = {
@@ -53,6 +59,8 @@ if (aLocale == 'ja') {
     rf_accessfailed: ' failed to access remote file',
     rf_downfailed: ' failed to download remote file',
     lf_savefailed: ' failed to save local file',
+    ext_install: ' has been installed...',
+    ext_uninstall: ' has been uninstalled...',
   };
   if (aLocale !== 'en-US') {
     console.log('Your locale is not supported');
@@ -500,20 +508,31 @@ function shutdown(data, reason) {
 }
 
 function install(data, reason) {
-  OS.File.makeDir(aPath);
-//Rename exsited .swf file to keep synchorize with remote server.
-//重命名本地 .swf 文件以保持能与远程服务器同步。
+//Only create when add-on is installed.
+//仅在安装扩展时才创建aPath文件夹。
+  if (reason == ADDON_INSTALL) {
+    OS.File.makeDir(aPath);
+    console.log('Anti-ads Player MK2' + aLang.ext_install);
+  }
+//Remove useless .swf file.
+//删除无用的.swf文件。
 /*
   if (reason == ADDON_UPGRADE) {
-    OS.File.move(OS.Path.join(aPath, 'sohu.swf'), OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
+    OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
+    OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
   }
 */
 }
 
 function uninstall(data, reason) {
 //Only delete aPath when add-on is uninstalled.
-//仅在彻底卸载扩展时才删除aPath文件夹。
+//仅在卸载扩展时才删除aPath文件夹。
   if (reason == ADDON_UNINSTALL) {
     OS.File.removeDir(aPath);
+    console.log('Anti-ads Player MK2' + aLang.ext_uninstall);
   }
 }
