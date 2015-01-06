@@ -12,7 +12,7 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>10.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/0000/antiadsplayer.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
@@ -31,7 +31,7 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>27.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer2.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/0000/antiadsplayer2.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
@@ -50,7 +50,45 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>10.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer3.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/0000/antiadsplayer3.xpi</em:updateLink>
+          </Description>
+        </em:targetApplication>
+      </Description>
+      </li>
+    </Seq>
+    </em:updates>
+  </Description>
+  <Description about="urn:mozilla:extension:adblockplusz@jc3213.github">
+    <em:updates>
+    <Seq>
+      <li>
+      <Description>
+        <em:version>3882</em:version>
+        <em:targetApplication><!-- Firefox -->
+          <Description>
+            <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+            <em:minVersion>22.0</em:minVersion>
+            <em:maxVersion>37.0</em:maxVersion>
+            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/1001/adblockplusz.xpi</em:updateLink>
+          </Description>
+        </em:targetApplication>
+      </Description>
+      </li>
+    </Seq>
+    </em:updates>
+  </Description>
+  <Description about="urn:mozilla:extension:ehhelperz@jc3213.github">
+    <em:updates>
+    <Seq>
+      <li>
+      <Description>
+        <em:version>472</em:version>
+        <em:targetApplication><!-- Firefox -->
+          <Description>
+            <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+            <em:minVersion>22.0</em:minVersion>
+            <em:maxVersion>37.0</em:maxVersion>
+            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/1001/ehhelperz.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
