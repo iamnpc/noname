@@ -1,5 +1,5 @@
 [Adblock Plus 2.0]
-! Homepage: http://jc3213.cwsurf.de/
+! Homepage: http://jc3213.cwsurf.de/index.html
 ! Title: Anti-ads Player Accessibility
 ! Version: 201501060001
 ! Expires: 14 days
