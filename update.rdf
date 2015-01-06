@@ -12,7 +12,7 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>10.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/v1/antiadsplayer.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
@@ -31,7 +31,7 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>27.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/v1/antiadsplayer2.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer2.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
@@ -50,7 +50,7 @@
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>10.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/v1/antiadsplayer3.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/antiadsplayer/releases/download/0000/antiadsplayer3.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
