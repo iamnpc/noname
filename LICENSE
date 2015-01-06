@@ -14,7 +14,7 @@ User License AAP(Anti-ads Player)
 5) You must not add reseller, or ask for donate in any purpose.
   5.1) This doesn't affect your other projects(repositories) which already have reseller or donate. It works only for the Anti-ads Player.
 
-
+6) You must include <User License AAP> if you are going to release any binary files.
 
 =================================================================================
 
@@ -36,7 +36,7 @@ User License AAP(Anti-ads Player)
 5) 无论出于什么目的，禁止添加返利或要求捐献。
   5.1) 如果你已经在别的项目中使用返利代码或者开放捐助的话则不受 5) 影响，其作用范围仅限Anti-ads Player的源代码。
 
-
+6) 当你发布时（程序、扩展），请包含〈用户授权协议AAP〉。
 
 =================================================================================
 
@@ -57,3 +57,5 @@ User License AAP(Anti-ads Player)
 
 5) リセラーの追加や寄付の要求は一切禁ずる。
   5.1) セクション 5) はAnti-ads Playerのソースコードだけに作用する。ユーザーの他のプロジェクトやRepositoriesに影響がありません。
+
+6) 配布する時は「ユーザーライセンスAAP」を内蔵することを要求する。
