@@ -1,5 +1,5 @@
-Please follow the User License AAP(Anti-ads Player)
+Please follow the User License AAS(Anti-ads Solution)
 
-请务必遵守用户授权协议AAP(Anti-ads Player)。
+请务必遵守用户授权协议AAS(Anti-ads Solution)。
 
-ユーザーライセンスAAP(Anti-ads Player)に従うことを要求する。
+ユーザーライセンスAAS(Anti-ads Solution)に従うことを要求する。
