@@ -1,8 +1,10 @@
 [Adblock Plus 2.0]
 ! Homepage: http://jc3213.cwsurf.de/
 ! Title: Whitelist for Anti-ads Player
-! Version: 201411150001
+! Version: 201501060001
 ! Expires: 14 days
+
+! Ads-filtering Rules
 
 ! Avoid conflict with Anti-ads Player MK2
 @@||ark.letv.com^
