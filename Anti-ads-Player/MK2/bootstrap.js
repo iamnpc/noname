@@ -140,7 +140,6 @@ function aDownload(aLink, aFile, aName, aSize) {
         function onSuccess(info) {
           if (aSize == info.size) {
             console.log(aName + aLang.lf_downloaded);
-            OS.File.remove(aFile);
             OS.File.move(aTemp, aFile);
           } else {
             console.log(aName + aLang.rf_interrupted);
