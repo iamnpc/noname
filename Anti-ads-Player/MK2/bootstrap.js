@@ -19,7 +19,7 @@ if (aLocale == 'ja') {
     lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
     rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
     rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    lf_savefailed: ' \u306E\u66F8\u304D\u8FBC\u307F\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
     ext_install: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
     ext_uninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
   };
@@ -32,7 +32,7 @@ if (aLocale == 'ja') {
     lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
     rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    lf_savefailed: ' \u65E0\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
     ext_install: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
     ext_uninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
   };
@@ -45,7 +45,7 @@ if (aLocale == 'ja') {
     lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
     rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-    lf_savefailed: ' \u7121\u6CD5\u4FDD\u5B58\u672C\u5730\u6587\u4EF6',
+    rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
     ext_install: '\u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
     ext_uninstall: '\u5DF2\u7D93\u6210\u529F\u6E05\u9664',
   };
@@ -58,7 +58,7 @@ if (aLocale == 'ja') {
     lf_downloaded: ' download session complete',
     rf_accessfailed: ' failed to access remote file',
     rf_downfailed: ' failed to download remote file',
-    lf_savefailed: ' failed to save local file',
+    rf_interrupted: ' download session has been interrupted due to unknown error',
     ext_install: ' has been installed...',
     ext_uninstall: ' has been uninstalled...',
   };
@@ -67,6 +67,9 @@ if (aLocale == 'ja') {
   }
 }
 
+//You need to upload .swf files to your domain.A domain with SSL is recommended
+//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
+var aDomain = 'http://your.domain.com/url/';
 //Lists of .swf files
 // .swf 文件列表
 var aName = [
@@ -79,67 +82,80 @@ var aName = [
   'iqiyi.swf',
   'pps.swf',
   'letv.swf',
+  'sohu_live.swf',
   'pptv.in.Ikan.swf',
   'pptv.in.Live.swf',
-  'sohu_live.swf',
   '17173.in.Vod.swf',
   '17173.out.Vod.swf',
   '17173.in.Live.swf',
   '17173.out.Live.swf',
   'ku6_in_player.swf',
   'ku6_out_player.swf',
-  'baidu.call.swf'
+  'baidu.call.swf',
   ];
 aName.forEach(aCheck);
 
-//Check for update or corruption
-//检查文件是否需要升级或已经损坏。
-function aCheck(aName) {
-//You need to upload .swf files to your domain.A domain with SSL is recommended
-//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
-  var aLink = 'yourdomain' + aName;
+//Check if remote file is online and then check for update.
+//优先检查远程文件是否响应，再检查文件是否需要更新。
+function aSync(aName) {
+  var aLink = aDomain + aName;
   var aFile = OS.Path.join(aPath, aName);
-  OS.File.stat(aFile).then(
-    function onSuccess(info) {
-      var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
-      aClient.open('HEAD', aLink, true);
-      aClient.send();
-      aClient.onload = function () {
-        var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-        var aSize = aClient.getResponseHeader('Content-Length');
-        if (aDate > info.lastModificationDate) {
-          console.log(aName + aLang.lf_outofdate);
-          aDownload(aLink, aFile, aName);
-        } else if (aSize == null || aSize < 10000) {
+  var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+  aClient.open('HEAD', aLink, true);
+  aClient.send();
+  aClient.onload = function () {
+    var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+    var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+    OS.File.stat(aFile).then(
+      function onSuccess(info) {
+        if (aSize == null || aSize < 10000) {
           console.log(aLink + aLang.rf_accessfailed);
-        } else if (aSize !== info.size) {
+        } else if (aDate > info.lastModificationDate) {
+          console.log(aName + aLang.lf_outofdate);
+          aDownload(aLink, aFile, aName, aSize);
+        } else if (aSize != info.size) {
           console.log(aName + aLang.lf_corrupted);
-          aDownload(aLink, aFile, aName);
+          aDownload(aLink, aFile, aName, aSize);
         } else {
           console.log(aName + aLang.lf_ready);
         }
+      },
+      function onFailure(reason) {
+        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
+          console.log(aName + aLang.lf_notexist);
+          aDownload(aLink, aFile, aName, aSize);
+        }
       }
-    },
-    function onFailure(reason) {
-      if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-        console.log(aName + aLang.lf_notexist);
-        aDownload(aLink, aFile, aName);
-      }
-    }
-  );
+    );
+  }
 }
 
-function aDownload(aLink, aFile, aName) {
-  Downloads.fetch(aLink, aFile, {isPrivate: true}).then(
+// Now download _aap temp file instead of overwrite original .swf file
+// 现在会先下载 _aap 临时文件而不是直接覆盖原文件
+function aDownload(aLink, aFile, aName, aSize) {
+  var aTemp = aFile + '_aap';
+  Downloads.fetch(aLink, aTemp, {isPrivate: true}).then(
     function onSuccess() {
-      console.log(aName + aLang.lf_downloaded);
+      OS.File.stat(aTemp).then(
+        function onSuccess(info) {
+          if (aSize == info.size) {
+            console.log(aName + aLang.lf_downloaded);
+            OS.File.remove(aFile);
+            OS.File.move(aTemp, aFile);
+          } else {
+            console.log(aName + aLang.rf_interrupted);
+            OS.File.remove(aTemp);
+            aDownload(aLink, aFile, aName, aSize);
+          }
+	    },
+        function onFailure() {
+          return;
+        }
+      );
     },
-    function onFailure(reason) {
-      if (reason instanceof Downloads.Error && reason.becauseSourceFailed) {
-        console.log(aLink + aLang.rf_downfailed);
-      } else if (reason instanceof Downloads.Error && reason.becauseTargetFailed) {
-        console.log(aFile + aLang.lf_savefailed);
-      }
+    function onFailure() {
+      console.log(aLink + aLang.rf_downfailed);
+      OS.File.remove(aTemp);
     }
   );
 }
