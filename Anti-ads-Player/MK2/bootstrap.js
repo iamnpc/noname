@@ -106,9 +106,9 @@ function aSync(aName) {
   var aFile = OS.Path.join(aPath, aName);
   var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
   aClient.open('HEAD', aLink, true);
-  aClient.timeout = 30000;
+  aClient.timeout = 30000; //超时时间30秒，可设置短些。
   aClient.ontimeout = function () {
-    console.log(aLink + rf_domainfailed);
+    console.log(aLink + aLang.rf_domainfailed);
   }
   aClient.send();
   aClient.onload = function () {
@@ -116,7 +116,7 @@ function aSync(aName) {
     var aSize = new Number(aClient.getResponseHeader('Content-Length'));
     OS.File.stat(aFile).then(
       function onSuccess(info) {
-        if (aSize == null || aSize < 10000) {
+        if (aSize == null || aSize < 10000) { //当远程文件大小为空或小于10K时返回错误
           console.log(aLink + aLang.rf_accessfailed);
         } else if (aDate > info.lastModificationDate) {
           console.log(aName + aLang.lf_outofdate);
@@ -150,9 +150,9 @@ function aDownload(aLink, aFile, aName, aSize) {
             console.log(aName + aLang.lf_downloaded);
             OS.File.move(aTemp, aFile);
           } else {
-            console.log(aName + aLang.rf_interrupted);
+            console.log(aName + aLang.rf_interrupted); //当下载临时文件大小与远程文件大小不符时删除临时文件并重新下载（如果网络环境不好可能导致死循环伤害硬盘）；
             OS.File.remove(aTemp);
-            aDownload(aLink, aFile, aName, aSize);
+            aDownload(aLink, aFile, aName, aSize); //当网络条件不好的时候请注释掉本行。
           }
 	    },
         function onFailure() {
