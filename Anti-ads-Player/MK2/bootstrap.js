@@ -3,10 +3,6 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
-
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
 var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
@@ -71,6 +67,10 @@ if (aLocale == 'ja') {
   }
 }
 
+//You can customize the dir name to store .swf files
+//你可以自行修改保存 .swf 文件的文件夹名字。
+var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
+var aURI = OS.Path.toFileURI(aPath);
 //You need to upload .swf files to your domain.A domain with SSL is recommended
 //你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
 var aDomain = 'http://your.domain.com/url/';
@@ -97,7 +97,7 @@ var aName = [
   'ku6_out_player.swf',
   'baidu.call.swf',
   ];
-aName.forEach(aCheck);
+var aRun;
 
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
@@ -166,8 +166,6 @@ function aDownload(aLink, aFile, aName, aSize) {
     }
   );
 }
-
-var aURI = OS.Path.toFileURI(aPath);
 
 //Core code from Harv.c (cinhoo), added Flilter-rules and more.
 //核心代码来自Harv.c (cinhoo)，添加了过滤规则以及更多功能。
@@ -519,9 +517,8 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
-var aRun;
-
 function startup(data, reason) {
+  aName.forEach(aCheck); //仅在扩展为启用状态时才检查是否.swf更新
   if (!aRun) {
     aRun = new aCommon();
     aRun.register();
