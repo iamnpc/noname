@@ -1,7 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
-Cu.import('resource://gre/modules/NetUtil.jsm');
+Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain which require Gecko 25 and later
 
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
@@ -151,7 +151,7 @@ function aDownload(aLink, aFile, aName, aSize) {
             OS.File.remove(aTemp);
             aDownload(aLink, aFile, aName, aSize); //当网络条件不好的时候请注释掉本行。
           }
-	    },
+        },
         function onFailure() {
           return;
         }
