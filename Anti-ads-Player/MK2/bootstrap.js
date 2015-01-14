@@ -6,8 +6,8 @@ Cu.import('resource://gre/modules/NetUtil.jsm');
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
 var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
-if (aLocale == 'ja') {
-  var aLang = {
+var aMUL = {
+  'ja': {
     lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
     lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
     lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
@@ -19,9 +19,8 @@ if (aLocale == 'ja') {
     rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
     ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
     ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-  };
-} else if (aLocale == 'zh-CN') {
-  var aLang = {
+  },
+  'zh-CN': {
     lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
     lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
     lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
@@ -33,9 +32,8 @@ if (aLocale == 'ja') {
     rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
     ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
     ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-  };
-} else if (aLocale == 'zh-TW') {
-  var aLang = {
+  },
+  'zh-TW': {
     lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
     lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
     lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
@@ -47,9 +45,8 @@ if (aLocale == 'ja') {
     rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
     ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
     ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
-  };
-} else {
-  var aLang = {
+  },
+  'en-US': {
     lf_outofdate: ' is out of date',
     lf_corrupted: ' may be corrupted',
     lf_ready: ' is ready to serve',
@@ -61,11 +58,12 @@ if (aLocale == 'ja') {
     rf_interrupted: ' download session has been interrupted due to unknown error',
     ext_install: ' has been installed...',
     ext_uninstall: ' has been uninstalled...',
-  };
-  if (aLocale !== 'en-US') {
-    console.log('Your locale is not supported');
-  }
+  },
+};
+if (!aMUL[aLocale]) {
+  console.log('Your locale is not supported');
 }
+var aLang = aMUL[aLocale] || aMUL['en-US'];
 
 //You can customize the dir name to store .swf files
 //你可以自行修改保存 .swf 文件的文件夹名字。
@@ -97,7 +95,6 @@ var aName = [
   'ku6_out_player.swf',
   'baidu.call.swf',
   ];
-var aRun;
 
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
@@ -517,19 +514,15 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
+var aRun = new aCommon();
+
 function startup(data, reason) {
-  aName.forEach(aCheck); //仅在扩展为启用状态时才检查是否.swf更新
-  if (!aRun) {
-    aRun = new aCommon();
-    aRun.register();
-  }
+  aName.forEach(aSync); //仅在扩展为启用状态时才检查是否.swf更新
+  aRun.register();
 }
 
 function shutdown(data, reason) {
-  if (aRun) {
-    aRun.unregister();
-    aRun = null;
-  }
+  aRun.unregister();
 }
 
 function install(data, reason) {
