@@ -13,12 +13,12 @@ var aMUL = {
     lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
     lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
     lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    rf_domainfailed: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093r',
+    rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
     rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
     rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
     rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
     ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    ext_uninstall: ' \u304C\u30A2\u30F3\hu30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
   },
   'zh-CN': {
     lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
@@ -26,7 +26,7 @@ var aMUL = {
     lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
     lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
     lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-    rf_domainfailed: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
+    rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
     rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
     rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
@@ -39,7 +39,7 @@ var aMUL = {
     lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
     lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
     lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
-    rf_domainfailed: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
+    rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
     rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
     rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
     rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
@@ -52,7 +52,7 @@ var aMUL = {
     lf_ready: ' is ready to serve',
     lf_notexist: ' is not exist',
     lf_downloaded: ' download session complete',
-    rf_domainfailed: ' no response from remote server',
+    rf_timeout: ' no response from remote server',
     rf_accessfailed: ' failed to access remote file',
     rf_downfailed: ' failed to download remote file',
     rf_interrupted: ' download session has been interrupted due to unknown error',
@@ -105,7 +105,7 @@ function aSync(aName) {
   aClient.open('HEAD', aLink, true);
   aClient.timeout = 30000; //超时时间30秒，可设置短些。
   aClient.ontimeout = function () {
-    console.log(aLink + aLang.rf_domainfailed);
+    console.log(aLink + aLang.rf_timeout);
   }
   aClient.send();
   aClient.onload = function () {
