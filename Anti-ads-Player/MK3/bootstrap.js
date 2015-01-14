@@ -363,20 +363,14 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
-var aRun;
+var aRun = new aCommon();
 
 function startup(data, reason) {
-  if (!aRun) {
-    aRun = new aCommon();
-    aRun.register();
-  }
+  aRun.register();
 }
 
 function shutdown(data, reason) {
-  if (aRun) {
-    aRun.unregister();
-    aRun = null;
-  }
+  aRun.unregister();
 }
 
 function install(data, reason) {
