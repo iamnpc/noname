@@ -3,117 +3,119 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain which require Gecko 25 and later
 
-//Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
-//控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
-var aLocale = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
-var aMUL = {
-  'ja': {
-    lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-    lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-    rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-    rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
-    ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-  },
-  'zh-CN': {
-    lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-    lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-    rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
-    rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
-    ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
-    ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-  },
-  'zh-TW': {
-    lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-    lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
-    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
-    rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
-    rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
-    rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-    rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
-    ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
-    ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
-  },
-  'en-US': {
-    lf_outofdate: ' is out of date',
-    lf_corrupted: ' may be corrupted',
-    lf_ready: ' is ready to serve',
-    lf_notexist: ' is not exist',
-    lf_downloaded: ' download session complete',
-    rf_timeout: ' no response from remote server',
-    rf_accessfailed: ' failed to access remote file',
-    rf_downfailed: ' failed to download remote file',
-    rf_interrupted: ' download session has been interrupted due to unknown error',
-    ext_install: ' has been installed...',
-    ext_uninstall: ' has been uninstalled...',
-  },
-};
-if (!aMUL[aLocale]) {
-  console.log('Your locale is not supported');
-}
-var aLang = aMUL[aLocale] || aMUL['en-US'];
 
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'yourdirectory');
-var aURI = OS.Path.toFileURI(aPath);
+function aCommon() {
+  if (!this.aLocale[this.uAgent]) {
+    console.log('Your locale is not supported');
+  }
+ aLang = this.aLocale[this.uAgent] || this.aLocale['en-US'];
 //You need to upload .swf files to your domain.A domain with SSL is recommended
 //你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
-var aDomain = 'http://your.domain.com/url/';
+ aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
+//You can customize the dir name to store .swf files
+//你可以自行修改保存 .swf 文件的文件夹名字。
+ aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
+ aURI = OS.Path.toFileURI(aPath);
+}
+aCommon.prototype = {
+//Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
+//控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
+  uAgent: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data,
+  aLocale: {
+    'ja': {
+      lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+      lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
+      lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+      lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
+      lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
+      rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
+      rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+      rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+      rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
+      ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+      ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    },
+    'zh-CN': {
+      lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+      lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+      lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+      lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+      lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
+      rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
+      rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+      rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+      rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
+      ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
+      ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
+   },
+    'zh-TW': {
+      lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
+      lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
+      lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
+      lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+      lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
+      rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
+      rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
+      rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
+      rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
+      ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
+      ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
+    },
+    'en-US': {
+      lf_outofdate: ' is out of date',
+      lf_corrupted: ' may be corrupted',
+      lf_ready: ' is ready to serve',
+      lf_notexist: ' is not exist',
+      lf_downloaded: ' download session complete',
+      rf_timeout: ' no response from remote server',
+      rf_accessfailed: ' failed to access remote file',
+      rf_downfailed: ' failed to download remote file',
+      rf_interrupted: ' download session has been interrupted due to unknown error',
+      ext_install: ' has been installed...',
+      ext_uninstall: ' has been uninstalled...',
+    },
+  },
 //Lists of .swf files
 // .swf 文件列表
-var aName = [
-  'loader.swf',
-  'player.swf',
-  'tudou.swf',
-  'sp.swf',
-  'iqiyi_out.swf',
-  'iqiyi5.swf',
-  'iqiyi.swf',
-  'pps.swf',
-  'letv.swf',
-  'sohu_live.swf',
-  'pptv.in.Ikan.swf',
-  'pptv.in.Live.swf',
-  '17173.in.Vod.swf',
-  '17173.out.Vod.swf',
-  '17173.in.Live.swf',
-  '17173.out.Live.swf',
-  'ku6_in_player.swf',
-  'ku6_out_player.swf',
-  'baidu.call.swf',
-  ];
+  aName: [
+    'loader.swf',
+    'player.swf',
+    'tudou.swf',
+    'sp.swf',
+    'iqiyi_out.swf',
+    'iqiyi5.swf',
+    'iqiyi.swf',
+    'pps.swf',
+    'letv.swf',
+    'sohu_live.swf',
+    'pptv.in.Ikan.swf',
+    'pptv.in.Live.swf',
+    '17173.in.Vod.swf',
+    '17173.out.Vod.swf',
+    '17173.in.Live.swf',
+    '17173.out.Live.swf',
+    'ku6_in_player.swf',
+    'ku6_out_player.swf',
+    'baidu.call.swf',
+  ],
 
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
-function aSync(aName) {
-  var aLink = aDomain + aName;
-  var aFile = OS.Path.join(aPath, aName);
-  var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
-  aClient.open('HEAD', aLink, true);
-  aClient.timeout = 30000; //超时时间30秒，可设置短些。
-  aClient.ontimeout = function () {
-    console.log(aLink + aLang.rf_timeout);
-  }
-  aClient.send();
-  aClient.onload = function () {
-    var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-    var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-    OS.File.stat(aFile).then(
-      function onSuccess(info) {
-        if (aSize == null || aSize < 10000) { //当远程文件大小为空或小于10K时返回错误
+  aSync: function (aName) {
+    var aLink = aDomain + aName;
+    var aFile = OS.Path.join(aPath, aName);
+    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+    aClient.open('HEAD', aLink, true);
+    aClient.timeout = 30000;
+    aClient.ontimeout = function () {
+      console.log(aLink + aLang.rf_timeout);
+    }
+    aClient.send();
+    aClient.onload = function () {
+      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      OS.File.stat(aFile).then(function onSuccess(info) {
+        if (aSize == null || aSize < 10000) {
           console.log(aLink + aLang.rf_accessfailed);
         } else if (aDate > info.lastModificationDate) {
           console.log(aName + aLang.lf_outofdate);
@@ -124,50 +126,43 @@ function aSync(aName) {
         } else {
           console.log(aName + aLang.lf_ready);
         }
-      },
-      function onFailure(reason) {
+      }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aName + aLang.lf_notexist);
           aDownload(aLink, aFile, aName, aSize);
         }
       }
-    );
-  }
-}
-
+      );
+    }
+  },
 // Now download _aap temp file instead of overwrite original .swf file
 // 现在会先下载 _aap 临时文件而不是直接覆盖原文件
-function aDownload(aLink, aFile, aName, aSize) {
-  var aTemp = aFile + '_aap';
-  Downloads.fetch(aLink, aTemp, {isPrivate: true}).then(
-    function onSuccess() {
-      OS.File.stat(aTemp).then(
-        function onSuccess(info) {
-          if (aSize == info.size) {
-            console.log(aName + aLang.lf_downloaded);
-            OS.File.move(aTemp, aFile);
-          } else {
-            console.log(aName + aLang.rf_interrupted); //当下载临时文件大小与远程文件大小不符时删除临时文件并重新下载（如果网络环境不好可能导致死循环伤害硬盘）；
-            OS.File.remove(aTemp);
-            aDownload(aLink, aFile, aName, aSize); //当网络条件不好的时候请注释掉本行。
-          }
-        },
-        function onFailure() {
-          return;
+  aDownload: function (aLink, aFile, aName, aSize) {
+    var aTemp = aFile + '_aap';
+    Downloads.fetch(aLink, aTemp, {
+      isPrivate: true
+    }).then(function onSuccess() {
+      OS.File.stat(aTemp).then(function onSuccess(info) {
+        if (aSize == info.size) {
+          console.log(aName + aLang.lf_downloaded);
+          OS.File.move(aTemp, aFile);
+        } else {
+          console.log(aName + aLang.rf_interrupted);
+          OS.File.remove(aTemp);
+          aDownload(aLink, aFile, aName, aSize);
         }
+      }, function onFailure() {
+        return;
+      }
       );
-    },
-    function onFailure() {
+    }, function onFailure() {
       console.log(aLink + aLang.rf_downfailed);
       OS.File.remove(aTemp);
     }
-  );
-}
-
-//Core code from Harv.c (cinhoo), added Flilter-rules and more.
-//核心代码来自Harv.c (cinhoo)，添加了过滤规则以及更多功能。
-function aCommon() {}
-aCommon.prototype = {
+    );
+  },
+//Player Rules.More tweaks coming later.
+//播放器规则，准备为下载部分进行优化。
   PLAYERS: {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku_loader': {
@@ -262,6 +257,8 @@ aCommon.prototype = {
       'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
     },
   },
+//Filter Rules that works for most site.
+//过滤规则，大多数网站都能正常工作。
   FILTERS: {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku_tudou': {
@@ -328,6 +325,8 @@ aCommon.prototype = {
       'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
     },
   },
+//Http Referer rule that may help if the site report source error
+//HTTP引用头规则,缓解当网站出现无法获取视频信息的问题.
   DOMAINS: {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku': {
@@ -436,6 +435,8 @@ aCommon.prototype = {
       return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
+// Resolver for iQiyi.May not help shince iQiyi uses one player now.
+// 爱奇艺专用代码,似乎已经派不上用场了.
   aResolver: function () {
     var rule = this.PLAYERS['iqiyi'];
     if (!rule) return;
@@ -517,7 +518,7 @@ HttpHeaderVisitor.prototype = {
 var aRun = new aCommon();
 
 function startup(data, reason) {
-  aName.forEach(aSync); //仅在扩展为启用状态时才检查是否.swf更新
+  aRun.aName.forEach(aRun.aSync); //仅在扩展为启用状态时才检查是否.swf更新
   aRun.register();
 }
 
