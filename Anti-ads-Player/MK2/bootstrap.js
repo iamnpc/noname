@@ -3,19 +3,19 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain which require Gecko 25 and later
 
+//You need to upload .swf files to your domain.A domain with SSL is recommended
+//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
+var aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
+//You can customize the dir name to store .swf files
+//你可以自行修改保存 .swf 文件的文件夹名字。
+var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
+var aURI = OS.Path.toFileURI(aPath);
 
 function aCommon() {
   if (!this.aLocale[this.uAgent]) {
     console.log('Your locale is not supported');
   }
- aLang = this.aLocale[this.uAgent] || this.aLocale['en-US'];
-//You need to upload .swf files to your domain.A domain with SSL is recommended
-//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
- aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
- aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
- aURI = OS.Path.toFileURI(aPath);
+  aLang = this.aLocale[this.uAgent] || this.aLocale['en-US'];
 }
 aCommon.prototype = {
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
