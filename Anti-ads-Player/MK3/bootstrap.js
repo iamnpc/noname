@@ -3,8 +3,7 @@ Cu.import("resource://gre/modules/NetUtil.jsm");
 
 var aURI = 'chrome://antiadsplayer3/content';
 
-function aCommon() {}
-aCommon.prototype = {
+var aCommon = {
   PLAYERS: {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku_loader': {
@@ -363,14 +362,12 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
-var aRun = new aCommon();
-
 function startup(data, reason) {
-  aRun.register();
+  aCommon.register();
 }
 
 function shutdown(data, reason) {
-  aRun.unregister();
+  aCommon.unregister();
 }
 
 function install(data, reason) {
