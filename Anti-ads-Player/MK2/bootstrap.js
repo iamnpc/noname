@@ -3,81 +3,79 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain which require Gecko 25 and later
 
-//You need to upload .swf files to your domain.A domain with SSL is recommended
-//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
-var aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
 //You can customize the dir name to store .swf files
 //你可以自行修改保存 .swf 文件的文件夹名字。
 var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
 var aURI = OS.Path.toFileURI(aPath);
 
-function aCommon() {
-  if (!this.aLocale[this.uAgent]) {
-    console.log('Your locale is not supported');
-  }
-  aLang = this.aLocale[this.uAgent] || this.aLocale['en-US'];
-}
-aCommon.prototype = {
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
-  uAgent: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data,
-  aLocale: {
-    'ja': {
-      lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-      lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-      lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-      lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-      lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-      rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-      rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-      rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-      rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
-      ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-      ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    },
-    'zh-CN': {
-      lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-      lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-      lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-      lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-      lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-      rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
-      rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-      rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-      rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
-      ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
-      ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-   },
-    'zh-TW': {
-      lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
-      lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-      lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
-      lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-      lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
-      rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
-      rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
-      rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-      rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
-      ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
-      ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
-    },
-    'en-US': {
-      lf_outofdate: ' is out of date',
-      lf_corrupted: ' may be corrupted',
-      lf_ready: ' is ready to serve',
-      lf_notexist: ' is not exist',
-      lf_downloaded: ' download session complete',
-      rf_timeout: ' no response from remote server',
-      rf_accessfailed: ' failed to access remote file',
-      rf_downfailed: ' failed to download remote file',
-      rf_interrupted: ' download session has been interrupted due to unknown error',
-      ext_install: ' has been installed...',
-      ext_uninstall: ' has been uninstalled...',
-    },
+var uAgent = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
+var aLocale = {
+  'ja': {
+    lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
+    lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+    lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
+    lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
+    rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
+    rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+    rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
+    ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
   },
+  'zh-CN': {
+    lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+    lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
+    rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
+    rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+    rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+    rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
+    ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
+    ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
+  },
+  'zh-TW': {
+    lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
+    lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
+    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
+    rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
+    rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
+    rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
+    rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
+    ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
+    ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
+  },
+  'en-US': {
+    lf_outofdate: ' is out of date',
+    lf_corrupted: ' may be corrupted',
+    lf_ready: ' is ready to serve',
+    lf_notexist: ' is not exist',
+    lf_downloaded: ' download session complete',
+    rf_timeout: ' no response from remote server',
+    rf_accessfailed: ' failed to access remote file',
+    rf_downfailed: ' failed to download remote file',
+    rf_interrupted: ' download session has been interrupted due to unknown error',
+    ext_install: ' has been installed...',
+    ext_uninstall: ' has been uninstalled...',
+  },
+};
+if (!aLocale[uAgent]) {
+  console.log('Your locale is not supported');
+}
+var aLang = aLocale[uAgent] || aLocale['en-US'];
+  
+//You need to upload .swf files to your domain.A domain with SSL is recommended
+//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
+var aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
 //Lists of .swf files
 // .swf 文件列表
-  aName: [
+var aName = [
     'loader.swf',
     'player.swf',
     'tudou.swf',
@@ -97,12 +95,14 @@ aCommon.prototype = {
     'ku6_in_player.swf',
     'ku6_out_player.swf',
     'baidu.call.swf',
-  ],
+ ];
 
+var aCommon = {
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
   aSync: function (aName) {
     var aLink = aDomain + aName;
+	console.log(aLink);
     var aFile = OS.Path.join(aPath, aName);
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
@@ -119,17 +119,17 @@ aCommon.prototype = {
           console.log(aLink + aLang.rf_accessfailed);
         } else if (aDate > info.lastModificationDate) {
           console.log(aName + aLang.lf_outofdate);
-          aDownload(aLink, aFile, aName, aSize);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
         } else if (aSize != info.size) {
           console.log(aName + aLang.lf_corrupted);
-          aDownload(aLink, aFile, aName, aSize);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
         } else {
           console.log(aName + aLang.lf_ready);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aName + aLang.lf_notexist);
-          aDownload(aLink, aFile, aName, aSize);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
         }
       }
       );
@@ -149,7 +149,7 @@ aCommon.prototype = {
         } else {
           console.log(aName + aLang.rf_interrupted);
           OS.File.remove(aTemp);
-          aDownload(aLink, aFile, aName, aSize);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
         }
       }, function onFailure() {
         return;
@@ -515,11 +515,9 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
-var aRun = new aCommon();
-
 function startup(data, reason) {
-  aRun.aName.forEach(aRun.aSync); //仅在扩展为启用状态时才检查是否.swf更新
-  aRun.register();
+  aName.forEach(aCommon.aSync); //仅在扩展为启用状态时才检查是否.swf更新
+  aCommon.register();
 }
 
 function shutdown(data, reason) {
