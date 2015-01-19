@@ -3,8 +3,7 @@ Cu.import('resource://gre/modules/NetUtil.jsm');
 
 var aURI = 'chrome://antiadsplayer/content';
 
-function aCommon() {}
-aCommon.prototype = {
+var aCommon = {
   PLAYERS: {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku_loader': {
@@ -54,6 +53,11 @@ aCommon.prototype = {
       'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
+    'sohu': {
+      'object': aURI + '/sohu_live.swf',
+      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
+    },
+/**  -------------------------------------------------------------------------------------------------------  */
     'pptv': {
       'object': aURI + '/pptv.in.Ikan.swf',
       'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
@@ -61,11 +65,6 @@ aCommon.prototype = {
     'pptv_live': {
       'object': aURI + '/pptv.in.Live.swf',
       'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
-    },
-/**  -------------------------------------------------------------------------------------------------------  */
-    'sohu': {
-      'object': aURI + '/sohu_live.swf',
-      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     '17173': {
@@ -103,7 +102,7 @@ aCommon.prototype = {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku': {
       'host': 'http://www.youku.com/',
-      'target': /http:\/\/((?!www).)+\.youku\.com/i
+      'target': /http:\/\/.*\.youku\.com/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'iqiyi': {
@@ -285,14 +284,12 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
-var aRun = new aCommon();
-
 function startup(data, reason) {
-  aRun.register();
+  aCommon.register();
 }
 
 function shutdown(data, reason) {
-  aRun.unregister();
+  aCommon.unregister();
 }
 
 function install(data, reason) {
