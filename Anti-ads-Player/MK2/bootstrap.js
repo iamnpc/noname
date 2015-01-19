@@ -98,69 +98,6 @@ var aName = [
  ];
 
 var aCommon = {
-//Check if remote file is online and then check for update.
-//优先检查远程文件是否响应，再检查文件是否需要更新。
-  aSync: function (aName) {
-    var aLink = aDomain + aName;
-	console.log(aLink);
-    var aFile = OS.Path.join(aPath, aName);
-    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
-    aClient.open('HEAD', aLink, true);
-    aClient.timeout = 30000;
-    aClient.ontimeout = function () {
-      console.log(aLink + aLang.rf_timeout);
-    }
-    aClient.send();
-    aClient.onload = function () {
-      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-      OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aSize == null || aSize < 10000) {
-          console.log(aLink + aLang.rf_accessfailed);
-        } else if (aDate > info.lastModificationDate) {
-          console.log(aName + aLang.lf_outofdate);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
-        } else if (aSize != info.size) {
-          console.log(aName + aLang.lf_corrupted);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
-        } else {
-          console.log(aName + aLang.lf_ready);
-        }
-      }, function onFailure(reason) {
-        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aName + aLang.lf_notexist);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
-        }
-      }
-      );
-    }
-  },
-// Now download _aap temp file instead of overwrite original .swf file
-// 现在会先下载 _aap 临时文件而不是直接覆盖原文件
-  aDownload: function (aLink, aFile, aName, aSize) {
-    var aTemp = aFile + '_aap';
-    Downloads.fetch(aLink, aTemp, {
-      isPrivate: true
-    }).then(function onSuccess() {
-      OS.File.stat(aTemp).then(function onSuccess(info) {
-        if (aSize == info.size) {
-          console.log(aName + aLang.lf_downloaded);
-          OS.File.move(aTemp, aFile);
-        } else {
-          console.log(aName + aLang.rf_interrupted);
-          OS.File.remove(aTemp);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
-        }
-      }, function onFailure() {
-        return;
-      }
-      );
-    }, function onFailure() {
-      console.log(aLink + aLang.rf_downfailed);
-      OS.File.remove(aTemp);
-    }
-    );
-  },
 //Player Rules.More tweaks coming later.
 //播放器规则，准备为下载部分进行优化。
   PLAYERS: {
@@ -471,6 +408,68 @@ var aCommon = {
         }
       }
     };
+  },
+//Check if remote file is online and then check for update.
+//优先检查远程文件是否响应，再检查文件是否需要更新。
+  aSync: function (aName) {
+    var aLink = aDomain + aName;
+    var aFile = OS.Path.join(aPath, aName);
+    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+    aClient.open('HEAD', aLink, true);
+    aClient.timeout = 30000;
+    aClient.ontimeout = function () {
+      console.log(aLink + aLang.rf_timeout);
+    }
+    aClient.send();
+    aClient.onload = function () {
+      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      OS.File.stat(aFile).then(function onSuccess(info) {
+        if (aSize == null || aSize < 10000) {
+          console.log(aLink + aLang.rf_accessfailed);
+        } else if (aDate > info.lastModificationDate) {
+          console.log(aName + aLang.lf_outofdate);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
+        } else if (aSize != info.size) {
+          console.log(aName + aLang.lf_corrupted);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
+        } else {
+          console.log(aName + aLang.lf_ready);
+        }
+      }, function onFailure(reason) {
+        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
+          console.log(aName + aLang.lf_notexist);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
+        }
+      }
+      );
+    }
+  },
+// Now download _aap temp file instead of overwrite original .swf file
+// 现在会先下载 _aap 临时文件而不是直接覆盖原文件
+  aDownload: function (aLink, aFile, aName, aSize) {
+    var aTemp = aFile + '_aap';
+    Downloads.fetch(aLink, aTemp, {
+      isPrivate: true
+    }).then(function onSuccess() {
+      OS.File.stat(aTemp).then(function onSuccess(info) {
+        if (aSize == info.size) {
+          console.log(aName + aLang.lf_downloaded);
+          OS.File.move(aTemp, aFile);
+        } else {
+          console.log(aName + aLang.rf_interrupted);
+          OS.File.remove(aTemp);
+          aCommon.aDownload(aLink, aFile, aName, aSize);
+        }
+      }, function onFailure() {
+        return;
+      }
+      );
+    }, function onFailure() {
+      console.log(aLink + aLang.rf_downfailed);
+      OS.File.remove(aTemp);
+    }
+    );
   },
   register: function () {
     this.aResolver();
