@@ -30,11 +30,13 @@ var aCommon = {
     },
 */
 /**  -------------------------------------------------------------------------------------------------------  */
-    'iqiyi': {
-      'object0': aURI + '/iqiyi_out.swf',
-      'object1': aURI + '/iqiyi5.swf',
-      'object2': aURI + '/iqiyi.swf',
-      'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Main|Share)?Player.*\.swf/i
+    'iqiyi5': {
+      'object': aURI + '/iqiyi5.swf',
+      'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
+    },
+    'iqiyi_out': {
+      'object': aURI + '/iqiyi_out.swf',
+      'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'pps': {
@@ -55,9 +57,12 @@ var aCommon = {
       'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
       'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
     },
-    'letv_live': {
-      'object': aURI + '/letv.in.Live.swf',
-      'target': /http:\/\/player\.letvcdn\.com\/.*\/newplayer\/(SDK)?LivePlayer\.swf/i
+*/
+/**  -------------------------------------------------------------------------------------------------------  */
+/*
+    'sohu': {
+      'object': aURI + '/sohu_live.swf',
+      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
     },
 */
 /**  -------------------------------------------------------------------------------------------------------  */
@@ -69,13 +74,6 @@ var aCommon = {
     'pptv_live': {
       'object': aURI + '/pptv.in.Live.swf',
       'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
-    },
-*/
-/**  -------------------------------------------------------------------------------------------------------  */
-/*
-    'sohu': {
-      'object': aURI + '/sohu_live.swf',
-      'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
     },
 */
 /**  -------------------------------------------------------------------------------------------------------  */
@@ -120,10 +118,6 @@ var aCommon = {
     'iqiyi_pps': {
       'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
       'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
-    },
-    'iqiyi_live': {
-      'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-      'target': /http:\/\/dispatcher\.video\.qiyi\.com\/dispn\/iaml\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'letv': {
@@ -180,7 +174,7 @@ var aCommon = {
 /**  -------------------------------------------------------------------------------------------------------  */
     'youku': {
       'host': 'http://www.youku.com/',
-      'target': /http:\/\/((?!www).)+\.youku\.com/i
+      'target': /http:\/\/.*\.youku\.com/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
     'iqiyi': {
