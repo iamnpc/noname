@@ -225,11 +225,6 @@
                 continue;
             }
             entry = locations[location];
-            // https://github.com/gorhill/uBlock/issues/418
-            // We now support built-in external filter lists
-            if ( /^https?:/.test(location) === false ) {
-                location = 'assets/thirdparties/' + location;
-            }
             availableLists[location] = entry;
         }
 
@@ -271,7 +266,7 @@
     }
 
     // get built-in block lists.
-    this.assets.get('assets/ublock/filter-lists.json', onBuiltinListsLoaded);
+    this.assets.get('', onBuiltinListsLoaded);
 };
 
 /******************************************************************************/
@@ -488,7 +483,6 @@
         }
         callback();
     };
-    this.assets.get(this.pslPath, applyPublicSuffixList);
 };
 
 /******************************************************************************/
