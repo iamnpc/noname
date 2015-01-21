@@ -124,12 +124,14 @@ var aCommon = {
       'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
-    'iqiyi': {
-      'object0': aURI + '/iqiyi_out.swf',
-      'object1': aURI + '/iqiyi5.swf',
-      'object2': aURI + '/iqiyi.swf',
-      'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Main|Share)?Player.*\.swf/i
-    },
+    'iqiyi5': {
+      'object': aURI + '/iqiyi5.swf',
+      'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
+},
+    'iqiyi_out': {
+      'object': aURI + '/iqiyi_out.swf',
+      'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
+},
 /**  -------------------------------------------------------------------------------------------------------  */
     'pps': {
       'object': aURI + '/iqiyi.swf',
