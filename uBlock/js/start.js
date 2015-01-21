@@ -45,13 +45,6 @@ var jobCallback = function() {
     }
 
     var onMetadataReady = function(metadata) {
-        // Check PSL
-        var mdEntry = metadata[µb.pslPath];
-        if ( mdEntry.repoObsolete ) {
-            // console.log('µBlock.updater> updating all updatable assets');
-            µb.loadUpdatableAssets({ update: true });
-            return;
-        }
         // Check used filter lists
         var lists = µb.remoteBlacklists;
         for ( var path in lists ) {
