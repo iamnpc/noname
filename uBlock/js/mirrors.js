@@ -535,7 +535,7 @@ var load = function() {
     };
 
     vAPI.storage.get({ 'mirrors_metadata': metadata }, onMetadataReady);
-    µBlock.assets.get('assets/ublock/mirror-candidates.txt', onMirrorCandidatesReady);
+    µBlock.assets.get('', onMirrorCandidatesReady);
 };
 
 /******************************************************************************/
