@@ -27,8 +27,6 @@ File system structure:
     assets
         ublock
             ...
-        thirdparties
-            ...
         user
             filters.txt
             ...
@@ -119,7 +117,6 @@ var cachedAssetsManager = (function() {
             var lastVersion = store.extensionLastVersion || '0.0.0.0';
             if ( currentVersion !== lastVersion ) {
                 vAPI.storage.set({ 'extensionLastVersion': currentVersion });
-                exports.remove(/^assets\/(ublock|thirdparties)\//);
                 exports.remove('assets/checksums.txt');
             }
             callback(entries);
@@ -248,7 +245,6 @@ var cachedAssetsManager = (function() {
     exports.removeAll = function(callback) {
         var onEntries = function() {
             exports.remove(/^https?:\/\/[a-z0-9]+/);
-            exports.remove(/^assets\/(ublock|thirdparties)\//);
             exports.remove('assets/checksums.txt');
             if ( typeof callback === 'function' ) {
                 callback(null);
