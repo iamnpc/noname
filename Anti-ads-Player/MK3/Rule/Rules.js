@@ -1,6 +1,6 @@
 var EXPORTED_SYMBOLS = ["PLAYERS","FILTERS","REFERERS"];
 
-var aURI = 'chrome://antiadsplayer3/content';
+var aURI = 'chrome://mk3-flash/content';
 var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
