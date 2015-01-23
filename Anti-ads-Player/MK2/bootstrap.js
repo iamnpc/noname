@@ -317,8 +317,8 @@ var aCommon = {
   observe: function (aSubject, aTopic, aData) {
     if (aTopic == 'http-on-modify-request') {
     var httpReferer = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    for (var i in this.REFERERS) {
-      var domain = this.REFERERS[i];
+    for (var i in REFERERS) {
+      var domain = REFERERS[i];
         try {
         var URL = httpReferer.originalURI.spec;
           if (domain['target'].test(URL)) {
@@ -330,8 +330,8 @@ var aCommon = {
 
     if (aTopic != 'http-on-examine-response') return;
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    for (var i in this.FILTERS) {
-      var rule = this.FILTERS[i];
+    for (var i in FILTERS) {
+      var rule = FILTERS[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
@@ -351,8 +351,8 @@ var aCommon = {
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
 
-    for (var i in this.PLAYERS) {
-      var rule = this.PLAYERS[i];
+    for (var i in PLAYERS) {
+      var rule = PLAYERS[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
         if (typeof rule['preHandle'] === 'function')
@@ -381,7 +381,7 @@ var aCommon = {
 // Resolver for iQiyi.May not help shince iQiyi uses one player now.
 // 爱奇艺专用代码,似乎已经派不上用场了.
   aResolver: function () {
-    var rule = this.PLAYERS['iqiyi'];
+    var rule = PLAYERS['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
       var wnd = this.getWindowForRequest(aSubject);
