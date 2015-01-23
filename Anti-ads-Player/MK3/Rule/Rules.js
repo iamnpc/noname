@@ -164,8 +164,8 @@ var FILTERS = {
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'hunan': {
-    'object': 'http://sdk.yunfancdn.com/config/hunantv/Yunfan.swf',
-    'target': /http:\/\/res\.hunantv\.com\/FrameWork\/AFP\/.+\.swf/i
+    'object': 'http://res.hunantv.com/',
+    'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'duowan': {
