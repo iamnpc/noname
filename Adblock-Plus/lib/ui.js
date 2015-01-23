@@ -29,7 +29,6 @@ let {Subscription, SpecialSubscription, DownloadableSubscription} = require("sub
 let {Synchronizer} = require("synchronizer");
 let {KeySelector} = require("keySelector");
 let {Notification} = require("notification");
-let {initAntiAdblockNotification} = require("antiadblockInit");
 
 let CustomizableUI = null;
 
@@ -125,14 +124,6 @@ let optionsObserver =
         this.value = Prefs.savestats;
       });
 
-      let hasAcceptableAds = FilterStorage.subscriptions.some((subscription) => subscription instanceof DownloadableSubscription &&
-        subscription.url == Prefs.subscriptions_exceptionsurl);
-      setChecked("adblockplus-acceptableAds", hasAcceptableAds);
-      addCommandHandler("adblockplus-acceptableAds", function()
-      {
-        this.value = UI.toggleAcceptableAds();
-      });
-
       setChecked("adblockplus-sync", syncEngine && syncEngine.enabled);
       addCommandHandler("adblockplus-sync", function()
       {
@@ -158,9 +149,7 @@ let optionsObserver =
           if (onShutdown.done)
             return;
 
-          let currentSubscription = FilterStorage.subscriptions.filter((subscription) => subscription instanceof DownloadableSubscription &&
-            subscription.url != Prefs.subscriptions_exceptionsurl && 
-            subscription.url != Prefs.subscriptions_antiadblockurl);
+          let currentSubscription = FilterStorage.subscriptions.filter((subscription) => subscription instanceof DownloadableSubscription);
           currentSubscription = (currentSubscription.length ? currentSubscription[0] : null);
 
           let subscriptions =request.responseXML.getElementsByTagName("subscription");
@@ -424,9 +413,6 @@ let UI = exports.UI =
                                        3 * 60 * 1000, Ci.nsITimer.TYPE_ONE_SHOT);
     onShutdown.add(() => notificationTimer.cancel());
 
-    // Add "anti-adblock messages" notification
-    initAntiAdblockNotification();
-
     let documentCreationObserver = {
       observe: function(subject, topic, data)
       {
@@ -504,7 +490,6 @@ let UI = exports.UI =
     if (prevVersion != addonVersion)
     {
       Prefs.currentVersion = addonVersion;
-      this.addSubscription(window, prevVersion);
 
       // The "Hide placeholders" option has been removed from the UI in 2.6.6.3881
       // So we reset the option for users updating from older versions.
@@ -759,129 +744,6 @@ let UI = exports.UI =
         window.openDialog("chrome://adblockplus/content/ui/sendReport.xul", "_blank", "chrome,centerscreen,resizable=no", getBrowser(window).contentWindow, uri);
       }
     }
-  },
-
-  /**
-   * Opens our contribution page.
-   */
-  openContributePage: function(/**Window*/ window)
-  {
-    this.loadDocLink("contribute", window);
-  },
-
-  /**
-   * Executed on first run, adds a filter subscription and notifies that user
-   * about that.
-   */
-  addSubscription: function(/**Window*/ window, /**String*/ prevVersion)
-  {
-    // Add "acceptable ads" subscription for new users and user updating from old ABP versions.
-    // Don't add it for users of privacy subscriptions (use a hardcoded list for now).
-    let addAcceptable = (Services.vc.compare(prevVersion, "2.0") < 0);
-    let privacySubscriptions = {
-      "https://easylist-downloads.adblockplus.org/easyprivacy+easylist.txt": true,
-      "https://easylist-downloads.adblockplus.org/easyprivacy.txt": true,
-      "https://secure.fanboy.co.nz/fanboy-tracking.txt": true,
-      "https://fanboy-adblock-list.googlecode.com/hg/fanboy-adblocklist-stats.txt": true,
-      "https://bitbucket.org/fanboy/fanboyadblock/raw/tip/fanboy-adblocklist-stats.txt": true,
-      "https://hg01.codeplex.com/fanboyadblock/raw-file/tip/fanboy-adblocklist-stats.txt": true,
-      "https://adversity.googlecode.com/hg/Adversity-Tracking.txt": true
-    };
-    if (FilterStorage.subscriptions.some((subscription) => subscription.url == Prefs.subscriptions_exceptionsurl || subscription.url in privacySubscriptions))
-      addAcceptable = false;
-
-    // Don't add subscription if the user has a subscription already
-    let addSubscription = true;
-    if (FilterStorage.subscriptions.some((subscription) => subscription instanceof DownloadableSubscription && subscription.url != Prefs.subscriptions_exceptionsurl))
-      addSubscription = false;
-
-    // If this isn't the first run, only add subscription if the user has no custom filters
-    if (addSubscription && Services.vc.compare(prevVersion, "0.0") > 0)
-    {
-      if (FilterStorage.subscriptions.some((subscription) => subscription.url != Prefs.subscriptions_exceptionsurl && subscription.filters.length))
-        addSubscription = false;
-    }
-
-    // Add "acceptable ads" subscription
-    if (addAcceptable)
-    {
-      let subscription = Subscription.fromURL(Prefs.subscriptions_exceptionsurl);
-      if (subscription)
-      {
-        subscription.title = "Allow non-intrusive advertising";
-        FilterStorage.addSubscription(subscription);
-        if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
-          Synchronizer.execute(subscription);
-      }
-      else
-        addAcceptable = false;
-    }
-
-    // Add "anti-adblock messages" subscription for new users and users updating from old ABP versions
-    if (Services.vc.compare(prevVersion, "2.5") < 0)
-    {
-      let subscription = Subscription.fromURL(Prefs.subscriptions_antiadblockurl);
-      if (subscription && !(subscription.url in FilterStorage.knownSubscriptions))
-      {
-        subscription.disabled = true;
-        FilterStorage.addSubscription(subscription);
-        if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
-          Synchronizer.execute(subscription);
-      }
-    }
-
-    if (!addSubscription && !addAcceptable)
-      return;
-
-    function notifyUser()
-    {
-      let {addTab} = require("appSupport");
-      if (addTab)
-      {
-        addTab(window, "chrome://adblockplus/content/ui/firstRun.html");
-      }
-      else
-      {
-        let dialogSource = '\
-          <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>\
-          <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="document.title=content.document.title" buttons="accept" width="500" height="600">\
-            <iframe type="content-primary" flex="1" src="chrome://adblockplus/content/ui/firstRun.html"/>\
-          </dialog>';
-        Services.ww.openWindow(window,
-                               "data:application/vnd.mozilla.xul+xml," + encodeURIComponent(dialogSource),
-                               "_blank", "chrome,centerscreen,resizable,dialog=no", null);
-      }
-    }
-
-    if (addSubscription)
-    {
-      // Load subscriptions data
-      let request = new XMLHttpRequest();
-      request.mozBackgroundRequest = true;
-      request.open("GET", "chrome://adblockplus/content/ui/subscriptions.xml");
-      request.addEventListener("load", function()
-      {
-        if (onShutdown.done)
-          return;
-
-        let node = Utils.chooseFilterSubscription(request.responseXML.getElementsByTagName("subscription"));
-        let subscription = (node ? Subscription.fromURL(node.getAttribute("url")) : null);
-        if (subscription)
-        {
-          FilterStorage.addSubscription(subscription);
-          subscription.disabled = false;
-          subscription.title = node.getAttribute("title");
-          subscription.homepage = node.getAttribute("homepage");
-          if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
-            Synchronizer.execute(subscription);
-
-          notifyUser();
-        }
-      }, false);
-      request.send();
-    }
-    else
-      notifyUser();
   },
 
   /**
@@ -1209,7 +1071,7 @@ let UI = exports.UI =
   {
     let subscription = Subscription.fromURL(url);
     let currentSubscriptions = FilterStorage.subscriptions.filter(
-      ((subscription) => subscription instanceof DownloadableSubscription && subscription.url != Prefs.subscriptions_exceptionsurl)
+      ((subscription) => subscription instanceof DownloadableSubscription)
     );
     if (!subscription || currentSubscriptions.indexOf(subscription) >= 0)
       return;
@@ -1221,30 +1083,6 @@ let UI = exports.UI =
     FilterStorage.addSubscription(subscription);
     if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
       Synchronizer.execute(subscription);
-  },
-
-  /**
-   * Adds or removes "non-intrisive ads" filter list.
-   * @return {Boolean} true if the filter list has been added
-   **/
-  toggleAcceptableAds: function()
-  {
-    let subscription = Subscription.fromURL(Prefs.subscriptions_exceptionsurl);
-    if (!subscription)
-      return false;
-
-    subscription.disabled = false;
-    subscription.title = "Allow non-intrusive advertising";
-    if (subscription.url in FilterStorage.knownSubscriptions)
-      FilterStorage.removeSubscription(subscription);
-    else
-    {
-      FilterStorage.addSubscription(subscription);
-      if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
-        Synchronizer.execute(subscription);
-    }
-
-    return (subscription.url in FilterStorage.knownSubscriptions);
   },
 
   /**
@@ -1392,7 +1230,7 @@ let UI = exports.UI =
       {
         if (current instanceof SpecialSubscription)
           return [subscriptions, filters + current.filters.filter((filter) => !filter.disabled).length];
-        else if (!current.disabled && !(Prefs.subscriptions_exceptionscheckbox && current.url == Prefs.subscriptions_exceptionsurl))
+        else if (!current.disabled)
           return [subscriptions + 1, filters];
         else
           return [subscriptions, filters]
@@ -1584,8 +1422,6 @@ let UI = exports.UI =
           item.removeAttribute("acceltext");
       }
     }
-
-    hideElement(prefix + "contributebutton", Prefs.hideContributeButton);
   },
 
   /**
@@ -1825,21 +1661,6 @@ let UI = exports.UI =
     }
   },
 
-  /**
-   * Hide contribute button and persist this choice.
-   */
-  hideContributeButton: function(/**Window*/ window)
-  {
-    Prefs.hideContributeButton = true;
-
-    for (let id of ["abp-status-contributebutton", "abp-toolbar-contributebutton", "abp-menuitem-contributebutton"])
-    {
-      let button = window.document.getElementById(id);
-      if (button)
-        button.hidden = true;
-    }
-  },
-
   showNextNotification: function(url)
   {
     let window = this.currentWindow;
@@ -1951,8 +1772,6 @@ let eventHandlers = [
   ["abp-command-toggleshowintoolbar", "command", UI.toggleToolbarIcon.bind(UI)],
   ["abp-command-toggleshowinstatusbar", "command", UI.togglePref.bind(UI, "showinstatusbar")],
   ["abp-command-enable", "command", UI.togglePref.bind(UI, "enabled")],
-  ["abp-command-contribute", "command", UI.openContributePage.bind(UI)],
-  ["abp-command-contribute-hide", "command", UI.hideContributeButton.bind(UI)]
 ];
 
 onShutdown.add(function()
