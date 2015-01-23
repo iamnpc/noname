@@ -1,5 +1,5 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
-Cu.import("resource://gre/modules/NetUtil.jsm");
+Cu.import('resource://gre/modules/NetUtil.jsm');
 
 var aCommon = {
   oService: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
@@ -35,7 +35,7 @@ var aCommon = {
     return null;
   },
   observe: function (aSubject, aTopic, aData) {
-    if (aTopic == "http-on-modify-request") {
+    if (aTopic == 'http-on-modify-request') {
     var httpReferer = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in REFERERS) {
       var domain = REFERERS[i];
@@ -136,11 +136,11 @@ var aCommon = {
   register: function () {
     this.aResolver();
     this.oService.addObserver(this, 'http-on-examine-response', false);
-    this.oService.addObserver(this, "http-on-modify-request", false);
+    this.oService.addObserver(this, 'http-on-modify-request', false);
   },
   unregister: function () {
     this.oService.removeObserver(this, 'http-on-examine-response', false);
-    this.oService.removeObserver(this, "http-on-modify-request", false);
+    this.oService.removeObserver(this, 'http-on-modify-request', false);
   }
 }
 
@@ -165,8 +165,8 @@ function HttpHeaderVisitor() {
 }
 HttpHeaderVisitor.prototype = {
   visitHeader: function (aHeader, aValue) {
-    if (aHeader.indexOf("Content-Type") !== -1) {
-      if (aValue.indexOf("application/x-shockwave-flash") !== -1) {
+    if (aHeader.indexOf('Content-Type') !== -1) {
+      if (aValue.indexOf('application/x-shockwave-flash') !== -1) {
         this._isFlash = true;
       }
     }
@@ -178,6 +178,11 @@ HttpHeaderVisitor.prototype = {
 
 function startup(data, reason) {
   Cu.import('https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Anti-ads-Player/MK3/Rule/Rules.js');
+//This is for testing only!!
+//以下代码仅用于本地测试用!!
+/**
+  Cu.import('chrome://mk3-rule/content/rules.js');
+*/
   aCommon.register();
 }
 
