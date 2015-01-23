@@ -177,12 +177,7 @@ HttpHeaderVisitor.prototype = {
 }
 
 function startup(data, reason) {
-  Cu.import('https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Anti-ads-Player/MK3/Rule/Rules.js');
-//This is for testing only!!
-//以下代码仅用于本地测试用!!
-/**
   Cu.import('chrome://mk3-rule/content/rules.js');
-*/
   aCommon.register();
 }
 
