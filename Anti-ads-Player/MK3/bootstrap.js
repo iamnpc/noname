@@ -165,6 +165,11 @@ var aCommon = {
       'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
     },
 /**  -------------------------------------------------------------------------------------------------------  */
+    'hunan': {
+      'object': 'http://sdk.yunfancdn.com/config/hunantv/Yunfan.swf',
+      'target': /http:\/\/res\.hunantv\.com\/FrameWork\/AFP\/.+\.swf/i
+    },
+/**  -------------------------------------------------------------------------------------------------------  */
     'duowan': {
       'object': 'http://yuntv.letv.com/bcloud.swf',
       'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
