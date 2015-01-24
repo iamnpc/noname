@@ -74,8 +74,8 @@ var aURI = OS.Path.toFileURI(aPath);
 var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
 var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
-//Player Rules.
-//播放器规则，准备为下载部分进行优化。
+//Player Rules. If you can't fetch remote files, these won't be functional.
+//播放器规则。如果你无法获取远程文件，它们将不会工作
 var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
