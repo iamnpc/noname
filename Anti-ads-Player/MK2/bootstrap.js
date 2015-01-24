@@ -1,12 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
-Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain which require Gecko 25 and later
-
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
-var aURI = OS.Path.toFileURI(aPath);
+Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain that require Gecko 25 and later
 
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
@@ -69,49 +64,34 @@ if (!aLocale[uAgent]) {
   console.log('Your locale is not supported');
 }
 var aLang = aLocale[uAgent] || aLocale['en-US'];
-  
-//You need to upload .swf files to your domain.A domain with SSL is recommended
-//你需要将 .swf 文件上传至你的服务器，推荐使用支持SSL加密连接的服务器。
-var aDomain = 'http://jc3213.cwsurf.de/bin/aap/';
-//Lists of .swf files
-// .swf 文件列表
-var aName = [
-    'loader.swf',
-    'player.swf',
-    'tudou.swf',
-    'sp.swf',
-    'iqiyi_out.swf',
-    'iqiyi5.swf',
-    'iqiyi.swf',
-    'pps.swf',
-    'letv.swf',
-    'sohu_live.swf',
-    'pptv.in.Ikan.swf',
-    'pptv.in.Live.swf',
-    '17173.in.Vod.swf',
-    '17173.out.Vod.swf',
-    '17173.in.Live.swf',
-    '17173.out.Live.swf',
-    'ku6_in_player.swf',
-    'ku6_out_player.swf',
-    'baidu.call.swf',
- ];
 
-//Player Rules.More tweaks coming later.
+//You can customize the dir name to store .swf files
+//你可以自行修改保存 .swf 文件的文件夹名字。
+var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
+var aURI = OS.Path.toFileURI(aPath);
+//You can add more domains easily now. example: google for player moded by 15536900, github for catcat520
+//现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
+var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
+var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
+
+//Player Rules.
 //播放器规则，准备为下载部分进行优化。
 var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
     'object': aURI + '/loader.swf',
+    'remote': aURL_google + 'loader.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
   },
   'youku_player': {
     'object': aURI + '/player.swf',
+    'remote': aURL_google + 'player.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'tudou_portal': {
     'object': aURI + '/tudou.swf',
+    'remote': aURL_google + 'tudou.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
   },
   'tudou_olc': {
@@ -120,29 +100,35 @@ var PLAYERS = {
   },
   'tudou_social': {
     'object': aURI + '/sp.swf',
+    'remote': aURL_google + 'sp.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'iqiyi5': {
     'object': aURI + '/iqiyi5.swf',
+    'remote': aURL_google + 'iqiyi5.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
   },
   'iqiyi_out': {
     'object': aURI + '/iqiyi_out.swf',
+    'remote': aURL_google + 'iqiyi_out.swf',
     'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'pps': {
     'object': aURI + '/iqiyi.swf',
+    'remote': aURL_google + 'iqiyi.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
   },
   'pps_out': {
     'object': aURI + '/pps.swf',
+    'remote': aURL_google + 'pps.swf',
     'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'letv': {
     'object': aURI + '/letv.swf',
+    'remote': aURL_google + 'letv.swf',
     'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
   },
   'letv_skin': {
@@ -152,46 +138,56 @@ var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'sohu': {
     'object': aURI + '/sohu_live.swf',
+    'remote': aURL_google + 'sohu_live.swf',
     'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'pptv': {
     'object': aURI + '/pptv.in.Ikan.swf',
+    'remote': aURL_github + 'pptv.in.Ikan.swf',
     'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
   },
   'pptv_live': {
     'object': aURI + '/pptv.in.Live.swf',
+    'remote': aURL_github + 'pptv.in.Live.swf',
     'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   '17173': {
     'object': aURI + '/17173.in.Vod.swf',
+    'remote': aURL_github + '17173.in.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
   },
   '17173_out': {
     'object': aURI + '/17173.out.Vod.swf',
+    'remote': aURL_github + '17173.out.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
   },
   '17173_live': {
     'object': aURI + '/17173.in.Live.swf',
+    'remote': aURL_github + '17173.in.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
   },
   '17173_live_out': {
     'object': aURI + '/17173.out.Live.swf',
+    'remote': aURL_github + '17173.out.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'ku6': {
     'object': aURI + '/ku6_in_player.swf',
+    'remote': aURL_github + 'ku6_in_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
   },
   'ku6_out': {
     'object': aURI + '/ku6_out_player.swf',
+    'remote': aURL_github + 'ku6_out_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'baidu': {
     'object': aURI + '/baidu.call.swf',
+    'remote': aURL_github + 'baidu.call.swf',
     'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
   },
 };
@@ -378,7 +374,7 @@ var aCommon = {
       return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
-// Resolver for iQiyi.May not help shince iQiyi uses one player now.
+// Resolver for iQiyi.May not help since iQiyi uses one player now.
 // 爱奇艺专用代码,似乎已经派不上用场了.
   aResolver: function () {
     var rule = PLAYERS['iqiyi'];
@@ -417,9 +413,7 @@ var aCommon = {
   },
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
-  aSync: function (aName) {
-    var aLink = aDomain + aName;
-    var aFile = OS.Path.join(aPath, aName);
+  aSync: function (aLink, aFile) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
@@ -434,48 +428,43 @@ var aCommon = {
         if (aSize == null || aSize < 10000) {
           console.log(aLink + aLang.rf_accessfailed);
         } else if (aDate > info.lastModificationDate) {
-          console.log(aName + aLang.lf_outofdate);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
+          console.log(aFile + aLang.lf_outofdate);
+          aCommon.aDownload(aLink, aFile, aSize);
         } else if (aSize != info.size) {
-          console.log(aName + aLang.lf_corrupted);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
+          console.log(aFile + aLang.lf_corrupted);
+          aCommon.aDownload(aLink, aFile, aSize);
         } else {
-          console.log(aName + aLang.lf_ready);
+          console.log(aFile + aLang.lf_ready);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aName + aLang.lf_notexist);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
+          console.log(aFile + aLang.lf_notexist);
+          aCommon.aDownload(aLink, aFile, aSize);
         }
-      }
-      );
+      });
     }
   },
 // Now download _aap temp file instead of overwrite original .swf file
 // 现在会先下载 _aap 临时文件而不是直接覆盖原文件
-  aDownload: function (aLink, aFile, aName, aSize) {
+  aDownload: function (aLink, aFile, aSize) {
     var aTemp = aFile + '_aap';
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
     }).then(function onSuccess() {
       OS.File.stat(aTemp).then(function onSuccess(info) {
         if (aSize == info.size) {
-          console.log(aName + aLang.lf_downloaded);
+          console.log(aFile + aLang.lf_downloaded);
           OS.File.move(aTemp, aFile);
         } else {
-          console.log(aName + aLang.rf_interrupted);
+          console.log(aFile + aLang.rf_interrupted);
           OS.File.remove(aTemp);
-          aCommon.aDownload(aLink, aFile, aName, aSize);
+          aCommon.aDownload(aLink, aFile, aSize);
         }
-      }, function onFailure() {
-        return;
-      }
-      );
+      });
     }, function onFailure() {
       console.log(aLink + aLang.rf_downfailed);
       OS.File.remove(aTemp);
-    }
-    );
+    });
   },
   register: function () {
     this.aResolver();
@@ -521,7 +510,16 @@ HttpHeaderVisitor.prototype = {
 }
 
 function startup(data, reason) {
-  aName.forEach(aCommon.aSync); //仅在扩展为启用状态时才检查是否.swf更新
+//Synchronize only when enabled.
+//仅在扩展为启用状态时才检查是否.swf更新
+  for (var i in PLAYERS) {
+    var rule = PLAYERS[i];
+    if (rule['remote']) {
+      var aLink = rule['remote'];
+      var aFile = OS.Path.fromFileURI(rule['object']);
+      aCommon.aSync(aLink, aFile);
+    }
+  };
   aCommon.register();
 }
 
