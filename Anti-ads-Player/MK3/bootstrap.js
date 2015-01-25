@@ -188,8 +188,7 @@ var REFERERS = {
   },
 };
 
-var aCommon = {
-  oService: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+var Common = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -285,7 +284,7 @@ var aCommon = {
       return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
-  aResolver: function () {
+  iQiyi: function () {
     var rule = PLAYERS['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
@@ -320,16 +319,20 @@ var aCommon = {
       }
     };
   },
-  register: function () {
-    this.aResolver();
-    this.oService.addObserver(this, 'http-on-examine-response', false);
-    this.oService.addObserver(this, 'http-on-modify-request', false);
+};
+
+var aOS = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+var MozApp = {
+  startup: function () {
+    Common.iQiyi();
+    aOS.addObserver(Common, 'http-on-examine-response', false);
+    aOS.addObserver(Common, 'http-on-modify-request', false);
   },
-  unregister: function () {
-    this.oService.removeObserver(this, 'http-on-examine-response', false);
-    this.oService.removeObserver(this, 'http-on-modify-request', false);
-  }
-}
+  shutdown: function () {
+    aOS.removeObserver(Common, 'http-on-examine-response', false);
+    aOS.removeObserver(Common, 'http-on-modify-request', false);
+  },
+};
 
 function TrackingListener() {
   this.originalListener = null;
@@ -364,11 +367,11 @@ HttpHeaderVisitor.prototype = {
 }
 
 function startup(data, reason) {
-  aCommon.register();
+  MozApp.startup();
 }
 
 function shutdown(data, reason) {
-  aCommon.unregister();
+  MozApp.shutdown();
 }
 
 function install(data, reason) {
