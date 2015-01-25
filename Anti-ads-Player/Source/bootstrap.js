@@ -112,8 +112,7 @@ var REFERERS = {
   },
 };
 
-var aCommon = {
-  oService: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+var Common = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -146,7 +145,7 @@ var aCommon = {
     return null;
   },
   observe: function (aSubject, aTopic, aData) {
-    if (aTopic == "http-on-modify-request") {
+    if (aTopic == 'http-on-modify-request') {
     var httpReferer = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in REFERERS) {
       var domain = REFERERS[i];
@@ -161,22 +160,6 @@ var aCommon = {
 
     if (aTopic != 'http-on-examine-response') return;
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    for (var i in this.FILTERS) {
-      var rule = this.FILTERS[i];
-      if (rule['target'].test(httpChannel.URI.spec)) {
-        if (!rule['storageStream'] || !rule['count']) {
-          httpChannel.suspend();
-          this.getObject(rule, function () {
-            httpChannel.resume();
-          });
-        }
-        var newListener = new TrackingListener();
-        aSubject.QueryInterface(Ci.nsITraceableChannel);
-        newListener.originalListener = aSubject.setNewListener(newListener);
-        newListener.rule = rule;
-        break;
-      }
-    }
 
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
@@ -209,7 +192,7 @@ var aCommon = {
       return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
-  aResolver: function () {
+  iQiyi: function () {
     var rule = PLAYERS['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
@@ -244,16 +227,20 @@ var aCommon = {
       }
     };
   },
-  register: function () {
-    this.aResolver();
-    this.oService.addObserver(this, 'http-on-examine-response', false);
-    this.oService.addObserver(this, "http-on-modify-request", false);
+};
+
+var aOS = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+var MozApp = {
+  startup: function () {
+    Common.iQiyi();
+    aOS.addObserver(Common, 'http-on-examine-response', false);
+    aOS.addObserver(Common, 'http-on-modify-request', false);
   },
-  unregister: function () {
-    this.oService.removeObserver(this, 'http-on-examine-response', false);
-    this.oService.removeObserver(this, "http-on-modify-request", false);
-  }
-}
+  shutdown: function () {
+    aOS.removeObserver(Common, 'http-on-examine-response', false);
+    aOS.removeObserver(Common, 'http-on-modify-request', false);
+  },
+};
 
 function TrackingListener() {
   this.originalListener = null;
@@ -276,8 +263,8 @@ function HttpHeaderVisitor() {
 }
 HttpHeaderVisitor.prototype = {
   visitHeader: function (aHeader, aValue) {
-    if (aHeader.indexOf("Content-Type") !== -1) {
-      if (aValue.indexOf("application/x-shockwave-flash") !== -1) {
+    if (aHeader.indexOf('Content-Type') !== -1) {
+      if (aValue.indexOf('application/x-shockwave-flash') !== -1) {
         this._isFlash = true;
       }
     }
@@ -288,11 +275,11 @@ HttpHeaderVisitor.prototype = {
 }
 
 function startup(data, reason) {
-  aCommon.register();
+  MozApp.startup();
 }
 
 function shutdown(data, reason) {
-  aCommon.unregister();
+  MozApp.shutdown();
 }
 
 function install(data, reason) {
