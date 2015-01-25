@@ -1,7 +1,9 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
+Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Geck 29 and later
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain that require Gecko 25 and later
+Cu.import('resource://gre/modules/Services.jsm'); //Now as a work round for ToobarIcon
 
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
@@ -19,6 +21,8 @@ var aLocale = {
     rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
     ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
     ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    ext_name: 'Anti-ads Player Mk2',
+    ext_tooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
   },
   'zh-CN': {
     lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
@@ -32,6 +36,8 @@ var aLocale = {
     rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
     ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
     ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
+    ext_name: 'Anti-ads Player Mk2',
+    ext_tooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
   },
   'zh-TW': {
     lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
@@ -45,6 +51,8 @@ var aLocale = {
     rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
     ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
     ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
+    ext_name: 'Anti-ads Player Mk2',
+    ext_tooltip: '\u7ACB\u5373\u57F7\u884C\u66F4\u65B0\u6AA2\u67E5',
   },
   'en-US': {
     lf_outofdate: ' is out of date',
@@ -58,6 +66,8 @@ var aLocale = {
     rf_interrupted: ' download session has been interrupted due to unknown error',
     ext_install: ' has been installed...',
     ext_uninstall: ' has been uninstalled...',
+    ext_name: 'Anti-ads Player Mk2',
+    ext_tooltip: 'Run update check now...',
   },
 };
 if (!aLocale[uAgent]) {
@@ -277,6 +287,27 @@ var REFERERS = {
   },
 };
 
+// Add icon for Toobar button
+// 为工具栏按钮添加图标
+var ssService = Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService);
+var aIcon = '';
+aIcon += '@-moz-document url("chrome://browser/content/browser.xul") {';
+aIcon += '    #mk2-button {';
+aIcon += '        list-style-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACJElEQVR42q2SS2gTURSGr4LxTVrzmEzqwoWVLgV1IT6qoVEqRTfahRTETZC4sVjtTDJ5tFKpLVGyKIqVCrYoWFBqFYriC5Sgu2bZTVdasCFt0sZpJzP3987cSTEUKUIP/Fy4nPP959x7CFnPyLW76nTFcwadtU50kO24QBz/BRht3nxl4aYHiPlUxASK/v3jWJgJa5p2eM1iKK4mI+6bRdyHKt3eB2i/wSLDtGd1YYhsQtR9kCWrlSI9JiJ7qwljD9MYezIMrUyR+/gIevrItCa5D1QBXrU4GjJtO7/nr7vN1i3A3N0AUuMlvMlSfJmiSLykKBYXkes7Cj0qFJYkz94VQOIE2fKs2dGrKwKgcACNi7jR8wnBfopTTIE7FBOTOpY/3ONjRYXh6jFi3pBVHBGxHPPjbdclnOwuWIWmGnuW8DyjAp/THCCL+eo3iHv7LIDsh5HcDXV+Fq2pPI4lCzjeVUSwO4cfeQMYbOFjsjxIztoKYwMDJC2AVMfaY+doGL/myxiYKCH1uoSpGZ39wWDFnUsRJv/6Qs/56fAu0E6T7OeQ+0Hg6wPg22NgpI07R2wTSdTLiiuwApi7VlPz4uzWxZ9X3XaCn7tEbbG3se74vYqIcHHVPgw0kkPZy86hSiKVRBtmSxYNI+LtZd3W/3sbE2QjlYV3pvv71h0odXgpB/Ku2A6cW3ulQ2Qbc0qOnHY8HQqSenPF9YjQDlOyq4Gsd/wBqsWREbqbXxEAAAAASUVORK5CYII=");';
+aIcon += '    }';
+aIcon += '    #mk2-button[cui-areatype="menu-panel"],';
+aIcon += '        toolbarpaletteitem[place="palette"] > #mk2-button {';
+aIcon += '        list-style-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEzElEQVR42u2XfUxVdRjHD8pLFIi83XOBWm+r5VqtrbJYIC8ZY9rSVcymrlErGi5m6MzLPedwcZZAmEqMgQ6bkv94Y87QLRqYKVsUOLNIXlNempFX3rxd4L6c+/v2O+fcN+69XEhx6w9/27MDZ/d5vp/n+T2/l8Mwd8f/degYZsn4ttgC8GydnVftRVF8qvS+v4AJQ1Hk49gRr76jAHnPMiF1maHG4Q9jgGK1bCLPDhKBFeW/BXYQOubeOwrRujFCP1oY5wLwNrv+vRH7tc4BAB12u/0Qfa7V6/VLb1sYumUxdp5tnEvYx75cD5iNkIYoin30kX3r4rzqUQjs1QWLO81kgHMQOuij5L+La1UspLkNIGQX1OjTrEDTtpdwbOtq1G/NQkvp25Kqoj4+BBx5E2jIh/3k9l00bNBC9YPsnKolkLiJfwCntmfg+2MH0PzDbzjRZoL+JxvOXJzA2D8KgPHGX2gt3QAiKD6EVzVDExU9r7qoVW2mXQ4bp5oToPWT13G1/wr2NRHUniU4003Q2kfQcIFA20Dwy5ACYRjoRq/2aZcfhWgbyGXuCQjQuD78YnVaCM69FaE4Cr4AtuZylJ4myCwn0HcQdI9AtvYBgk21BBtrCIZGFYg/TlV5TZ2qPCBAZcqSitr0EExrHBXg/ACUPIjCsp9lAMnWVRK8UUWw+jPievf5t3YZwDRhgEVI8qiC2gIuNilgD/TkRdXKDjy1okS/09Cvy0BWmdkl6G05ldOu1SDuT3b7ahNAlzYXsAqutc8lAJrZAKKQgCbhHWTvGplTPH2PFWtKJ1wA2L/SHUNKiFO3BQSg2+x1Jy00Sa4+MGgfwfEda7G35jukcNeR/qnFRzyjzI7U4nG8W3NTEbdMATr3FEgJEa16ek5xwxYmwrNcMoBUCfq/ec+TMJtuwmCkQrpRCmFA2u5pWdSZeWrxmAx35JxZAbh82i0uJeKIN1bALPMLMKNZ/pDLgXMAePbBlfNy3PrzFhlAEvO23GojZqyODanuNfjEk5+xz+tzGN/zYpJuFj4OspPjXXUGYJ2RY59ot2FN2SRS+BvUDFilG0fx1zOYnHKIX6j3yj5RicU7+0l1yf9mJLBG1ypwAkjOzj3hq010bk3KFNsIuq4RXBomGDMRd+P9/g09Be6Hz3RKcaTEpIT4+CL/q0Bgf5Sb7qM4N7U8FQluiAMvAJ0n6RqzYtb4u4vu/1tmL1vOMxEFQuTYy9Klxj8Ap6qwaFU4/HIoxJ0JPs7OEsq2+2HgYDZweB1Q8cxsYcEzc09xtQlC9FNzn4ZCXFpPXjSqVoVgMD/WK4ADQqoGP8eBxTuFE/3BT0Grzpj3RGzbHNkpAbTkRPgJ5A3jYX5/qwCLgnrYysU9t6AzueGVsMe+SFnaWJMeYp75mA0AEMAkIFoJwtONTWBLsTM66lZuxcG0H0pmZSYF5dTzVCZJ+o3FWhSTLN2sb+tu+GchE067ttclSAHOboiATcsqvRCgAvRuUbgoN2PwsSto947KEBTgUGYojmaFofeD5VKmojL/vhAUvGPRrucoin2CHiTtEkDDq+GoSg0mlSnBJdDex4q8Kp9+vByna76L/maccAkTFKyHLumji/2ZEAQu5sVfcyPf35fMrLz77bhY41/wTM0FqVZmhwAAAABJRU5ErkJggg==");';
+aIcon += '    }';
+aIcon += '}';
+var aIconEnc = encodeURIComponent(aIcon);
+var newURIParam = {
+    aURL: 'data:text/css,' + aIconEnc,
+    aOriginCharset: null,
+    aBaseURI: null,
+};
+var aIconUri = Services.io.newURI(newURIParam.aURL, newURIParam.aOriginCharset, newURIParam.aBaseURI);
+
 var aCommon = {
   oService: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   getObject: function (rule, callback) {
@@ -413,7 +444,7 @@ var aCommon = {
   },
 //Check if remote file is online and then check for update.
 //优先检查远程文件是否响应，再检查文件是否需要更新。
-  aSync: function (aLink, aFile) {
+  checkUpdate: function (aLink, aFile) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
@@ -429,24 +460,24 @@ var aCommon = {
           console.log(aLink + aLang.rf_accessfailed);
         } else if (aDate > info.lastModificationDate) {
           console.log(aFile + aLang.lf_outofdate);
-          aCommon.aDownload(aLink, aFile, aSize);
+          aCommon.initDownload(aLink, aFile, aSize);
         } else if (aSize != info.size) {
           console.log(aFile + aLang.lf_corrupted);
-          aCommon.aDownload(aLink, aFile, aSize);
+          aCommon.initDownload(aLink, aFile, aSize);
         } else {
           console.log(aFile + aLang.lf_ready);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aFile + aLang.lf_notexist);
-          aCommon.aDownload(aLink, aFile, aSize);
+          aCommon.initDownload(aLink, aFile, aSize);
         }
       });
     }
   },
 // Now download _aap temp file instead of overwrite original .swf file
 // 现在会先下载 _aap 临时文件而不是直接覆盖原文件
-  aDownload: function (aLink, aFile, aSize) {
+  initDownload: function (aLink, aFile, aSize) {
     var aTemp = aFile + '_aap';
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
@@ -458,13 +489,25 @@ var aCommon = {
         } else {
           console.log(aFile + aLang.rf_interrupted);
           OS.File.remove(aTemp);
-          aCommon.aDownload(aLink, aFile, aSize);
+          aCommon.initDownload(aLink, aFile, aSize);
         }
       });
     }, function onFailure() {
       console.log(aLink + aLang.rf_downfailed);
       OS.File.remove(aTemp);
     });
+  },
+// Start download now
+// 开始下载
+  startDownload: function() {
+    for (var i in PLAYERS) {
+      var rule = PLAYERS[i];
+      if (rule['remote']) {
+        var aLink = rule['remote'];
+        var aFile = OS.Path.fromFileURI(rule['object']);
+        aCommon.checkUpdate(aLink, aFile);
+      }
+    }
   },
   register: function () {
     this.aResolver();
@@ -510,29 +553,37 @@ HttpHeaderVisitor.prototype = {
 }
 
 function startup(data, reason) {
-//Synchronize only when enabled.
-//仅在扩展为启用状态时才检查是否.swf更新
-  for (var i in PLAYERS) {
-    var rule = PLAYERS[i];
-    if (rule['remote']) {
-      var aLink = rule['remote'];
-      var aFile = OS.Path.fromFileURI(rule['object']);
-      aCommon.aSync(aLink, aFile);
-    }
-  };
+// Add Toobar button
+// 添加工具栏按钮
+  CustomizableUI.createWidget({
+    id: 'mk2-button',
+    defaultArea: CustomizableUI.AREA_NAVBAR,
+    label: aLang.ext_name,
+    tooltiptext: aLang.ext_tooltip,
+    onCommand: function() {
+      aCommon.startDownload();
+    },
+  });
+  ssService.loadAndRegisterSheet(aIconUri, ssService.AUTHOR_SHEET);
+//
   aCommon.register();
 }
 
 function shutdown(data, reason) {
-  aRun.unregister();
+// Remove Toobar button
+// 移除工具栏按钮
+  CustomizableUI.destroyWidget('mk2-button');
+  ssService.unregisterSheet(aIconUri, ssService.AUTHOR_SHEET);
+  aCommon.unregister();
 }
 
 function install(data, reason) {
-//Only create when add-on is installed.
-//仅在安装扩展时才创建aPath文件夹。
+//Create folder and run download once when installed
+//安装扩展后新建文件夹并下载破解播放器
   if (reason == ADDON_INSTALL) {
+    aCommon.startDownload();
     OS.File.makeDir(aPath);
-    console.log('Anti-ads Player MK2' + aLang.ext_install);
+    console.log(aLang.ext_name + aLang.ext_install);
   }
 //Remove useless .swf file.
 //删除无用的.swf文件。
@@ -551,8 +602,9 @@ function install(data, reason) {
 function uninstall(data, reason) {
 //Only delete aPath when add-on is uninstalled.
 //仅在卸载扩展时才删除aPath文件夹。
+function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
     OS.File.removeDir(aPath);
-    console.log('Anti-ads Player MK2' + aLang.ext_uninstall);
+    console.log(aLang.ext_name + aLang.ext_uninstall);
   }
 }
