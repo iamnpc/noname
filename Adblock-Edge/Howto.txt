@@ -41,6 +41,7 @@ chrome/skin/abe-icon-big.png
 chrome/skin/firstRun.css
 chrome/content\ui/firstrun.js
 chrome/content/ui/firstrun.xhtml
+chrome/locale/**/firstRun.properties
 
 
 ===================================================================================================================================================
