@@ -22,5 +22,5 @@ Adblock Plus Z は Adblock Plus や Adblock Edgeより改良され、Howtoを読
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Adblock-Plus/Howto.txt
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Adblock-Edge/Howto.txt
 
-’ダウンロード’、’編集’、’再配布’らの行為は、ユーザーライセンスAAS(Anti-ads Solution)に同意することを意味する。
+‘ダウンロード’、‘編集’、‘再配布’らの行為は、ユーザーライセンスAAS(Anti-ads Solution)に同意することを意味する。
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/LICENSE
