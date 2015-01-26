@@ -1,0 +1,24 @@
+Modified based on source code of Adblock Edge (https://addons.mozilla.org/firefox/downloads/latest/394968/platform:5/addon-394968-latest.xpi?src=dp-btn-primary)
+
+1) Replaced all 'adblockedge' as 'adblockplus' in all files.
+2) Replaced all 'abe-' as 'abp-' in all files.
+3) Replaced default toobar icon file 'chrome/skin/abp-status.png', 'chrome/skin/abp-status-16.png', and 'chrome/skin/abp-status-32.png' as ones from Adblcok Plus
+4) Modified 'defaults/prefs/pref.js' (https://github.com/jc3213/Anti-ads-Solution/commit/97dca69cd6659c01ccfd5da1469b3c2770f39693)
+5) Modified 'libs/ui.js' (https://github.com/jc3213/Anti-ads-Solution/commit/08290cdda2b5dce1a822304706d85719294df384)
+6) Removed 'chrome/skin/abe-icon-big.png', 'chrome/skin/firstRun.css',  'chrome/content\ui/firstrun.js', and 'chrome/content/ui/firstrun.xhtml'
+7) Other modification: Replaced 'icon.png', Modified 'install.rdf', etc...
+
+
+=======================================================================================================================================================================
+
+
+基于 Adblock Edge 源代码的修改 (https://addons.mozilla.org/firefox/downloads/latest/394968/platform:5/addon-394968-latest.xpi?src=dp-btn-primary)
+
+1) 查找替换所有文件中的 'adblockedge' 为 'adblockplus' 。
+2) 查找替换所有文件中的 'abe-' 为 'abp-' 。
+3) 将工具栏图标替换回ABP默认的 'chrome/skin/abp-status.png', 'chrome/skin/abp-status-16.png', and 'chrome/skin/abp-status-32.png' 。
+4) 修改了 'defaults/prefs/pref.js' (https://github.com/jc3213/Anti-ads-Solution/commit/97dca69cd6659c01ccfd5da1469b3c2770f39693)
+5) 修改了 'libs/ui.js' (https://github.com/jc3213/Anti-ads-Solution/commit/08290cdda2b5dce1a822304706d85719294df384)
+6) 删除了 'chrome/skin/abe-icon-big.png', 'chrome/skin/firstRun.css',  'chrome/content\ui/firstrun.js', and 'chrome/content/ui/firstrun.xhtml'
+7) 其他修改如： 替换 'icon.png', 修改 'install.rdf', etc...
+
