@@ -78,18 +78,18 @@ let optionsObserver =
 				element.addEventListener("command", handler, false);
 		}
 
-		addCommandHandler("adblockedge-filters", UI.openFiltersDialog.bind(UI));
+		addCommandHandler("adblockplus-filters", UI.openFiltersDialog.bind(UI));
 
 		let {Sync} = require("sync");
 		let syncEngine = Sync.getEngine();
-		hideElement("adblockedge-sync", !syncEngine);
+		hideElement("adblockplus-sync", !syncEngine);
 
 		let {defaultToolbarPosition, statusbarPosition} = require("appSupport");
 		let hasToolbar = defaultToolbarPosition;
 		let hasStatusBar = statusbarPosition;
 
-		hideElement("adblockedge-showintoolbar", !hasToolbar);
-		hideElement("adblockedge-showinstatusbar", !hasStatusBar);
+		hideElement("adblockplus-showintoolbar", !hasToolbar);
+		hideElement("adblockplus-showinstatusbar", !hasStatusBar);
 
 		let checkbox = doc.querySelector("setting[type=bool]");
 		if (checkbox)
@@ -104,15 +104,15 @@ let optionsObserver =
 				return;
 			}
 
-			setChecked("adblockedge-savestats", Prefs.savestats);
-			addCommandHandler("adblockedge-savestats", function()
+			setChecked("adblockplus-savestats", Prefs.savestats);
+			addCommandHandler("adblockplus-savestats", function()
 			{
 				UI.toggleSaveStats(doc.defaultView);
 				this.value = Prefs.savestats;
 			});
 
-			setChecked("adblockedge-sync", syncEngine && syncEngine.enabled);
-			addCommandHandler("adblockedge-sync", function()
+			setChecked("adblockplus-sync", syncEngine && syncEngine.enabled);
+			addCommandHandler("adblockplus-sync", function()
 			{
 				this.value = UI.toggleSync();
 			});
@@ -124,13 +124,13 @@ let optionsObserver =
 				this.value = UI.isToolbarIconVisible();
 			});
 
-			let list = doc.getElementById("adblockedge-subscription-list");
+			let list = doc.getElementById("adblockplus-subscription-list");
 			if (list)
 			{
 				// Load subscriptions data
 				let request = new XMLHttpRequest();
 				request.mozBackgroundRequest = true;
-				request.open("GET", "chrome://adblockedge/content/ui/subscriptions.xml");
+				request.open("GET", "chrome://adblockplus/content/ui/subscriptions.xml");
 				request.addEventListener("load", function()
 				{
 					if (onShutdown.done)
@@ -248,7 +248,7 @@ let UI = exports.UI =
 		// Start loading overlay
 		let request = new XMLHttpRequest();
 		request.mozBackgroundRequest = true;
-		request.open("GET", "chrome://adblockedge/content/ui/overlay.xul");
+		request.open("GET", "chrome://adblockplus/content/ui/overlay.xul");
 		request.addEventListener("load", function(event)
 		{
 			if (onShutdown.done)
@@ -451,7 +451,6 @@ let UI = exports.UI =
 		if (prevVersion != addonVersion)
 		{
 			Prefs.currentVersion = addonVersion;
-			this.addSubscription(window, prevVersion);
 		}
 	},
 
@@ -471,7 +470,7 @@ let UI = exports.UI =
 		if (window.document.documentElement.id == "CustomizeToolbarWindow" || isKnownWindow(window))
 		{
 			// Add style processing instruction
-			let style = window.document.createProcessingInstruction("xml-stylesheet", 'class="adblockedge-node" href="chrome://adblockedge/skin/overlay.css" type="text/css"');
+			let style = window.document.createProcessingInstruction("xml-stylesheet", 'class="adblockplus-node" href="chrome://adblockplus/skin/overlay.css" type="text/css"');
 			window.document.insertBefore(style, window.document.firstChild);
 		}
 
@@ -541,7 +540,7 @@ let UI = exports.UI =
 		{
 			// Remove style processing instruction
 			for (let child = window.document.firstChild; child; child = child.nextSibling)
-				if (child.nodeType == child.PROCESSING_INSTRUCTION_NODE && child.data.indexOf("adblockedge-node") >= 0)
+				if (child.nodeType == child.PROCESSING_INSTRUCTION_NODE && child.data.indexOf("adblockplus-node") >= 0)
 					child.parentNode.removeChild(child);
 		}
 
@@ -655,7 +654,7 @@ let UI = exports.UI =
 		if (!item)
 			return;
 
-		window.openDialog("chrome://adblockedge/content/ui/composer.xul", "_blank", "chrome,centerscreen,resizable,dialog=no,dependent", [node], item);
+		window.openDialog("chrome://adblockplus/content/ui/composer.xul", "_blank", "chrome,centerscreen,resizable,dialog=no,dependent", [node], item);
 	},
 
 	/**
@@ -676,79 +675,9 @@ let UI = exports.UI =
 		}
 		else
 		{
-			Services.ww.openWindow(null, "chrome://adblockedge/content/ui/filters.xul", "_blank", "chrome,centerscreen,resizable,dialog=no", {wrappedJSObject: filter});
+			Services.ww.openWindow(null, "chrome://adblockplus/content/ui/filters.xul", "_blank", "chrome,centerscreen,resizable,dialog=no", {wrappedJSObject: filter});
 		}
 	},  
-
-
-	/**
-	 * Executed on first run, adds a filter subscription and notifies that user
-	 * about that.
-	 */
-	addSubscription: function(/**Window*/ window, /**String*/ prevVersion)
-	{
-		
-		// Don't add subscription if the user has a subscription already
-		let addSubscription = true;
-		if (FilterStorage.subscriptions.some((subscription) => subscription instanceof DownloadableSubscription && subscription.url != Prefs.subscriptions_exceptionsurl))
-
-		// If this isn't the first run, only add subscription if the user has no custom filters
-		if (addSubscription && Services.vc.compare(prevVersion, "0.0") > 0)
-		{
-			if (FilterStorage.subscriptions.some((subscription) => subscription.url != Prefs.subscriptions_exceptionsurl && subscription.filters.length))
-				addSubscription = false;
-		}    
-
-		function notifyUser()
-		{
-			let {addTab} = require("appSupport");
-			if (addTab)
-			{
-				addTab(window, "chrome://adblockedge/content/ui/firstRun.xhtml");
-			}
-			else
-			{
-				let dialogSource = '\
-					<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>\
-					<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="document.title=content.document.title" buttons="accept" width="500" height="600">\
-						<iframe type="content-primary" flex="1" src="chrome://adblockedge/content/ui/firstRun.xhtml"/>\
-					</dialog>';
-				Services.ww.openWindow(window,
-															 "data:application/vnd.mozilla.xul+xml," + encodeURIComponent(dialogSource),
-															 "_blank", "chrome,centerscreen,resizable,dialog=no", null);
-			}
-		}
-
-		if (addSubscription)
-		{
-			// Load subscriptions data
-			let request = new XMLHttpRequest();
-			request.mozBackgroundRequest = true;
-			request.open("GET", "chrome://adblockedge/content/ui/subscriptions.xml");
-			request.addEventListener("load", function()
-			{
-				if (onShutdown.done)
-					return;
-
-				let node = Utils.chooseFilterSubscription(request.responseXML.getElementsByTagName("subscription"));
-				let subscription = (node ? Subscription.fromURL(node.getAttribute("url")) : null);
-				if (subscription)
-				{
-					FilterStorage.addSubscription(subscription);
-					subscription.disabled = false;
-					subscription.title = node.getAttribute("title");
-					subscription.homepage = node.getAttribute("homepage");
-					if (subscription instanceof DownloadableSubscription && !subscription.lastDownload)
-						Synchronizer.execute(subscription);
-
-					notifyUser();
-				}
-			}, false);
-			request.send();
-		}
-		else
-			notifyUser();
-	},
 
 	/**
 	 * Handles clicks inside the browser's content area, will intercept clicks on
@@ -857,7 +786,7 @@ let UI = exports.UI =
 	{
 		let subscription = {url: url, title: title, disabled: false, external: false,
 												mainSubscriptionTitle: mainTitle, mainSubscriptionURL: mainURL};
-		window.openDialog("chrome://adblockedge/content/ui/subscriptionSelection.xul", "_blank",
+		window.openDialog("chrome://adblockplus/content/ui/subscriptionSelection.xul", "_blank",
 											"chrome,centerscreen,resizable,dialog=no", subscription, null);
 	},
 
@@ -1662,7 +1591,7 @@ let UI = exports.UI =
 				}
 			}
 			else
-				detachedBottombar = window.openDialog("chrome://adblockedge/content/ui/sidebarDetached.xul", "_blank", "chrome,resizable,dependent,dialog=no", mustDetach);
+				detachedBottombar = window.openDialog("chrome://adblockplus/content/ui/sidebarDetached.xul", "_blank", "chrome,resizable,dependent,dialog=no", mustDetach);
 		}
 	},
 };
