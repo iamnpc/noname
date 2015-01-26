@@ -7,10 +7,13 @@ https://addons.cdn.mozilla.net/user-media/addons/394968/adblock_edge-2.1.7-tb+sm
 ===================================================================================================================================================
 
 
-Replaced all 'adblockedge' as 'adblockplus' in all files.
+Replaced all 'Adblock Edge' with 'Adblock Plus Z' in all files.
+查找替换所有文件中的 'Adblock Edge' 为 'Adblock Plus Z' 。
+
+Replaced all 'adblockedge' with 'adblockplus' in all files.
 查找替换所有文件中的 'adblockedge' 为 'adblockplus' 。
 
-Replaced all 'abe-' as 'abp-' in all files.
+Replaced all 'abe-' with 'abp-' in all files.
 查找替换所有文件中的 'abe-' 为 'abp-' 。
 
 
