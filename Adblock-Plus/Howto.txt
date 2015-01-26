@@ -32,4 +32,9 @@ adblockplus/lib/ui.js  (https://github.com/jc3213/Anti-ads-Solution/commit/ba459
 
 ========================================================================
 
-Other modification such as adblockplus/icon.png, adblockplus/install.rdf, etc...
+Other modification
+其他修改
+
+adblockplus/icon.png
+adblockplus/install.rdf
+etc...
