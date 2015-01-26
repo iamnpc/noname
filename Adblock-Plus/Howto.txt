@@ -1,0 +1,35 @@
+Modification based on Adblock Plus Development 2.6.7.3895
+基于Adblock Plus 开发版 2.6.7.3895
+
+https://downloads.adblockplus.org/devbuilds/adblockplus/adblockplus-2.6.7.3895.xpi
+
+
+===================================================================================================================================================
+
+
+Deleted files
+删除文件
+
+adblockplus/chrome/content/ui/firstrun.js
+adblockplus/chrome/content/ui/firstrun.html
+adblockplus/chrome/content/skin/firstrun.css
+adblockplus/chrome/locale/**/firstRun.properties
+adblockplus/META-INF/**
+adblockplus/lib/antiadblockInit.js
+
+
+===================================================================================================================================================
+
+Modified Files
+修改文件
+
+adblockplus/chrome/content/ui/fennecSettings.xul  (https://github.com/jc3213/Anti-ads-Solution/commit/7cade5aca958c95754c1a91554e160e0f2b94cc6)
+adblockplus/chrome/content/ui/filters-subscriptionview.js  (https://github.com/jc3213/Anti-ads-Solution/commit/b1670bb588aa8cafa5f80b83e144b3aac4773e9b)
+adblockplus/chrome/content/ui/filters.xul  (https://github.com/jc3213/Anti-ads-Solution/commit/3cc0bdb71912f20814761f6f33af688b0d4d1f57)
+adblockplus/chrome/content/ui/overlay.xul  (https://github.com/jc3213/Anti-ads-Solution/commit/ddbf5e30e42adb3ba64a36c1100fe0153831d36d)
+adblockplus/defaults/prefs.js  (https://github.com/jc3213/Anti-ads-Solution/commit/39954f040e632cac42603c0af63ee417b7995f80)
+adblockplus/lib/ui.js  (https://github.com/jc3213/Anti-ads-Solution/commit/ba459c4e3d7bbf55909287f010b671609dd1610d)
+
+========================================================================
+
+Other modification such as adblockplus/icon.png, adblockplus/install.rdf, etc...
