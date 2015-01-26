@@ -34,6 +34,9 @@ chrome/skin/abp-status-32.png
 Deleted files
 删除文件
 
+chrome/skin/abe-status.png
+chrome/skin/abe-status-16.png
+chrome/skin/abe-status-32.png
 chrome/skin/abe-icon-big.png
 chrome/skin/firstRun.css
 chrome/content\ui/firstrun.js
