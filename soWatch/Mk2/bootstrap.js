@@ -2,7 +2,7 @@ const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Geck 29 and later
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
-Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain that require Gecko 25 and later
+Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
@@ -11,17 +11,17 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
 };
 
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
 var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'soWatch');
 var aURI = OS.Path.toFileURI(aPath);
-//You can add more domains now. example: google for player moded by 15536900, github for catcat520
-//现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
+// You can add more domains for now. example: google for player moded by 15536900, github for catcat520
+// 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
 var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
 var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
-//Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
-//控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
+// Localize debugging console logs to help improve user experience.
+// 本地化Debug控制台记录以方便改善用户体验。
 var uAgent = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 var aLocale = {
   'ja': {
@@ -90,8 +90,8 @@ if (!aLocale[uAgent]) {
 }
 var aLang = aLocale[uAgent] || aLocale['en-US'];
 
-//Player Rules. If you can't fetch remote files, these won't be functional.
-//播放器规则。如果你无法获取远程文件，它们将不会工作
+// Player Rules: You can delete ['remote'] if you don't like to keep synchronize.
+// 播放器规则： 删除['remote']项后将不能进行播放器的更新了.
 var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
@@ -208,8 +208,8 @@ var PLAYERS = {
   },
 };
 
-//Filter Rules that works for most site.
-//过滤规则，大多数网站都能正常工作。
+// Filter Rules: May work for most site.
+// 过滤规则： 大多数网站都能正常工作。
 var FILTERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_tudou': {
@@ -278,8 +278,8 @@ var FILTERS = {
   },
 };
 
-//Http Referer rule that may help if the site report source error
-//HTTP引用头规则,缓解当网站出现无法获取视频信息的问题.
+//Referer rule： Help resolve problems with HTTP Referer.
+//引用头规则： 用于解决HTTP引用头导致的问题。
 var REFERERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku': {
@@ -294,8 +294,8 @@ var REFERERS = {
 };
 
 var Download = {
-//Check if remote file is online and then for update.
-//优先检查远程文件是否响应，再检查文件是否需要更新。
+// Check for remote files then synchronize local files.
+// 检查远程文件，再检查文件是否需要更新。
   check: function (aLink, aFile) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
@@ -327,7 +327,7 @@ var Download = {
       });
     }
   },
-// Download remote file add _sw as temp file,check then overwrite.
+// Download remote file with _sw as temp file, then check and overwrite.
 // 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
   fetch: function (aLink, aFile, aSize) {
     var aTemp = aFile + '_sw';
@@ -363,10 +363,14 @@ var Download = {
   },
 };
 
-// Add icon for Toobar button
-// 为工具栏按钮添加图标
 var Toolbar = {
-  css: Services.io.newURI('data:text/css;base64,QC1tb3otZG9jdW1lbnQgdXJsKCJjaHJvbWU6Ly9icm93c2VyL2NvbnRlbnQvYnJvd3Nlci54dWwiKSB7DQogICNtazItYnV0dG9uIHsNCiAgICBsaXN0LXN0eWxlLWltYWdlOiB1cmwoZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFCQUFBQUFRQ0FZQUFBQWY4LzloQUFBQ0pFbEVRVlI0MnEyU1MyZ1RVUlNHcjRMeFRWcnptRXpxd29XVkxnVjFJVDZxb1ZFcVJUZmFoUlRFVFpDNHNWanRUREo1dEZLcExWR3lLSXFWQ3JZb1dGQnFGWXJpQzVTZ3UyYlpUVmRhc0NGdDBzWnBKelAzOTg3Y1NURVVLVUlQL0Z5NG5QUDk1OXg3Q0ZuUHlMVzc2blRGY3dhZHRVNTBrTzI0UUJ6L0JSaHQzbnhsNGFZSGlQbFV4QVNLL3YzaldKZ0phNXAyZU0xaUtLNG1JKzZiUmR5SEt0M2VCMmkvd1NMRHRHZDFZWWhzUXRSOWtDV3JsU0k5SmlKN3F3bGpEOU1ZZXpJTXJVeVIrL2dJZXZySXRDYTVEMVFCWHJVNEdqSnRPNy9ucjd2TjFpM0EzTjBBVXVNbHZNbFNmSm1pU0x5a0tCWVhrZXM3Q2owcUZKWWt6OTRWUU9JRTJmS3MyZEdyS3dLZ2NBQ05pN2pSOHduQmZvcFRUSUU3RkJPVE9wWS8zT05qUllYaDZqRmkzcEJWSEJHeEhQUGpiZGNsbk93dVdJV21HbnVXOER5akFwL1RIQ0NMK2VvM2lIdjdMSURzaDVIY0RYVitGcTJwUEk0bEN6amVWVVN3TzRjZmVRTVliT0Zqc2p4SXp0b0tZd01ESkMyQVZNZmFZK2RvR0wvbXl4aVlLQ0gxdW9TcEdaMzl3V0RGblVzUkp2LzZRcy81NmZBdTBFNlQ3T2VRKzBIZzZ3UGcyMk5ncEkwN1Iyd1RTZFRMaWl1d0FwaTdWbFB6NHV6V3haOVgzWGFDbjd0RWJiRzNzZTc0dllxSWNISFZQZ3cwa2tQWnk4NmhTaUtWUkJ0bVN4WU5JK0x0WmQzVy8zc2JFMlFqbFlWM3B2djcxaDBvZFhncEIvS3UyQTZjVzN1bFEyUWJjMHFPbkhZOEhRcVNlblBGOVlqUURsT3lxNEdzZC93QnFzV1JFYnFiWHhFQUFBQUFTVVZPUks1Q1lJST0pOw0KICB9DQogICNtazItYnV0dG9uW2N1aS1hcmVhdHlwZT0ibWVudS1wYW5lbCJdLA0KICAgIHRvb2xiYXJwYWxldHRlaXRlbVtwbGFjZT0icGFsZXR0ZSJdID4gI21rMi1idXR0b24gew0KICAgIGxpc3Qtc3R5bGUtaW1hZ2U6IHVybChkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFFekVsRVFWUjQydTJYZlV4VmRSakhEOHBMRklpODNYT0JXbStyNVZxdHJiSllJQzhaWTlyU1ZjeW1ybEVyR2k1bTZNekxQZWR3Y1paQW1FcU1nUTZia3Y5NFk4N1FMUnFZS1ZzVU9MTklYbE5lbXBGWDNyeGQ0TDZjKy92Mk8rZmNOKzY5WEVoeDZ3OS8yN01EWi9kNXZwL24rVDIvbDhNd2Q4Zi9kZWdZWnNuNHR0Z0M4R3lkblZmdFJWRjhxdlMrdjRBSlExSGs0OWdScjc2akFIblBNaUYxbWFIRzRROWpnR0sxYkNMUERoS0JGZVcvQlhZUU91YmVPd3JSdWpGQ1Axb1k1d0x3TnJ2K3ZSSDd0YzRCQUIxMnUvMFFmYTdWNi9WTGIxc1l1bVV4ZHA1dG5Fdll4NzVjRDVpTmtJWW9pbjMwa1gzcjRyenFVUWpzMVFXTE84MWtnSE1RT3VpajVMK0xhMVVzcExrTklHUVgxT2pUckVEVHRwZHdiT3RxMUcvTlFrdnAyNUtxb2o0K0JCeDVFMmpJaC8zazlsMDBiTkJDOVlQc25Lb2xrTGlKZndDbnRtZmcrMk1IMFB6RGJ6alJab0wrSnh2T1hKekEyRDhLZ1BIR1gyZ3QzUUFpS0Q2RVZ6VkRFeFU5cjdxb1ZXMm1YUTRicDVvVG9QV1QxM0cxL3dyMk5SSFVuaVU0MDAzUTJrZlFjSUZBMjBEd3k1QUNZUmpvUnEvMmFaY2ZoV2dieUdYdUNRalF1RDc4WW5WYUNNNjlGYUU0Q3I0QXR1WnlsSjRteUN3bjBIY1FkSTlBdHZZQmdrMjFCQnRyQ0laR0ZZZy9UbFY1VFoycVBDQkFaY3FTaXRyMEVFeHJIQlhnL0FDVVBJakNzcDlsQU1uV1ZSSzhVVVd3K2pQaWV2ZjV0M1lad0RSaGdFVkk4cWlDMmdJdU5pbGdEL1RrUmRYS0RqeTFva1MvMDlDdnkwQldtZGtsNkcwNWxkT3UxU0R1VDNiN2FoTkFsellYc0FxdXRjOGxBSnJaQUtLUWdDYmhIV1R2R3BsVFBIMlBGV3RLSjF3QTJML1NIVU5LaUZPM0JRU2cyK3gxSnkwMFNhNCtNR2dmd2ZFZGE3RzM1anVrY05lUi9xbkZSenlqekk3VTRuRzhXM05URWJkTUFUcjNGRWdKRWExNmVrNXh3eFltd3JOY01vQlVDZnEvZWMrVE1KdHV3bUNrUXJwUkNtRkEydTVwV2RTWmVXcnhtQXgzNUp4WkFiaDgyaTB1SmVLSU4xYkFMUE1MTUtOWi9wRExnWE1BZVBiQmxmTnkzUHJ6RmhsQUV2TzIzR29qWnF5T0RhbnVOZmpFazUreHordHpHTi96WXBKdUZqNE9zcFBqWFhVR1lKMlJZNTlvdDJGTjJTUlMrQnZVREZpbEcwZngxek9ZbkhLSVg2ajN5ajVSaWNVNyswbDF5ZjltSkxCRzF5cHdBa2pPemozaHEwMTBiazNLRk5zSXVxNFJYQm9tR0RNUmQrUDkvZzA5QmU2SHozUktjYVRFcElUNCtDTC9xMEJnZjVTYjdxTTRON1U4RlFsdWlBTXZBSjBuNlJxell0YjR1NHZ1LzF0bUwxdk9NeEVGUXVUWXk5S2x4ajhBcDZxd2FGVTQvSElveEowSlBzN09Fc3EyKzJIZ1lEWndlQjFROGN4c1ljRXpjMDl4dFFsQzlGTnpuNFpDWEZwUFhqU3FWb1ZnTUQvV0s0QURRcW9HUDhlQnhUdUZFLzNCVDBHcnpwajNSR3piSE5rcEFiVGtSUGdKNUEzallYNS9xd0NMZ25yWXlzVTl0NkF6dWVHVnNNZStTRm5hV0pNZVlwNzVtQTBBRU1Ba0lGb0p3dE9OVFdCTHNUTTY2bFp1eGNHMEgwcG1aU1lGNWRUelZDWkorbzNGV2hTVExOMnNiK3R1K0djaEUwNjd0dGNsU0FIT2JvaUFUY3NxdlJDZ0F2UnVVYmdvTjJQd3NTdG85NDdLRUJUZ1VHWW9qbWFGb2ZlRDVWS21vakwvdmhBVXZHUFJydWNvaW4yQ0hpVHRFa0REcStHb1NnMG1sU25CSmREZXg0cThLcDkrdkJ5bmE3NkwvbWFjY0FrVEZLeUhMdW1qaS8yWkVBUXU1c1ZmY3lQZjM1Zk1yTHo3N2JoWTQxL3dUTTBGcVZabWh3QUFBQUJKUlU1RXJrSmdnZz09KTsNCiAgfQ0KfQ==', 'UTF-8', null),
+// Embedded style sheet
+// 内置样式表
+  css: Services.io.newURI(
+    'data:text/css;base64,QC1tb3otZG9jdW1lbnQgdXJsKCJjaHJvbWU6Ly9icm93c2VyL2NvbnRlbnQvYnJvd3Nlci54dWwiKSB7DQogICNtazItYnV0dG9uIHsNCiAgICBsaXN0LXN0eWxlLWltYWdlOiB1cmwoZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFCQUFBQUFRQ0FZQUFBQWY4LzloQUFBQ0pFbEVRVlI0MnEyU1MyZ1RVUlNHcjRMeFRWcnptRXpxd29XVkxnVjFJVDZxb1ZFcVJUZmFoUlRFVFpDNHNWanRUREo1dEZLcExWR3lLSXFWQ3JZb1dGQnFGWXJpQzVTZ3UyYlpUVmRhc0NGdDBzWnBKelAzOTg3Y1NURVVLVUlQL0Z5NG5QUDk1OXg3Q0ZuUHlMVzc2blRGY3dhZHRVNTBrTzI0UUJ6L0JSaHQzbnhsNGFZSGlQbFV4QVNLL3YzaldKZ0phNXAyZU0xaUtLNG1JKzZiUmR5SEt0M2VCMmkvd1NMRHRHZDFZWWhzUXRSOWtDV3JsU0k5SmlKN3F3bGpEOU1ZZXpJTXJVeVIrL2dJZXZySXRDYTVEMVFCWHJVNEdqSnRPNy9ucjd2TjFpM0EzTjBBVXVNbHZNbFNmSm1pU0x5a0tCWVhrZXM3Q2owcUZKWWt6OTRWUU9JRTJmS3MyZEdyS3dLZ2NBQ05pN2pSOHduQmZvcFRUSUU3RkJPVE9wWS8zT05qUllYaDZqRmkzcEJWSEJHeEhQUGpiZGNsbk93dVdJV21HbnVXOER5akFwL1RIQ0NMK2VvM2lIdjdMSURzaDVIY0RYVitGcTJwUEk0bEN6amVWVVN3TzRjZmVRTVliT0Zqc2p4SXp0b0tZd01ESkMyQVZNZmFZK2RvR0wvbXl4aVlLQ0gxdW9TcEdaMzl3V0RGblVzUkp2LzZRcy81NmZBdTBFNlQ3T2VRKzBIZzZ3UGcyMk5ncEkwN1Iyd1RTZFRMaWl1d0FwaTdWbFB6NHV6V3haOVgzWGFDbjd0RWJiRzNzZTc0dllxSWNISFZQZ3cwa2tQWnk4NmhTaUtWUkJ0bVN4WU5JK0x0WmQzVy8zc2JFMlFqbFlWM3B2djcxaDBvZFhncEIvS3UyQTZjVzN1bFEyUWJjMHFPbkhZOEhRcVNlblBGOVlqUURsT3lxNEdzZC93QnFzV1JFYnFiWHhFQUFBQUFTVVZPUks1Q1lJST0pOw0KICB9DQogICNtazItYnV0dG9uW2N1aS1hcmVhdHlwZT0ibWVudS1wYW5lbCJdLA0KICAgIHRvb2xiYXJwYWxldHRlaXRlbVtwbGFjZT0icGFsZXR0ZSJdID4gI21rMi1idXR0b24gew0KICAgIGxpc3Qtc3R5bGUtaW1hZ2U6IHVybChkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFFekVsRVFWUjQydTJYZlV4VmRSakhEOHBMRklpODNYT0JXbStyNVZxdHJiSllJQzhaWTlyU1ZjeW1ybEVyR2k1bTZNekxQZWR3Y1paQW1FcU1nUTZia3Y5NFk4N1FMUnFZS1ZzVU9MTklYbE5lbXBGWDNyeGQ0TDZjKy92Mk8rZmNOKzY5WEVoeDZ3OS8yN01EWi9kNXZwL24rVDIvbDhNd2Q4Zi9kZWdZWnNuNHR0Z0M4R3lkblZmdFJWRjhxdlMrdjRBSlExSGs0OWdScjc2akFIblBNaUYxbWFIRzRROWpnR0sxYkNMUERoS0JGZVcvQlhZUU91YmVPd3JSdWpGQ1Axb1k1d0x3TnJ2K3ZSSDd0YzRCQUIxMnUvMFFmYTdWNi9WTGIxc1l1bVV4ZHA1dG5Fdll4NzVjRDVpTmtJWW9pbjMwa1gzcjRyenFVUWpzMVFXTE84MWtnSE1RT3VpajVMK0xhMVVzcExrTklHUVgxT2pUckVEVHRwZHdiT3RxMUcvTlFrdnAyNUtxb2o0K0JCeDVFMmpJaC8zazlsMDBiTkJDOVlQc25Lb2xrTGlKZndDbnRtZmcrMk1IMFB6RGJ6alJab0wrSnh2T1hKekEyRDhLZ1BIR1gyZ3QzUUFpS0Q2RVZ6VkRFeFU5cjdxb1ZXMm1YUTRicDVvVG9QV1QxM0cxL3dyMk5SSFVuaVU0MDAzUTJrZlFjSUZBMjBEd3k1QUNZUmpvUnEvMmFaY2ZoV2dieUdYdUNRalF1RDc4WW5WYUNNNjlGYUU0Q3I0QXR1WnlsSjRteUN3bjBIY1FkSTlBdHZZQmdrMjFCQnRyQ0laR0ZZZy9UbFY1VFoycVBDQkFaY3FTaXRyMEVFeHJIQlhnL0FDVVBJakNzcDlsQU1uV1ZSSzhVVVd3K2pQaWV2ZjV0M1lad0RSaGdFVkk4cWlDMmdJdU5pbGdEL1RrUmRYS0RqeTFva1MvMDlDdnkwQldtZGtsNkcwNWxkT3UxU0R1VDNiN2FoTkFsellYc0FxdXRjOGxBSnJaQUtLUWdDYmhIV1R2R3BsVFBIMlBGV3RLSjF3QTJML1NIVU5LaUZPM0JRU2cyK3gxSnkwMFNhNCtNR2dmd2ZFZGE3RzM1anVrY05lUi9xbkZSenlqekk3VTRuRzhXM05URWJkTUFUcjNGRWdKRWExNmVrNXh3eFltd3JOY01vQlVDZnEvZWMrVE1KdHV3bUNrUXJwUkNtRkEydTVwV2RTWmVXcnhtQXgzNUp4WkFiaDgyaTB1SmVLSU4xYkFMUE1MTUtOWi9wRExnWE1BZVBiQmxmTnkzUHJ6RmhsQUV2TzIzR29qWnF5T0RhbnVOZmpFazUreHordHpHTi96WXBKdUZqNE9zcFBqWFhVR1lKMlJZNTlvdDJGTjJTUlMrQnZVREZpbEcwZngxek9ZbkhLSVg2ajN5ajVSaWNVNyswbDF5ZjltSkxCRzF5cHdBa2pPemozaHEwMTBiazNLRk5zSXVxNFJYQm9tR0RNUmQrUDkvZzA5QmU2SHozUktjYVRFcElUNCtDTC9xMEJnZjVTYjdxTTRON1U4RlFsdWlBTXZBSjBuNlJxell0YjR1NHZ1LzF0bUwxdk9NeEVGUXVUWXk5S2x4ajhBcDZxd2FGVTQvSElveEowSlBzN09Fc3EyKzJIZ1lEWndlQjFROGN4c1ljRXpjMDl4dFFsQzlGTnpuNFpDWEZwUFhqU3FWb1ZnTUQvV0s0QURRcW9HUDhlQnhUdUZFLzNCVDBHcnpwajNSR3piSE5rcEFiVGtSUGdKNUEzallYNS9xd0NMZ25yWXlzVTl0NkF6dWVHVnNNZStTRm5hV0pNZVlwNzVtQTBBRU1Ba0lGb0p3dE9OVFdCTHNUTTY2bFp1eGNHMEgwcG1aU1lGNWRUelZDWkorbzNGV2hTVExOMnNiK3R1K0djaEUwNjd0dGNsU0FIT2JvaUFUY3NxdlJDZ0F2UnVVYmdvTjJQd3NTdG85NDdLRUJUZ1VHWW9qbWFGb2ZlRDVWS21vakwvdmhBVXZHUFJydWNvaW4yQ0hpVHRFa0REcStHb1NnMG1sU25CSmREZXg0cThLcDkrdkJ5bmE3NkwvbWFjY0FrVEZLeUhMdW1qaS8yWkVBUXU1c1ZmY3lQZjM1Zk1yTHo3N2JoWTQxL3dUTTBGcVZabWh3QUFBQUJKUlU1RXJrSmdnZz09KTsNCiAgfQ0KfQ==',
+    null,
+    null
+  ),
 // Add Toobar button
 // 添加工具栏按钮
   addIcon: function () {
@@ -557,29 +561,34 @@ HttpHeaderVisitor.prototype = {
 }
 
 var MozApp = {
+// Enable Add-on, keep soWatch folder alive.
+// 启用扩展，确保soWatch文件夹一定存在。
   startup: function () {
-    Common.iQiyi();
+    OS.File.makeDir(aPath);
     Toolbar.addIcon();
+    Common.iQiyi();
     Services.os.addObserver(Common, 'http-on-examine-response', false);
     Services.os.addObserver(Common, 'http-on-modify-request', false);
   },
+// Disable Add-on
+// 禁用扩展
   shutdown: function () {
     Toolbar.removeIcon();
     Services.os.removeObserver(Common, 'http-on-examine-response', false);
     Services.os.removeObserver(Common, 'http-on-modify-request', false);
   },
-//Create folder and run download once when installed
-//安装扩展后新建文件夹并下载破解播放器
+// Create folder and run download once when installed
+// 安装扩展后新建文件夹并下载破解播放器
   install: function () {
     OS.File.makeDir(aPath);
     Download.start();
-    console.log(aLang.ext_name + '\n' + aLang.ext_install);
+    console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
-//Only delete aPath when add-on is uninstalled.
-//仅在卸载扩展时才删除aPath文件夹。
+// Only delete aPath when add-on is uninstalled.
+// 仅在卸载扩展时才删除aPath文件夹。
   uninstall: function () {
     OS.File.removeDir(aPath);
-    console.log(aLang.ext_name + '\n' + aLang.ext_uninstall);
+    console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
   },
 };
 
