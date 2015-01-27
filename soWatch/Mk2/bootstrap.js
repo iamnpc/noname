@@ -577,15 +577,15 @@ var MozApp = {
     Services.os.removeObserver(Common, 'http-on-examine-response', false);
     Services.os.removeObserver(Common, 'http-on-modify-request', false);
   },
-// Create folder and run download once when installed
-// 安装扩展后新建文件夹并下载破解播放器
+// Run download at once after installed
+// 安装扩展后立即下载播放器
   install: function () {
     OS.File.makeDir(aPath);
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
-// Only delete aPath when add-on is uninstalled.
-// 仅在卸载扩展时才删除aPath文件夹。
+// Only delete soWatch folder when uninstalled.
+// 仅在卸载时才删除soWatch文件夹。
   uninstall: function () {
     OS.File.removeDir(aPath);
     console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
