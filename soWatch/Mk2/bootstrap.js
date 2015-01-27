@@ -351,7 +351,7 @@ var Download = {
   },
 // Start download
 // 开始下载
-  start: function() {
+  start: function () {
     for (var i in PLAYERS) {
       var rule = PLAYERS[i];
       if (rule['remote']) {
@@ -441,6 +441,7 @@ var Common = {
     }
 
     if (aTopic != 'http-on-examine-response') return;
+
     for (var i in FILTERS) {
       var rule = FILTERS[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
@@ -470,7 +471,7 @@ var Common = {
           rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
-          this.getObject(rule, function() {
+          this.getObject(rule, function () {
             httpChannel.resume();
             if (typeof rule['callback'] === 'function')
               rule['callback'].apply(fn, args);
@@ -555,7 +556,7 @@ HttpHeaderVisitor.prototype = {
       }
     }
   },
-  isFlash: function() {
+  isFlash: function () {
     return this._isFlash;
   }
 }
@@ -590,6 +591,18 @@ var MozApp = {
     OS.File.removeDir(aPath);
     console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
   },
+/*
+//Remove useless files after update.
+//升级后删除无用的文件。
+  upgrade: function () {
+    OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
+    OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
+    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
+  },
+*/
 };
 
 function startup(data, reason) {
@@ -604,16 +617,9 @@ function install(data, reason) {
   if (reason == ADDON_INSTALL) {
     MozApp.install();
   }
-//Remove useless .swf file after update.
-//升级后删除无用的.swf文件。
 /*
-  if (reason == ADDON_UPGRADE) {
-    OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
-    OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
+  else if (reason == ADDON_UPGRADE) {
+    MozApp.upgrade();
   }
 */
 }
