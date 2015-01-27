@@ -3,86 +3,92 @@ Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Geck 29 and later
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Coded with Promise chain that require Gecko 25 and later
-Cu.import('resource://gre/modules/Services.jsm'); //Now as a work round for ToobarIcon
+
+var Services = {
+  os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
+  io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
+  prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
+};
+
+//You can customize the dir name to store .swf files
+//你可以自行修改保存 .swf 文件的文件夹名字。
+var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'soWatch');
+var aURI = OS.Path.toFileURI(aPath);
+//You can add more domains now. example: google for player moded by 15536900, github for catcat520
+//现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
+var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
+var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
 //Localization code for console logs.Non-Latin characters must be transcoded into UTF-8 code.
 //控制台记录的本地化代码。非拉丁文字必须转换成UTF-8代码。
-var uAgent = Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch).getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
+var uAgent = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 var aLocale = {
   'ja': {
-    lf_outofdate: ' \u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    lf_corrupted: ' \u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    lf_ready: ' \u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-    lf_notexist: ' \u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    lf_downloaded: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    rf_timeout: ' \u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-    rf_accessfailed: ' \u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-    rf_downfailed: ' \u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    rf_interrupted: ' \u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
-    ext_install: ' \u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    ext_uninstall: ' \u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    ext_name: 'Anti-ads Player Mk2',
+    ext_name: 'soWatch! Mk2',
     ext_tooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
+    ext_install: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    ext_uninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    lf_outofdate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    lf_corrupted: '\u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
+    lf_ready: '\u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+    lf_notexist: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
+    lf_downloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
+    rf_timeout: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
+    rf_accessfailed: '\u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+    rf_downfailed: '\u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    rf_interrupted: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
   },
   'zh-CN': {
-    lf_outofdate: ' \u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-    lf_ready: ' \u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: ' \u4E0B\u8F7D\u5B8C\u6210',
-    rf_timeout: ' \u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
-    rf_accessfailed: ' \u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    rf_downfailed: ' \u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    rf_interrupted: ' \u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
-    ext_install: ' \u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
-    ext_uninstall: ' \u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-    ext_name: 'Anti-ads Player Mk2',
+    ext_name: 'soWatch! Mk2',
     ext_tooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
+    ext_install: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
+    ext_uninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
+    lf_outofdate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+    lf_ready: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: '\u4E0B\u8F7D\u5B8C\u6210',
+    rf_timeout: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
+    rf_accessfailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+    rf_downfailed: '\u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+    rf_interrupted: '\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
   },
   'zh-TW': {
-    lf_outofdate: ' \u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: ' \u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-    lf_ready: ' \u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
-    lf_notexist: ' \u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: ' \u4E0B\u8F09\u6210\u529F',
-    rf_timeout: ' \u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
-    rf_accessfailed: ' \u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
-    rf_downfailed: ' \u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-    rf_interrupted: ' \u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
-    ext_install: ' \u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
-    ext_uninstall: ' \u5DF2\u7D93\u6210\u529F\u6E05\u9664',
-    ext_name: 'Anti-ads Player Mk2',
+    ext_name: 'soWatch! Mk2',
     ext_tooltip: '\u7ACB\u5373\u57F7\u884C\u66F4\u65B0\u6AA2\u67E5',
+    ext_install: '\u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
+    ext_uninstall: '\u5DF2\u7D93\u6210\u529F\u6E05\u9664',
+    lf_outofdate: '\u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
+    lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
+    lf_ready: '\u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
+    lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
+    lf_downloaded: '\u4E0B\u8F09\u6210\u529F',
+    rf_timeout: '\u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
+    rf_accessfailed: '\u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
+    rf_downfailed: '\u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
+    rf_interrupted: '\u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
   },
   'en-US': {
-    lf_outofdate: ' is out of date',
-    lf_corrupted: ' may be corrupted',
-    lf_ready: ' is ready to serve',
-    lf_notexist: ' is not exist',
-    lf_downloaded: ' download session complete',
-    rf_timeout: ' no response from remote server',
-    rf_accessfailed: ' failed to access remote file',
-    rf_downfailed: ' failed to download remote file',
-    rf_interrupted: ' download session has been interrupted due to unknown error',
-    ext_install: ' has been installed...',
-    ext_uninstall: ' has been uninstalled...',
-    ext_name: 'Anti-ads Player Mk2',
+    ext_name: 'soWatch! Mk2',
     ext_tooltip: 'Run update check now...',
+    ext_install: 'has been installed...',
+    ext_uninstall: 'has been uninstalled...',
+    lf_outofdate: 'is out of date',
+    lf_corrupted: 'may be corrupted',
+    lf_ready: 'is ready to serve',
+    lf_notexist: 'is not exist',
+    lf_downloaded: 'download session complete',
+    rf_timeout: 'no response from remote server',
+    rf_accessfailed: 'failed to access remote file',
+    rf_downfailed: 'failed to download remote file',
+    rf_interrupted: 'download session has been interrupted due to unknown error',
   },
 };
 if (!aLocale[uAgent]) {
   console.log('Your locale is not supported');
 }
 var aLang = aLocale[uAgent] || aLocale['en-US'];
-
-//You can customize the dir name to store .swf files
-//你可以自行修改保存 .swf 文件的文件夹名字。
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'antiadsplayer2');
-var aURI = OS.Path.toFileURI(aPath);
-//You can add more domains easily now. example: google for player moded by 15536900, github for catcat520
-//现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
-var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
-var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
 //Player Rules. If you can't fetch remote files, these won't be functional.
 //播放器规则。如果你无法获取远程文件，它们将不会工作
@@ -287,29 +293,103 @@ var REFERERS = {
   },
 };
 
+var Download = {
+//Check if remote file is online and then for update.
+//优先检查远程文件是否响应，再检查文件是否需要更新。
+  check: function (aLink, aFile) {
+    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+    aClient.open('HEAD', aLink, true);
+    aClient.timeout = 30000;  //超时时间: 30秒
+    aClient.ontimeout = function () {
+      console.log(aLink + '\n' + aLang.rf_timeout);
+    }
+    aClient.send();
+    aClient.onload = function () {
+      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      OS.File.stat(aFile).then(function onSuccess(info) {
+        if (aSize == null || aSize < 10000) {
+          console.log(aLink + '\n' + aLang.rf_accessfailed);
+        } else if (aDate > info.lastModificationDate) {
+          console.log(aFile + '\n' + aLang.lf_outofdate);
+          Download.fetch(aLink, aFile, aSize);
+        } else if (aSize != info.size) {
+          console.log(aFile + '\n' + aLang.lf_corrupted);
+          Download.fetch(aLink, aFile, aSize);
+        } else {
+          console.log(aFile + '\n' + aLang.lf_ready);
+        }
+      }, function onFailure(reason) {
+        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
+          console.log(aFile + '\n' + aLang.lf_notexist);
+          Download.fetch(aLink, aFile, aSize);
+        }
+      });
+    }
+  },
+// Download remote file add _sw as temp file,check then overwrite.
+// 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
+  fetch: function (aLink, aFile, aSize) {
+    var aTemp = aFile + '_sw';
+    Downloads.fetch(aLink, aTemp, {
+      isPrivate: true
+    }).then(function onSuccess() {
+      OS.File.stat(aTemp).then(function onSuccess(info) {
+        if (aSize == info.size) {
+          console.log(aFile + '\n' + aLang.lf_downloaded);
+          OS.File.move(aTemp, aFile);
+        } else {
+          console.log(aFile + '\n' + aLang.rf_interrupted);
+          OS.File.remove(aTemp);
+          Download.fetch(aLink, aFile, aSize);
+        }
+      });
+    }, function onFailure() {
+      console.log(aLink + '\n' + aLang.rf_downfailed);
+      OS.File.remove(aTemp);
+    });
+  },
+// Start download
+// 开始下载
+  start: function() {
+    for (var i in PLAYERS) {
+      var rule = PLAYERS[i];
+      if (rule['remote']) {
+        var aLink = rule['remote'];
+        var aFile = OS.Path.fromFileURI(rule['object']);
+        Download.check(aLink, aFile);
+      }
+    }
+  },
+};
+
 // Add icon for Toobar button
 // 为工具栏按钮添加图标
-var ssService = Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService);
-var aIcon = '';
-aIcon += '@-moz-document url("chrome://browser/content/browser.xul") {';
-aIcon += '    #mk2-button {';
-aIcon += '        list-style-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACJElEQVR42q2SS2gTURSGr4LxTVrzmEzqwoWVLgV1IT6qoVEqRTfahRTETZC4sVjtTDJ5tFKpLVGyKIqVCrYoWFBqFYriC5Sgu2bZTVdasCFt0sZpJzP3987cSTEUKUIP/Fy4nPP959x7CFnPyLW76nTFcwadtU50kO24QBz/BRht3nxl4aYHiPlUxASK/v3jWJgJa5p2eM1iKK4mI+6bRdyHKt3eB2i/wSLDtGd1YYhsQtR9kCWrlSI9JiJ7qwljD9MYezIMrUyR+/gIevrItCa5D1QBXrU4GjJtO7/nr7vN1i3A3N0AUuMlvMlSfJmiSLykKBYXkes7Cj0qFJYkz94VQOIE2fKs2dGrKwKgcACNi7jR8wnBfopTTIE7FBOTOpY/3ONjRYXh6jFi3pBVHBGxHPPjbdclnOwuWIWmGnuW8DyjAp/THCCL+eo3iHv7LIDsh5HcDXV+Fq2pPI4lCzjeVUSwO4cfeQMYbOFjsjxIztoKYwMDJC2AVMfaY+doGL/myxiYKCH1uoSpGZ39wWDFnUsRJv/6Qs/56fAu0E6T7OeQ+0Hg6wPg22NgpI07R2wTSdTLiiuwApi7VlPz4uzWxZ9X3XaCn7tEbbG3se74vYqIcHHVPgw0kkPZy86hSiKVRBtmSxYNI+LtZd3W/3sbE2QjlYV3pvv71h0odXgpB/Ku2A6cW3ulQ2Qbc0qOnHY8HQqSenPF9YjQDlOyq4Gsd/wBqsWREbqbXxEAAAAASUVORK5CYII=");';
-aIcon += '    }';
-aIcon += '    #mk2-button[cui-areatype="menu-panel"],';
-aIcon += '        toolbarpaletteitem[place="palette"] > #mk2-button {';
-aIcon += '        list-style-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEzElEQVR42u2XfUxVdRjHD8pLFIi83XOBWm+r5VqtrbJYIC8ZY9rSVcymrlErGi5m6MzLPedwcZZAmEqMgQ6bkv94Y87QLRqYKVsUOLNIXlNempFX3rxd4L6c+/v2O+fcN+69XEhx6w9/27MDZ/d5vp/n+T2/l8Mwd8f/degYZsn4ttgC8GydnVftRVF8qvS+v4AJQ1Hk49gRr76jAHnPMiF1maHG4Q9jgGK1bCLPDhKBFeW/BXYQOubeOwrRujFCP1oY5wLwNrv+vRH7tc4BAB12u/0Qfa7V6/VLb1sYumUxdp5tnEvYx75cD5iNkIYoin30kX3r4rzqUQjs1QWLO81kgHMQOuij5L+La1UspLkNIGQX1OjTrEDTtpdwbOtq1G/NQkvp25Kqoj4+BBx5E2jIh/3k9l00bNBC9YPsnKolkLiJfwCntmfg+2MH0PzDbzjRZoL+JxvOXJzA2D8KgPHGX2gt3QAiKD6EVzVDExU9r7qoVW2mXQ4bp5oToPWT13G1/wr2NRHUniU4003Q2kfQcIFA20Dwy5ACYRjoRq/2aZcfhWgbyGXuCQjQuD78YnVaCM69FaE4Cr4AtuZylJ4myCwn0HcQdI9AtvYBgk21BBtrCIZGFYg/TlV5TZ2qPCBAZcqSitr0EExrHBXg/ACUPIjCsp9lAMnWVRK8UUWw+jPievf5t3YZwDRhgEVI8qiC2gIuNilgD/TkRdXKDjy1okS/09Cvy0BWmdkl6G05ldOu1SDuT3b7ahNAlzYXsAqutc8lAJrZAKKQgCbhHWTvGplTPH2PFWtKJ1wA2L/SHUNKiFO3BQSg2+x1Jy00Sa4+MGgfwfEda7G35jukcNeR/qnFRzyjzI7U4nG8W3NTEbdMATr3FEgJEa16ek5xwxYmwrNcMoBUCfq/ec+TMJtuwmCkQrpRCmFA2u5pWdSZeWrxmAx35JxZAbh82i0uJeKIN1bALPMLMKNZ/pDLgXMAePbBlfNy3PrzFhlAEvO23GojZqyODanuNfjEk5+xz+tzGN/zYpJuFj4OspPjXXUGYJ2RY59ot2FN2SRS+BvUDFilG0fx1zOYnHKIX6j3yj5RicU7+0l1yf9mJLBG1ypwAkjOzj3hq010bk3KFNsIuq4RXBomGDMRd+P9/g09Be6Hz3RKcaTEpIT4+CL/q0Bgf5Sb7qM4N7U8FQluiAMvAJ0n6RqzYtb4u4vu/1tmL1vOMxEFQuTYy9Klxj8Ap6qwaFU4/HIoxJ0JPs7OEsq2+2HgYDZweB1Q8cxsYcEzc09xtQlC9FNzn4ZCXFpPXjSqVoVgMD/WK4ADQqoGP8eBxTuFE/3BT0Grzpj3RGzbHNkpAbTkRPgJ5A3jYX5/qwCLgnrYysU9t6AzueGVsMe+SFnaWJMeYp75mA0AEMAkIFoJwtONTWBLsTM66lZuxcG0H0pmZSYF5dTzVCZJ+o3FWhSTLN2sb+tu+GchE067ttclSAHOboiATcsqvRCgAvRuUbgoN2PwsSto947KEBTgUGYojmaFofeD5VKmojL/vhAUvGPRrucoin2CHiTtEkDDq+GoSg0mlSnBJdDex4q8Kp9+vByna76L/maccAkTFKyHLumji/2ZEAQu5sVfcyPf35fMrLz77bhY41/wTM0FqVZmhwAAAABJRU5ErkJggg==");';
-aIcon += '    }';
-aIcon += '}';
-var aIconEnc = encodeURIComponent(aIcon);
-var newURIParam = {
-    aURL: 'data:text/css,' + aIconEnc,
-    aOriginCharset: null,
-    aBaseURI: null,
+var Toolbar = {
+  css: Services.io.newURI('data:text/css;base64,QC1tb3otZG9jdW1lbnQgdXJsKCJjaHJvbWU6Ly9icm93c2VyL2NvbnRlbnQvYnJvd3Nlci54dWwiKSB7DQogICNtazItYnV0dG9uIHsNCiAgICBsaXN0LXN0eWxlLWltYWdlOiB1cmwoZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFCQUFBQUFRQ0FZQUFBQWY4LzloQUFBQ0pFbEVRVlI0MnEyU1MyZ1RVUlNHcjRMeFRWcnptRXpxd29XVkxnVjFJVDZxb1ZFcVJUZmFoUlRFVFpDNHNWanRUREo1dEZLcExWR3lLSXFWQ3JZb1dGQnFGWXJpQzVTZ3UyYlpUVmRhc0NGdDBzWnBKelAzOTg3Y1NURVVLVUlQL0Z5NG5QUDk1OXg3Q0ZuUHlMVzc2blRGY3dhZHRVNTBrTzI0UUJ6L0JSaHQzbnhsNGFZSGlQbFV4QVNLL3YzaldKZ0phNXAyZU0xaUtLNG1JKzZiUmR5SEt0M2VCMmkvd1NMRHRHZDFZWWhzUXRSOWtDV3JsU0k5SmlKN3F3bGpEOU1ZZXpJTXJVeVIrL2dJZXZySXRDYTVEMVFCWHJVNEdqSnRPNy9ucjd2TjFpM0EzTjBBVXVNbHZNbFNmSm1pU0x5a0tCWVhrZXM3Q2owcUZKWWt6OTRWUU9JRTJmS3MyZEdyS3dLZ2NBQ05pN2pSOHduQmZvcFRUSUU3RkJPVE9wWS8zT05qUllYaDZqRmkzcEJWSEJHeEhQUGpiZGNsbk93dVdJV21HbnVXOER5akFwL1RIQ0NMK2VvM2lIdjdMSURzaDVIY0RYVitGcTJwUEk0bEN6amVWVVN3TzRjZmVRTVliT0Zqc2p4SXp0b0tZd01ESkMyQVZNZmFZK2RvR0wvbXl4aVlLQ0gxdW9TcEdaMzl3V0RGblVzUkp2LzZRcy81NmZBdTBFNlQ3T2VRKzBIZzZ3UGcyMk5ncEkwN1Iyd1RTZFRMaWl1d0FwaTdWbFB6NHV6V3haOVgzWGFDbjd0RWJiRzNzZTc0dllxSWNISFZQZ3cwa2tQWnk4NmhTaUtWUkJ0bVN4WU5JK0x0WmQzVy8zc2JFMlFqbFlWM3B2djcxaDBvZFhncEIvS3UyQTZjVzN1bFEyUWJjMHFPbkhZOEhRcVNlblBGOVlqUURsT3lxNEdzZC93QnFzV1JFYnFiWHhFQUFBQUFTVVZPUks1Q1lJST0pOw0KICB9DQogICNtazItYnV0dG9uW2N1aS1hcmVhdHlwZT0ibWVudS1wYW5lbCJdLA0KICAgIHRvb2xiYXJwYWxldHRlaXRlbVtwbGFjZT0icGFsZXR0ZSJdID4gI21rMi1idXR0b24gew0KICAgIGxpc3Qtc3R5bGUtaW1hZ2U6IHVybChkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFFekVsRVFWUjQydTJYZlV4VmRSakhEOHBMRklpODNYT0JXbStyNVZxdHJiSllJQzhaWTlyU1ZjeW1ybEVyR2k1bTZNekxQZWR3Y1paQW1FcU1nUTZia3Y5NFk4N1FMUnFZS1ZzVU9MTklYbE5lbXBGWDNyeGQ0TDZjKy92Mk8rZmNOKzY5WEVoeDZ3OS8yN01EWi9kNXZwL24rVDIvbDhNd2Q4Zi9kZWdZWnNuNHR0Z0M4R3lkblZmdFJWRjhxdlMrdjRBSlExSGs0OWdScjc2akFIblBNaUYxbWFIRzRROWpnR0sxYkNMUERoS0JGZVcvQlhZUU91YmVPd3JSdWpGQ1Axb1k1d0x3TnJ2K3ZSSDd0YzRCQUIxMnUvMFFmYTdWNi9WTGIxc1l1bVV4ZHA1dG5Fdll4NzVjRDVpTmtJWW9pbjMwa1gzcjRyenFVUWpzMVFXTE84MWtnSE1RT3VpajVMK0xhMVVzcExrTklHUVgxT2pUckVEVHRwZHdiT3RxMUcvTlFrdnAyNUtxb2o0K0JCeDVFMmpJaC8zazlsMDBiTkJDOVlQc25Lb2xrTGlKZndDbnRtZmcrMk1IMFB6RGJ6alJab0wrSnh2T1hKekEyRDhLZ1BIR1gyZ3QzUUFpS0Q2RVZ6VkRFeFU5cjdxb1ZXMm1YUTRicDVvVG9QV1QxM0cxL3dyMk5SSFVuaVU0MDAzUTJrZlFjSUZBMjBEd3k1QUNZUmpvUnEvMmFaY2ZoV2dieUdYdUNRalF1RDc4WW5WYUNNNjlGYUU0Q3I0QXR1WnlsSjRteUN3bjBIY1FkSTlBdHZZQmdrMjFCQnRyQ0laR0ZZZy9UbFY1VFoycVBDQkFaY3FTaXRyMEVFeHJIQlhnL0FDVVBJakNzcDlsQU1uV1ZSSzhVVVd3K2pQaWV2ZjV0M1lad0RSaGdFVkk4cWlDMmdJdU5pbGdEL1RrUmRYS0RqeTFva1MvMDlDdnkwQldtZGtsNkcwNWxkT3UxU0R1VDNiN2FoTkFsellYc0FxdXRjOGxBSnJaQUtLUWdDYmhIV1R2R3BsVFBIMlBGV3RLSjF3QTJML1NIVU5LaUZPM0JRU2cyK3gxSnkwMFNhNCtNR2dmd2ZFZGE3RzM1anVrY05lUi9xbkZSenlqekk3VTRuRzhXM05URWJkTUFUcjNGRWdKRWExNmVrNXh3eFltd3JOY01vQlVDZnEvZWMrVE1KdHV3bUNrUXJwUkNtRkEydTVwV2RTWmVXcnhtQXgzNUp4WkFiaDgyaTB1SmVLSU4xYkFMUE1MTUtOWi9wRExnWE1BZVBiQmxmTnkzUHJ6RmhsQUV2TzIzR29qWnF5T0RhbnVOZmpFazUreHordHpHTi96WXBKdUZqNE9zcFBqWFhVR1lKMlJZNTlvdDJGTjJTUlMrQnZVREZpbEcwZngxek9ZbkhLSVg2ajN5ajVSaWNVNyswbDF5ZjltSkxCRzF5cHdBa2pPemozaHEwMTBiazNLRk5zSXVxNFJYQm9tR0RNUmQrUDkvZzA5QmU2SHozUktjYVRFcElUNCtDTC9xMEJnZjVTYjdxTTRON1U4RlFsdWlBTXZBSjBuNlJxell0YjR1NHZ1LzF0bUwxdk9NeEVGUXVUWXk5S2x4ajhBcDZxd2FGVTQvSElveEowSlBzN09Fc3EyKzJIZ1lEWndlQjFROGN4c1ljRXpjMDl4dFFsQzlGTnpuNFpDWEZwUFhqU3FWb1ZnTUQvV0s0QURRcW9HUDhlQnhUdUZFLzNCVDBHcnpwajNSR3piSE5rcEFiVGtSUGdKNUEzallYNS9xd0NMZ25yWXlzVTl0NkF6dWVHVnNNZStTRm5hV0pNZVlwNzVtQTBBRU1Ba0lGb0p3dE9OVFdCTHNUTTY2bFp1eGNHMEgwcG1aU1lGNWRUelZDWkorbzNGV2hTVExOMnNiK3R1K0djaEUwNjd0dGNsU0FIT2JvaUFUY3NxdlJDZ0F2UnVVYmdvTjJQd3NTdG85NDdLRUJUZ1VHWW9qbWFGb2ZlRDVWS21vakwvdmhBVXZHUFJydWNvaW4yQ0hpVHRFa0REcStHb1NnMG1sU25CSmREZXg0cThLcDkrdkJ5bmE3NkwvbWFjY0FrVEZLeUhMdW1qaS8yWkVBUXU1c1ZmY3lQZjM1Zk1yTHo3N2JoWTQxL3dUTTBGcVZabWh3QUFBQUJKUlU1RXJrSmdnZz09KTsNCiAgfQ0KfQ==', 'UTF-8', null),
+// Add Toobar button
+// 添加工具栏按钮
+  addIcon: function () {
+    CustomizableUI.createWidget({
+      id: 'mk2-button',
+      defaultArea: CustomizableUI.AREA_NAVBAR,
+      label: aLang.ext_name,
+      tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
+      onCommand: function () {
+        Download.start();
+      },
+    });
+    Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+  },
+// Remove Toobar button
+// 移除工具栏按钮
+  removeIcon: function () {
+    CustomizableUI.destroyWidget('mk2-button');
+    Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+  },
 };
-var aIconUri = Services.io.newURI(newURIParam.aURL, newURIParam.aOriginCharset, newURIParam.aBaseURI);
 
-var aCommon = {
-  oService: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+var Common = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -342,21 +422,21 @@ var aCommon = {
     return null;
   },
   observe: function (aSubject, aTopic, aData) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
     if (aTopic == 'http-on-modify-request') {
-    var httpReferer = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in REFERERS) {
       var domain = REFERERS[i];
         try {
-        var URL = httpReferer.originalURI.spec;
+        var URL = httpChannel.originalURI.spec;
           if (domain['target'].test(URL)) {
-            httpReferer.setRequestHeader('Referer', domain['host'], false);
+            httpChannel.setRequestHeader('Referer', domain['host'], false);
           }
         } catch (e) {}
       }
     }
 
     if (aTopic != 'http-on-examine-response') return;
-    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in FILTERS) {
       var rule = FILTERS[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
@@ -407,7 +487,7 @@ var aCommon = {
   },
 // Resolver for iQiyi.May not help since iQiyi uses one player now.
 // 爱奇艺专用代码,似乎已经派不上用场了.
-  aResolver: function () {
+  iQiyi: function () {
     var rule = PLAYERS['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
@@ -442,82 +522,6 @@ var aCommon = {
       }
     };
   },
-//Check if remote file is online and then for update.
-//优先检查远程文件是否响应，再检查文件是否需要更新。
-  checkUpdate: function (aLink, aFile) {
-    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
-    aClient.open('HEAD', aLink, true);
-    aClient.timeout = 30000;  //超时时间: 30秒
-    aClient.ontimeout = function () {
-      console.log(aLink + aLang.rf_timeout);
-    }
-    aClient.send();
-    aClient.onload = function () {
-      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-      OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aSize == null || aSize < 10000) {
-          console.log(aLink + aLang.rf_accessfailed);
-        } else if (aDate > info.lastModificationDate) {
-          console.log(aFile + aLang.lf_outofdate);
-          aCommon.initDownload(aLink, aFile, aSize);
-        } else if (aSize != info.size) {
-          console.log(aFile + aLang.lf_corrupted);
-          aCommon.initDownload(aLink, aFile, aSize);
-        } else {
-          console.log(aFile + aLang.lf_ready);
-        }
-      }, function onFailure(reason) {
-        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aFile + aLang.lf_notexist);
-          aCommon.initDownload(aLink, aFile, aSize);
-        }
-      });
-    }
-  },
-// Download remote file add _sw as temp,check for download then overwrite.
-// 下载远程文件至 _sw 临时文件,然后检查下载是否完成,再覆盖文件
-  initDownload: function (aLink, aFile, aSize) {
-    var aTemp = aFile + '_sw';
-    Downloads.fetch(aLink, aTemp, {
-      isPrivate: true
-    }).then(function onSuccess() {
-      OS.File.stat(aTemp).then(function onSuccess(info) {
-        if (aSize == info.size) {
-          console.log(aFile + aLang.lf_downloaded);
-          OS.File.move(aTemp, aFile);
-        } else {
-          console.log(aFile + aLang.rf_interrupted);
-          OS.File.remove(aTemp);
-          aCommon.initDownload(aLink, aFile, aSize);
-        }
-      });
-    }, function onFailure() {
-      console.log(aLink + aLang.rf_downfailed);
-      OS.File.remove(aTemp);
-    });
-  },
-// Start download
-// 开始下载
-  startDownload: function() {
-    for (var i in PLAYERS) {
-      var rule = PLAYERS[i];
-      if (rule['remote']) {
-        var aLink = rule['remote'];
-        var aFile = OS.Path.fromFileURI(rule['object']);
-        aCommon.checkUpdate(aLink, aFile);
-      }
-    }
-  },
-  register: function () {
-    this.aResolver();
-    this.oService.addObserver(this, 'http-on-examine-response', false);
-    this.oService.addObserver(this, "http-on-modify-request", false);
-  },
-  unregister: function () {
-    this.oService.removeObserver(this, 'http-on-examine-response', false);
-    this.oService.removeObserver(this, "http-on-modify-request", false);
-  }
 }
 
 function TrackingListener() {
@@ -552,41 +556,47 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
+var MozApp = {
+  startup: function () {
+    Common.iQiyi();
+    Toolbar.addIcon();
+    Services.os.addObserver(Common, 'http-on-examine-response', false);
+    Services.os.addObserver(Common, 'http-on-modify-request', false);
+  },
+  shutdown: function () {
+    Toolbar.removeIcon();
+    Services.os.removeObserver(Common, 'http-on-examine-response', false);
+    Services.os.removeObserver(Common, 'http-on-modify-request', false);
+  },
+//Create folder and run download once when installed
+//安装扩展后新建文件夹并下载破解播放器
+  install: function () {
+    OS.File.makeDir(aPath);
+    Download.start();
+    console.log(aLang.ext_name + '\n' + aLang.ext_install);
+  },
+//Only delete aPath when add-on is uninstalled.
+//仅在卸载扩展时才删除aPath文件夹。
+  uninstall: function () {
+    OS.File.removeDir(aPath);
+    console.log(aLang.ext_name + '\n' + aLang.ext_uninstall);
+  },
+};
+
 function startup(data, reason) {
-// Add Toobar button
-// 添加工具栏按钮
-  CustomizableUI.createWidget({
-    id: 'mk2-button',
-    defaultArea: CustomizableUI.AREA_NAVBAR,
-    label: aLang.ext_name,
-    tooltiptext: aLang.ext_tooltip,
-    onCommand: function() {
-      aCommon.startDownload();
-    },
-  });
-  ssService.loadAndRegisterSheet(aIconUri, ssService.AUTHOR_SHEET);
-//
-  aCommon.register();
+  MozApp.startup();
 }
 
 function shutdown(data, reason) {
-// Remove Toobar button
-// 移除工具栏按钮
-  CustomizableUI.destroyWidget('mk2-button');
-  ssService.unregisterSheet(aIconUri, ssService.AUTHOR_SHEET);
-  aCommon.unregister();
+  MozApp.shutdown();
 }
 
 function install(data, reason) {
-//Create folder and run download once when installed
-//安装扩展后新建文件夹并下载破解播放器
   if (reason == ADDON_INSTALL) {
-    aCommon.startDownload();
-    OS.File.makeDir(aPath);
-    console.log(aLang.ext_name + aLang.ext_install);
+    MozApp.install();
   }
-//Remove useless .swf file.
-//删除无用的.swf文件。
+//Remove useless .swf file after update.
+//升级后删除无用的.swf文件。
 /*
   if (reason == ADDON_UPGRADE) {
     OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
@@ -600,11 +610,7 @@ function install(data, reason) {
 }
 
 function uninstall(data, reason) {
-//Only delete aPath when add-on is uninstalled.
-//仅在卸载扩展时才删除aPath文件夹。
-function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
-    OS.File.removeDir(aPath);
-    console.log(aLang.ext_name + aLang.ext_uninstall);
+    MozApp.uninstall();
   }
 }
