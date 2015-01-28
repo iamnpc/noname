@@ -6,13 +6,13 @@
 
 ! Ad-filtering Rules
 
-! Anti-ads Player MK2 Compatibility Rules
+! soWatch! Mk2 Compatibility Rules
 @@||ark.letv.com^
 @@||livew.l.qq.com
 
-! Anti-ads Player MK3 Compatibility Rules
+! soWatch! Mk3 Compatibility Rules
 @@||val*.atm.youku.com^
 
-! The Rules may NOT help but better than nothing
+! Misc
 @@||17173im.allyes.com^
 @@||fz.letv.com^
