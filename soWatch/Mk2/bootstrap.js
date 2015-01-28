@@ -33,7 +33,7 @@ var aLocale = {
     lf_corrupted: '\u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
     lf_ready: '\u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
     lf_notexist: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    lf_downloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
+    rf_downloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
     rf_timeout: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
     rf_accessfailed: '\u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
     rf_downfailed: '\u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
@@ -48,7 +48,7 @@ var aLocale = {
     lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
     lf_ready: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
     lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: '\u4E0B\u8F7D\u5B8C\u6210',
+    rf_downloaded: '\u4E0B\u8F7D\u5B8C\u6210',
     rf_timeout: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
     rf_accessfailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
     rf_downfailed: '\u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
@@ -63,7 +63,7 @@ var aLocale = {
     lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
     lf_ready: '\u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
     lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
-    lf_downloaded: '\u4E0B\u8F09\u6210\u529F',
+    rf_downloaded: '\u4E0B\u8F09\u6210\u529F',
     rf_timeout: '\u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
     rf_accessfailed: '\u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
     rf_downfailed: '\u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
@@ -78,7 +78,7 @@ var aLocale = {
     lf_corrupted: 'may be corrupted',
     lf_ready: 'is ready to serve',
     lf_notexist: 'is not exist',
-    lf_downloaded: 'download session complete',
+    rf_downloaded: 'download session complete',
     rf_timeout: 'no response from remote server',
     rf_accessfailed: 'failed to access remote file',
     rf_downfailed: 'failed to download remote file',
@@ -299,7 +299,7 @@ var Download = {
   check: function (aLink, aFile) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
-    aClient.timeout = 30000;  //超时时间: 30秒
+    aClient.timeout = 30000;
     aClient.ontimeout = function () {
       console.log(aLink + '\n' + aLang.rf_timeout);
     }
@@ -336,10 +336,10 @@ var Download = {
     }).then(function onSuccess() {
       OS.File.stat(aTemp).then(function onSuccess(info) {
         if (aSize == info.size) {
-          console.log(aFile + '\n' + aLang.lf_downloaded);
+          console.log(aLink + '\n' + aLang.rf_downloaded);
           OS.File.move(aTemp, aFile);
         } else {
-          console.log(aFile + '\n' + aLang.rf_interrupted);
+          console.log(aLink + '\n' + aLang.rf_interrupted);
           OS.File.remove(aTemp);
           Download.fetch(aLink, aFile, aSize);
         }
