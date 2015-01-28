@@ -2,7 +2,7 @@ Adblock Plus Z is modified from Adblock Plus and Adblock Edge.You can read Howto
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Adblock-Plus/Howto.txt
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Adblock-Edge/Howto.txt
 
-Actions like 'download', 'fork', 'republish'... the source codes or released binary show that you've accepted the User License AAS(Anti-ads Solution).
+Actions like 'download', 'fork', 'republish'... the source codes or binaries equivalent to you've accepted the User License AAS(Anti-ads Solution).
 https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/LICENSE
 
 ===================================================================================================================================================
