@@ -1,61 +1,72 @@
 User License AAS(Anti-ads Solution)
 
-Attention:
-  Adblock Plus is under GNU GPLv3.0 (http://www.gnu.org/licenses/gpl-3.0.html)
-  Adblock Edge is under MPLv2.0 (https://www.mozilla.org/MPL/2.0/)
 
-==================================================================================================================================================================
 
-1) You can fork, modify, or republish the source codes freely.
+Caution:
+===================================================================================================
+
+1) "soWatch!" and "Anti-ads Player" is under User License AAS(Anti-ads Solution)
+
+2) "Adblock Plus Z" is under MPLv2.0 as source from Adblock Edge.It's formerly GNU GPLv3.0.
+  2.1.1) "Adblock Plus" is under GNU GPLv3.0 (http://www.gnu.org/licenses/gpl-3.0.html)
+  2.1.2) "Adblock Edge" is under MPLv2.0 (https://www.mozilla.org/MPL/2.0/)
+  2.2) "Fire-IE" is under GNU GPLv3.0 (http://www.gnu.org/licenses/gpl-3.0.html)
+
+3) "uBlock" is under GNU GPLv3.0 (http://www.gnu.org/licenses/gpl-3.0.html)
+
+
+Main license:
+===================================================================================================
+
+1) You can fork, quote, modify, or republish the source codes freely.
 
 2) You must not use the name of "Anti-ads Player" or "soWatch!".
 
-3) You must follow Copyleft and send pull requests to the "Anti-ads Solution repository" if any modification has been done.
+3) You must follow Copyleft and send pull requests to the "Anti-ads Solution repository"
 
-4) You must list the IDs in section 4.1) as contributors.
-  4.1) Harv.c  15536900  catcat520  ywzhaiqi
+4) You must list the IDs below as contributors.
+  4.1.1) Harv.c
+  4.1.2) 15536900
+  4.1.3) catcat520
+  4.1.4) ywzhaiqi
 
 5) You must not add reseller or donate into the source of "Anti-ads Player" or "soWatch!"
 
-6) You must include <User License AAS> if you are going to release any binary files.
-
-===========================================================================================================================
+6) You must include 「User License AAS」 if you are going to release any binary files.
 
 
-
-用户授权协议AAS(Anti-ads Solution)
-
-
-
-1) 任何人都可以自由转载，修改，再次发布源代码。
+中文：
+----------------------------------------------------------------------------------------------------
+1) 任何人都可以自由转载，引用，修改，再次发布源代码。
 
 2) 禁止使用Anti-ads Player或soWatch!的名义。
 
 3) 遵循Copyleft原则，如对源代码有修改必须向Anti-ads Solution的repository推送pull requests。
 
-4) 将 4.1) 的ID添加为Contributor。
-  4.1) Harv.c  15536900  catcat520  ywzhaiqi
+4) 将下列的ID添加为Contributor。
+  4.1.1) Harv.c
+  4.1.2) 15536900
+  4.1.3) catcat520
+  4.1.4) ywzhaiqi
 
 5) 禁止向Anti-ads Player或soWatch!的源代码添加返利或捐献代码。
 
-6) 当你发布时（程序、扩展），请包含〈用户授权协议AAS〉。
-
-===========================================================================================================================
+6) 当你发布"应用"、"扩展"等时，请将「用户授权协议AAS」一并封装。
 
 
+日本語：
+-----------------------------------------------------------------------------------------------------
+1) ソースの転載、引用、書替えや再配布らは自由にできます。
 
-ユーザーライセンスAAS(Anti-ads Solution)
+2) 「Anti-ads Player」や「soWatch!」の名を使用することを禁ずる。
 
+3) Copyleftの原則に従って、Anti-ads Solution repositoryへのpull requestsを要求する。
 
-
-1) ソースのフォーク、書替えや再配布らは自由にできます。
-
-2) Anti-ads PlayerやsoWatch!の名を使用することを禁ずる。
-
-3) Copyleftの原則に従って、ソースに書き替えがある場合はAnti-ads Solution repositoryへのpull requestsを要求する。
-
-4) 下記 4.1) のIDをContributorとして公開すること。
-  4.1) Harv.c  15536900  catcat520  ywzhaiqi
+4) 下記のIDをContributorとして公開すること。
+  4.1.1) Harv.c
+  4.1.2) 15536900
+  4.1.3) catcat520
+  4.1.4) ywzhaiqi
 
 5) Anti-ads PlayerやsoWatch!のソースコードにリセラーの追加や寄付の要求は一切禁ずる。
 
