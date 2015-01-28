@@ -86,6 +86,25 @@ let adblockerMap = (function generateAdblockers()
       catch (ex) {}
     }
   }, {
+    name: "Adblock Plus Z",
+    id: "adblockplusz@jc3213.github",
+    prefsBranch: "extensions.adblockplus.",
+    filterFilePath: "adblockplus/patterns.ini",
+    priority: 25,
+    getFilterNotifier: function()
+    {
+      // ABP 2.1+
+      try
+      {
+        let { FilterNotifier } = requireGeneric("filterNotifier", "adblockplus-require");
+        if (FilterNotifier)
+        {
+          return FilterNotifier;
+        }
+      }
+      catch (ex) {}
+    }
+  }, {
     name: "Adblock Edge",
     id: "{fe272bd1-5f76-4ea4-8501-a05d35d823fc}",
     prefsBranch: "extensions.adblockedge.",
