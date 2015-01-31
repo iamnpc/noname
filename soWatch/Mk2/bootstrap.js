@@ -11,50 +11,68 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
 };
 
-var AppPrefs = {
-  prefs: Services.prefs.getBranch('extensions.'),
-  autoUpdate: function () {
-    this.prefs.setBoolPref('sowatchmk2.autoupdate', true); //设置自动更新。
+var Preferences = {
+  track: Services.prefs.getBranch('extensions.sowatchmk2.'),
+  setAuto: function () {
+    this.track.setBoolPref('autoupdate', false); //设置自动更新，默认关闭。
   },
-  lastDate: function () {
-    this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //将目前时间写入设置。
+  setDate: function () {
+    this.track.setCharPref('lastdate', Date.now()); //将目前时间写入设置。
   },
-  Period: function () {
-    this.prefs.setCharPref('sowatchmk2.period', '604800000'); //7天更新周期，单位毫秒。
+  setPeriod: function () {
+    this.track.setCharPref('period', '604800000'); //7天更新周期，单位毫秒。
   },
 // Set default preferences
 // 设置默认参数
   setDefault: function () {
-    this.autoUpdate();
-    this.lastDate();
-    this.Period();
+    this.setAuto();
+    this.setDate();
+    this.setPeriod();
   },
   checkUpdate: function () {
-    var aUpdate = this.prefs.getBoolPref('sowatchmk2.autoupdate');
-    var aDate = this.prefs.getCharPref('sowatchmk2.lastdate');
-    var aPeriod = this.prefs.getCharPref('sowatchmk2.period');
-    if (aUpdate == false) return; //如果autoupdate为false的话，则不自动更新
-    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
-    else {
-      Download.start();
-      this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //更新完毕后将现在的时间写入上次更新时间.
+  initAuto: function () {
+    try {
+      var aUpdate = this.track.getBoolPref('autoupdate');
+    } catch (e) {
+      this.setAuto();
     }
+    var aUpdate = aUpdate;
+//如果autoupdate为false的话，则不自动更新，并刷新lastdate。
+    if (aUpdate == false) {
+      this.setDate();
+      return;
+    }
+    try {
+      var aDate = this.track.getCharPref('lastdate');
+    } catch (e) {
+      this.setDate();
+    }
+    var aDate = aDate;
+    try {
+      var aPeriod = this.track.getCharPref('period');
+    } catch (e) {
+      this.setPeriod();
+    }
+    var aPeriod = aPeriod;
+    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
+    this.setDate(); //更新完毕后将现在的时间写入上次更新时间。
+    Download.start();
   },
 };
 
 var FileIO = {
 // You can customize the dir name to store .swf files
 // 你可以自行修改保存 .swf 文件的文件夹名字。
-  dir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
-  addDir: function () {
-    OS.File.makeDir(this.dir);
+  path: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  addFolder: function () {
+    OS.File.makeDir(this.path);
   },
-  delDir: function () {
-    OS.File.removeDir(this.dir);
+  delFolder: function () {
+    OS.File.removeDir(this.path);
   },
 };
 
-var aURI = OS.Path.toFileURI(FileIO.dir);
+var aURI = OS.Path.toFileURI(FileIO.path);
 // You can add more domains for now. example: google for player moded by 15536900, github for catcat520
 // 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
 var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
@@ -132,22 +150,22 @@ var aLang = aLocale[uAgent] || aLocale['en-US'];
 
 // Player Rules: You can delete ['remote'] if you don't like to keep synchronize.
 // 播放器规则： 删除['remote']项后将不能进行播放器的更新了.
-var PLAYERS = {
+var PlayerRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
     'object': aURI + '/loader.swf',
-    'remote': aURL_google + 'loader.swf',
+    'remote': aURL + 'loader.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
   },
   'youku_player': {
     'object': aURI + '/player.swf',
-    'remote': aURL_google + 'player.swf',
+    'remote': aURL + 'player.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'tudou_portal': {
     'object': aURI + '/tudou.swf',
-    'remote': aURL_google + 'tudou.swf',
+    'remote': aURL + 'tudou.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
   },
   'tudou_olc': {
@@ -156,35 +174,35 @@ var PLAYERS = {
   },
   'tudou_social': {
     'object': aURI + '/sp.swf',
-    'remote': aURL_google + 'sp.swf',
+    'remote': aURL + 'sp.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'iqiyi5': {
     'object': aURI + '/iqiyi5.swf',
-    'remote': aURL_google + 'iqiyi5.swf',
+    'remote': aURL + 'iqiyi5.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
   },
   'iqiyi_out': {
     'object': aURI + '/iqiyi_out.swf',
-    'remote': aURL_google + 'iqiyi_out.swf',
+    'remote': aURL + 'iqiyi_out.swf',
     'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'pps': {
     'object': aURI + '/iqiyi.swf',
-    'remote': aURL_google + 'iqiyi.swf',
+    'remote': aURL + 'iqiyi.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
   },
   'pps_out': {
     'object': aURI + '/pps.swf',
-    'remote': aURL_google + 'pps.swf',
+    'remote': aURL + 'pps.swf',
     'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'letv': {
     'object': aURI + '/letv.swf',
-    'remote': aURL_google + 'letv.swf',
+    'remote': aURL + 'letv.swf',
     'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
   },
   'letv_skin': {
@@ -194,63 +212,63 @@ var PLAYERS = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'sohu': {
     'object': aURI + '/sohu_live.swf',
-    'remote': aURL_google + 'sohu_live.swf',
+    'remote': aURL + 'sohu_live.swf',
     'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'pptv': {
     'object': aURI + '/pptv.in.Ikan.swf',
-    'remote': aURL_github + 'pptv.in.Ikan.swf',
+    'remote': aURL + 'pptv.in.Ikan.swf',
     'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
   },
   'pptv_live': {
     'object': aURI + '/pptv.in.Live.swf',
-    'remote': aURL_github + 'pptv.in.Live.swf',
+    'remote': aURL + 'pptv.in.Live.swf',
     'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   '17173': {
     'object': aURI + '/17173.in.Vod.swf',
-    'remote': aURL_github + '17173.in.Vod.swf',
+    'remote': aURL + '17173.in.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
   },
   '17173_out': {
     'object': aURI + '/17173.out.Vod.swf',
-    'remote': aURL_github + '17173.out.Vod.swf',
+    'remote': aURL + '17173.out.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
   },
   '17173_live': {
     'object': aURI + '/17173.in.Live.swf',
-    'remote': aURL_github + '17173.in.Live.swf',
+    'remote': aURL + '17173.in.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
   },
   '17173_live_out': {
     'object': aURI + '/17173.out.Live.swf',
-    'remote': aURL_github + '17173.out.Live.swf',
+    'remote': aURL + '17173.out.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'ku6': {
     'object': aURI + '/ku6_in_player.swf',
-    'remote': aURL_github + 'ku6_in_player.swf',
+    'remote': aURL + 'ku6_in_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
   },
   'ku6_out': {
     'object': aURI + '/ku6_out_player.swf',
-    'remote': aURL_github + 'ku6_out_player.swf',
+    'remote': aURL + 'ku6_out_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'baidu': {
     'object': aURI + '/baidu.call.swf',
-    'remote': aURL_github + 'baidu.call.swf',
+    'remote': aURL + 'baidu.call.swf',
     'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
   },
 };
 
 // Filter Rules: May work for most site.
 // 过滤规则： 大多数网站都能正常工作。
-var FILTERS = {
+var FilterRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_tudou': {
     'object': 'http://valf.atm.youku.com/vf?vip=0',
@@ -320,7 +338,7 @@ var FILTERS = {
 
 //Referer rule： Help resolve problems with HTTP Referer.
 //引用头规则： 用于解决HTTP引用头导致的问题。
-var REFERERS = {
+var RefererRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku': {
     'host': 'http://www.youku.com/',
@@ -433,7 +451,7 @@ var Toolbar = {
   },
 };
 
-var Common = {
+var Program = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -469,8 +487,8 @@ var Common = {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
 
     if (aTopic == 'http-on-modify-request') {
-    for (var i in REFERERS) {
-      var domain = REFERERS[i];
+    for (var i in RefererRules) {
+      var domain = RefererRules[i];
         try {
         var URL = httpChannel.originalURI.spec;
           if (domain['target'].test(URL)) {
@@ -481,9 +499,8 @@ var Common = {
     }
 
     if (aTopic != 'http-on-examine-response') return;
-
-    for (var i in FILTERS) {
-      var rule = FILTERS[i];
+    for (var i in FilterRules) {
+      var rule = FilterRules[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
@@ -503,8 +520,8 @@ var Common = {
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
 
-    for (var i in PLAYERS) {
-      var rule = PLAYERS[i];
+    for (var i in PlayerRules) {
+      var rule = PlayerRules[i];
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
         if (typeof rule['preHandle'] === 'function')
@@ -605,47 +622,45 @@ var MozApp = {
 // Enable Add-on. Keep soWatch folder alive. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，确保soWatch文件夹一定存在，并检查自动更新参数。
   startup: function () {
-    FileIO.addDir();
+    FileIO.addFolder();
     Toolbar.addIcon();
-    AppPrefs.checkUpdate();
-    Common.iQiyi();
-    Services.os.addObserver(Common, 'http-on-examine-response', false);
-    Services.os.addObserver(Common, 'http-on-modify-request', false);
+    Preferences.initAuto();
+    Program.iQiyi();
+    Services.os.addObserver(Program, 'http-on-examine-response', false);
+    Services.os.addObserver(Program, 'http-on-modify-request', false);
   },
 // Disable Add-on
 // 禁用扩展
   shutdown: function () {
     Toolbar.removeIcon();
-    Services.os.removeObserver(Common, 'http-on-examine-response', false);
-    Services.os.removeObserver(Common, 'http-on-modify-request', false);
+    Services.os.removeObserver(Program, 'http-on-examine-response', false);
+    Services.os.removeObserver(Program, 'http-on-modify-request', false);
   },
 // Run download at once after installed and set default autoupdate preferences.
 // 安装扩展后立即下载播放器并设置默认的自动更新参数。
   install: function () {
-    AppPrefs.setDefault();
+    Preferences.setDefault();
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
 // Only delete soWatch folder when uninstalled.
 // 仅在卸载时才删除soWatch文件夹。
   uninstall: function () {
-    FileIO.delDir();
+    FileIO.delFolder();
     console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
   },
-  upgrade: function () {
-    AppPrefs.lastDate();
-    Download.start();
 /*
 //Remove useless files after update.
 //升级后删除无用的文件。
+  upgrade: function () {
     OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
     OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
-*/
   },
+*/
 };
 
 function startup(data, reason) {
@@ -659,9 +674,6 @@ function shutdown(data, reason) {
 function install(data, reason) {
   if (reason == ADDON_INSTALL) {
     MozApp.install();
-  }
-  else if (reason == ADDON_UPGRADE) {
-    MozApp.upgrade();
   }
 }
 
