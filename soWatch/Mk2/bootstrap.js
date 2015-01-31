@@ -11,10 +11,39 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
 };
 
+var AppPrefs = {
+  prefs: Services.prefs.getBranch('extensions.'),
+  set: function () {
+    this.prefs.setBoolPref('sowatchmk2.autoupdate', true); //设置自动更新。
+    this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //将目前时间写入设置。
+    this.prefs.setCharPref('sowatchmk2.period', '604800000'); //7天更新周期，单位毫秒。
+  },
+  check: function () {
+    var aUpdate = this.prefs.getBoolPref('sowatchmk2.autoupdate');
+    var aDate = this.prefs.getCharPref('sowatchmk2.lastdate');
+    var aPeriod = this.prefs.getCharPref('sowatchmk2.period');
+    if (aUpdate == false) return; //如果autoupdate为false的话，则不自动更新
+    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
+    else{
+      Download.start();
+      this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //更新完毕后将现在的时间写入上次更新时间.
+    }
+  },
+};
+
+var FileIO = {
 // You can customize the dir name to store .swf files
 // 你可以自行修改保存 .swf 文件的文件夹名字。
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'soWatch');
-var aURI = OS.Path.toFileURI(aPath);
+  dir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  addDir: function () {
+    OS.File.makeDir(this.dir);
+  },
+  delDir: function () {
+    OS.File.removeDir(this.dir);
+  },
+};
+
+var aURI = OS.Path.toFileURI(FileIO.dir);
 // You can add more domains for now. example: google for player moded by 15536900, github for catcat520
 // 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
 var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
@@ -371,7 +400,7 @@ var Toolbar = {
     null,
     null
   ),
-// Add Toobar button
+// Add Toolbar button
 // 添加工具栏按钮
   addIcon: function () {
     CustomizableUI.createWidget({
@@ -385,7 +414,7 @@ var Toolbar = {
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
   },
-// Remove Toobar button
+// Remove Toolbar button
 // 移除工具栏按钮
   removeIcon: function () {
     CustomizableUI.destroyWidget('mk2-button');
@@ -562,11 +591,12 @@ HttpHeaderVisitor.prototype = {
 }
 
 var MozApp = {
-// Enable Add-on, keep soWatch folder alive.
-// 启用扩展，确保soWatch文件夹一定存在。
+// Enable Add-on. Keep soWatch folder alive. Add Toolbar icon，Check for autoupdate preferences.
+// 启用扩展，添加工具栏图标，确保soWatch文件夹一定存在，并检查自动更新参数。
   startup: function () {
-    OS.File.makeDir(aPath);
+    FileIO.addDir();
     Toolbar.addIcon();
+    AppPrefs.check();
     Common.iQiyi();
     Services.os.addObserver(Common, 'http-on-examine-response', false);
     Services.os.addObserver(Common, 'http-on-modify-request', false);
@@ -578,10 +608,10 @@ var MozApp = {
     Services.os.removeObserver(Common, 'http-on-examine-response', false);
     Services.os.removeObserver(Common, 'http-on-modify-request', false);
   },
-// Run download at once after installed
-// 安装扩展后立即下载播放器
+// Run download at once after installed and set default autoupdate preferences.
+// 安装扩展后立即下载播放器并设置默认的自动更新参数。
   install: function () {
-    OS.File.makeDir(aPath);
+    AppPrefs.set();
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
