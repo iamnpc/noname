@@ -13,18 +13,29 @@ var Services = {
 
 var AppPrefs = {
   prefs: Services.prefs.getBranch('extensions.'),
-  set: function () {
+  autoUpdate: function () {
     this.prefs.setBoolPref('sowatchmk2.autoupdate', true); //设置自动更新。
+  },
+  lastDate: function () {
     this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //将目前时间写入设置。
+  },
+  Period: function () {
     this.prefs.setCharPref('sowatchmk2.period', '604800000'); //7天更新周期，单位毫秒。
   },
-  check: function () {
+// Set default preferences
+// 设置默认参数
+  setDefault: function () {
+    this.autoUpdate();
+    this.lastDate();
+    this.Peroid();
+  },
+  checkUpdate: function () {
     var aUpdate = this.prefs.getBoolPref('sowatchmk2.autoupdate');
     var aDate = this.prefs.getCharPref('sowatchmk2.lastdate');
     var aPeriod = this.prefs.getCharPref('sowatchmk2.period');
     if (aUpdate == false) return; //如果autoupdate为false的话，则不自动更新
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
-    else{
+    else {
       Download.start();
       this.prefs.setCharPref('sowatchmk2.lastdate', Date.now()); //更新完毕后将现在的时间写入上次更新时间.
     }
@@ -596,7 +607,7 @@ var MozApp = {
   startup: function () {
     FileIO.addDir();
     Toolbar.addIcon();
-    AppPrefs.check();
+    AppPrefs.checkUpdate();
     Common.iQiyi();
     Services.os.addObserver(Common, 'http-on-examine-response', false);
     Services.os.addObserver(Common, 'http-on-modify-request', false);
@@ -611,28 +622,30 @@ var MozApp = {
 // Run download at once after installed and set default autoupdate preferences.
 // 安装扩展后立即下载播放器并设置默认的自动更新参数。
   install: function () {
-    AppPrefs.set();
+    AppPrefs.setDefault();
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
 // Only delete soWatch folder when uninstalled.
 // 仅在卸载时才删除soWatch文件夹。
   uninstall: function () {
-    OS.File.removeDir(aPath);
+    FileIO.delDir();
     console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
   },
+  upgrade: function () {
+    AppPrefs.lastDate();
+    Download.start();
 /*
 //Remove useless files after update.
 //升级后删除无用的文件。
-  upgrade: function () {
     OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
     OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
-  },
 */
+  },
 };
 
 function startup(data, reason) {
@@ -647,11 +660,9 @@ function install(data, reason) {
   if (reason == ADDON_INSTALL) {
     MozApp.install();
   }
-/*
   else if (reason == ADDON_UPGRADE) {
     MozApp.upgrade();
   }
-*/
 }
 
 function uninstall(data, reason) {
