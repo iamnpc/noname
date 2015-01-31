@@ -29,15 +29,15 @@ var Preferences = {
     this.setDate();
     this.setPeriod();
   },
-  checkUpdate: function () {
   initAuto: function () {
     try {
       var aUpdate = this.track.getBoolPref('autoupdate');
     } catch (e) {
       this.setAuto();
+      var aUpdate = aUpdate;
     }
-    var aUpdate = aUpdate;
-//如果autoupdate为false的话，则不自动更新，并刷新lastdate。
+// If autoupdate is set to false,then just refresh lastdate then do nothing.
+// 如果autoupdate为false的话，则不自动更新，并刷新lastdate。
     if (aUpdate == false) {
       this.setDate();
       return;
@@ -46,14 +46,14 @@ var Preferences = {
       var aDate = this.track.getCharPref('lastdate');
     } catch (e) {
       this.setDate();
+      var aDate = aDate;
     }
-    var aDate = aDate;
     try {
       var aPeriod = this.track.getCharPref('period');
     } catch (e) {
       this.setPeriod();
+      var aPeriod = aPeriod;
     }
-    var aPeriod = aPeriod;
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
     this.setDate(); //更新完毕后将现在的时间写入上次更新时间。
     Download.start();
@@ -154,18 +154,18 @@ var PlayerRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku_loader': {
     'object': aURI + '/loader.swf',
-    'remote': aURL + 'loader.swf',
+    'remote': aURL_google + 'loader.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
   },
   'youku_player': {
     'object': aURI + '/player.swf',
-    'remote': aURL + 'player.swf',
+    'remote': aURL_google + 'player.swf',
     'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'tudou_portal': {
     'object': aURI + '/tudou.swf',
-    'remote': aURL + 'tudou.swf',
+    'remote': aURL_google + 'tudou.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
   },
   'tudou_olc': {
@@ -174,35 +174,35 @@ var PlayerRules = {
   },
   'tudou_social': {
     'object': aURI + '/sp.swf',
-    'remote': aURL + 'sp.swf',
+    'remote': aURL_google + 'sp.swf',
     'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'iqiyi5': {
     'object': aURI + '/iqiyi5.swf',
-    'remote': aURL + 'iqiyi5.swf',
+    'remote': aURL_google + 'iqiyi5.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
   },
   'iqiyi_out': {
     'object': aURI + '/iqiyi_out.swf',
-    'remote': aURL + 'iqiyi_out.swf',
+    'remote': aURL_google + 'iqiyi_out.swf',
     'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'pps': {
     'object': aURI + '/iqiyi.swf',
-    'remote': aURL + 'iqiyi.swf',
+    'remote': aURL_google + 'iqiyi.swf',
     'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
   },
   'pps_out': {
     'object': aURI + '/pps.swf',
-    'remote': aURL + 'pps.swf',
+    'remote': aURL_google + 'pps.swf',
     'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'letv': {
     'object': aURI + '/letv.swf',
-    'remote': aURL + 'letv.swf',
+    'remote': aURL_google + 'letv.swf',
     'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
   },
   'letv_skin': {
@@ -212,7 +212,7 @@ var PlayerRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'sohu': {
     'object': aURI + '/sohu_live.swf',
-    'remote': aURL + 'sohu_live.swf',
+    'remote': aURL_google + 'sohu_live.swf',
     'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
@@ -223,45 +223,45 @@ var PlayerRules = {
   },
   'pptv_live': {
     'object': aURI + '/pptv.in.Live.swf',
-    'remote': aURL + 'pptv.in.Live.swf',
+    'remote': aURL_github + 'pptv.in.Live.swf',
     'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   '17173': {
     'object': aURI + '/17173.in.Vod.swf',
-    'remote': aURL + '17173.in.Vod.swf',
+    'remote': aURL_github + '17173.in.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
   },
   '17173_out': {
     'object': aURI + '/17173.out.Vod.swf',
-    'remote': aURL + '17173.out.Vod.swf',
+    'remote': aURL_github + '17173.out.Vod.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
   },
   '17173_live': {
     'object': aURI + '/17173.in.Live.swf',
-    'remote': aURL + '17173.in.Live.swf',
+    'remote': aURL_github + '17173.in.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
   },
   '17173_live_out': {
     'object': aURI + '/17173.out.Live.swf',
-    'remote': aURL + '17173.out.Live.swf',
+    'remote': aURL_github + '17173.out.Live.swf',
     'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'ku6': {
     'object': aURI + '/ku6_in_player.swf',
-    'remote': aURL + 'ku6_in_player.swf',
+    'remote': aURL_github + 'ku6_in_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
   },
   'ku6_out': {
     'object': aURI + '/ku6_out_player.swf',
-    'remote': aURL + 'ku6_out_player.swf',
+    'remote': aURL_github + 'ku6_out_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
   'baidu': {
     'object': aURI + '/baidu.call.swf',
-    'remote': aURL + 'baidu.call.swf',
+    'remote': aURL_github + 'baidu.call.swf',
     'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
   },
 };
