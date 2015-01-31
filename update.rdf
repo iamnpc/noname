@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
   xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-  <Description about="urn:mozilla:extension:antiadsplayer3@jc3213.github">
+  <Description about="urn:mozilla:extension:sowatchmk3@jc3213.github">
     <em:updates>
     <Seq>
       <li>
       <Description>
-        <em:version>1.1.0</em:version>
+        <em:version>1.0</em:version>
         <em:targetApplication><!-- Firefox -->
           <Description>
             <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
             <em:minVersion>10.0</em:minVersion>
             <em:maxVersion>*</em:maxVersion>
-            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/4001/antiadsplayer3.xpi</em:updateLink>
+            <em:updateLink>https://github.com/jc3213/Anti-ads-Solution/releases/download/4001/sowatchmk3.xpi</em:updateLink>
           </Description>
         </em:targetApplication>
       </Description>
