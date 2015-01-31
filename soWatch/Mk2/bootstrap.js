@@ -27,7 +27,7 @@ var AppPrefs = {
   setDefault: function () {
     this.autoUpdate();
     this.lastDate();
-    this.Peroid();
+    this.Period();
   },
   checkUpdate: function () {
     var aUpdate = this.prefs.getBoolPref('sowatchmk2.autoupdate');
