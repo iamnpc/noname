@@ -270,6 +270,11 @@ var PlayerRules = {
 // 过滤规则： 大多数网站都能正常工作。
 var FilterRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
+  'tudou_css': {
+    'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
+    'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
   'youku_tudou': {
     'object': 'http://valf.atm.youku.com/vf?vip=0',
     'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
