@@ -420,7 +420,7 @@ var Toolbar = {
       label: aLang.ext_name,
       tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
       onCommand: function () {
-        Download.start();
+        MozApp.upgrade();
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
