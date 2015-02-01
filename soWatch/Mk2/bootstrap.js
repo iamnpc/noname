@@ -22,6 +22,35 @@ var Preferences = {
   setPeriod: function () {
     this.track.setCharPref('period', '604800000'); //7天更新周期，单位毫秒。
   },
+// Observe preference changes
+// 监视参数变化
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic != 'nsPref:changed') return;
+    switch (aData) {
+      case 'autoupdate':
+        try {
+          this.branch.getBoolPref('autoupdate');
+        } catch (e) {
+          this.setAuto();
+        }
+        break;
+      case 'lastdate':
+        try {
+          this.branch.getCharPref('lastdate');
+        } catch (e) {
+          this.setDate();
+        }
+        break;
+      case 'period':
+        try {
+          this.branch.getCharPref('period');
+        } catch (e) {
+          this.setPeriod();
+        }
+        break;
+    }
+    this.initAuto();
+  },
 // Set default preferences
 // 设置默认参数
   setDefault: function () {
@@ -30,30 +59,12 @@ var Preferences = {
     this.setPeriod();
   },
   initAuto: function () {
-    try {
-      var aUpdate = this.track.getBoolPref('autoupdate');
-    } catch (e) {
-      this.setAuto();
-      var aUpdate = aUpdate;
-    }
-// If autoupdate is set to false,then just refresh lastdate then do nothing.
-// 如果autoupdate为false的话，则不自动更新，并刷新lastdate。
-    if (aUpdate == false) {
-      this.setDate();
-      return;
-    }
-    try {
-      var aDate = this.track.getCharPref('lastdate');
-    } catch (e) {
-      this.setDate();
-      var aDate = aDate;
-    }
-    try {
-      var aPeriod = this.track.getCharPref('period');
-    } catch (e) {
-      this.setPeriod();
-      var aPeriod = aPeriod;
-    }
+// If autoupdate is set to false,then do nothing.
+// 如果autoupdate为false的话，则不自动更新。
+    var aUpdate = this.branch.getBoolPref('autoupdate');
+    if (aUpdate == false) return;
+    var aDate = this.branch.getCharPref('lastdate');
+    var aPeriod = this.branch.getCharPref('period');
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
     this.setDate(); //更新完毕后将现在的时间写入上次更新时间。
     Download.start();
@@ -629,8 +640,8 @@ var MozApp = {
   startup: function () {
     FileIO.addFolder();
     Toolbar.addIcon();
-    Preferences.initAuto();
     Program.iQiyi();
+    Preferences.branch.addObserver('', Preferences, false);
     Services.os.addObserver(Program, 'http-on-examine-response', false);
     Services.os.addObserver(Program, 'http-on-modify-request', false);
   },
@@ -638,6 +649,7 @@ var MozApp = {
 // 禁用扩展
   shutdown: function () {
     Toolbar.removeIcon();
+    Preferences.branch.removeObserver('', Preferences);
     Services.os.removeObserver(Program, 'http-on-examine-response', false);
     Services.os.removeObserver(Program, 'http-on-modify-request', false);
   },
