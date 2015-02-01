@@ -1,6 +1,8 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
+var aURI = 'chrome://mk3-flash/content';
+
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
@@ -391,7 +393,6 @@ var Preferences = {
   },
 };
 
-var aURI = 'chrome://antiadsplayer3/content';
 var PlayerRules = {
   'baidu': {
     'object': aURI + '/baidu.call.swf',
