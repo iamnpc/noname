@@ -26,28 +26,20 @@ var Preferences = {
 // 监视参数变化
   observe: function (aSubject, aTopic, aData) {
     if (aTopic != 'nsPref:changed') return;
-    switch (aData) {
-      case 'autoupdate':
-        try {
-          this.branch.getBoolPref('autoupdate');
-        } catch (e) {
-          this.setAuto();
-        }
-        break;
-      case 'lastdate':
-        try {
-          this.branch.getCharPref('lastdate');
-        } catch (e) {
-          this.setDate();
-        }
-        break;
-      case 'period':
-        try {
-          this.branch.getCharPref('period');
-        } catch (e) {
-          this.setPeriod();
-        }
-        break;
+    try {
+      this.branch.getBoolPref('autoupdate');
+    } catch (e) {
+      this.setAuto();
+    }
+    try {
+      this.branch.getCharPref('lastdate');
+    } catch (e) {
+      this.setDate();
+    }
+    try {
+      this.branch.getCharPref('period');
+    } catch (e) {
+      this.setPeriod();
     }
     this.initAuto();
   },
