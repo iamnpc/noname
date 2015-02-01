@@ -1,32 +1,88 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
+var Services = {
+  os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
+  io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
+  prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
+};
+
+var Preferences = {
+  branch: Services.prefs.getBranch('extensions.sowatchmk3.'),
+  setYouku: function () {
+    this.branch.setBoolPref('youku', true);
+  },
+  setTudou: function () {
+    this.branch.setBoolPref('tudou', true);
+  },
+  setTudouOut: function () {
+    this.branch.setBoolPref('tudou_out', false);
+  },
+  setDefault: function () {
+    this.setYouku();
+    this.setTudou();
+    this.setTudouOut();
+  },
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic != 'nsPref:changed') return;
+    try {
+      this.branch.getBoolPref('youku');
+    } catch (e) {
+      this.setYouku();
+    }
+    try {
+      this.branch.getBoolPref('tudou');
+    } catch (e) {
+      this.setTudou();
+    }
+    try {
+      this.branch.getBoolPref('tudou_out');
+    } catch (e) {
+      this.setTudouOut();
+    }
+    this.checkYoukuTudou();
+  },
+  checkYoukuTudou: function () {
+    var Youku = this.branch.getBoolPref('youku');
+    var Tudou = this.branch.getBoolPref('tudou');
+    var TdOut = this.branch.getBoolPref('tudou_out');
+    if (Youku == true) {
+      PlayerRules['youku_loader'] = {
+        'object': aURI + '/loader.swf',
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i,
+      };
+      PlayerRules['youku_player'] = {
+        'object': aURI + '/player.swf',
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i,
+      };
+    if (Tudou == true) {
+      PlayerRules['tudou_portal'] = {
+        'object': aURI + '/tudou.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
+      };
+	}
+    if (TdOut == true) {
+      PlayerRules['tudou_olc'] = {
+        'object': 'http://js.tudouui.com/bin/player2/olc.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
+      };
+      PlayerRules['youku_social'] = {
+        'object': aURI + '/sp.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
+      };
+    }
+    else {
+      FilterRules['youku_tudou'] = {
+        'object': 'http://valf.atm.youku.com/vf?vip=0',
+        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+      };
+    }
+  },
+};
+
 var aURI = 'chrome://antiadsplayer3/content';
 var PLAYERS = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'youku_loader': {
-    'object': aURI + '/loader.swf',
-    'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
-  },
-  'youku_player': {
-    'object': aURI + '/player.swf',
-    'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'tudou_portal': {
-    'object': aURI + '/tudou.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
-  },
-/*
-  'tudou_olc': {
-    'object': 'http://js.tudouui.com/bin/player2/olc.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
-  },
-  'tudou_social': {
-    'object': aURI + '/sp.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
-  },
-*/
 /**  -------------------------------------------------------------------------------------------------------  */
   'iqiyi5': {
     'object': aURI + '/iqiyi5.swf',
@@ -108,11 +164,6 @@ var PLAYERS = {
 };
 
 var FILTERS = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'youku_tudou': {
-    'object': 'http://valf.atm.youku.com/vf?vip=0',
-    'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
-  },
 /**  -------------------------------------------------------------------------------------------------------  */
   'iqiyi_pps': {
     'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
