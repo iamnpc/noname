@@ -44,9 +44,10 @@ var Preferences = {
 // Restore default preferences, not in use now.
 // 恢复默认参数, 暂未使用。
   setDefault: function () {
-    PrefValue['autoupdate'].set();
-    PrefValue['lastdate'].set();
-    PrefValue['period'].set();
+    for (var i in PrefValue) {
+      var rule = PrefValue[i];
+      rule.set();
+    }
   },
 // Check preferences, set to PrefValue if not exist.
 // 检查参数,如果不存在或值为空则重设默认。
