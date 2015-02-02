@@ -11,54 +11,72 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
 };
 
+// User preferences to toggle functions.
+// 设置用户参数以实现各种功能的开关
+var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
 var Preferences = {
-  track: Services.prefs.getBranch('extensions.sowatchmk2.'),
-  setAuto: function () {
-    this.track.setBoolPref('autoupdate', false); //设置自动更新，默认关闭。
-  },
-  setDate: function () {
-    this.track.setCharPref('lastdate', Date.now()); //将目前时间写入设置。
-  },
-  setPeriod: function () {
-    this.track.setCharPref('period', '604800000'); //7天更新周期，单位毫秒。
+  defaults: {
+   'autoupdate': {
+      get: function () {
+        return PrefBranch.getBoolPref('autoupdate');
+      },
+      set: function () {
+        PrefBranch.setBoolPref('autoupdate', false); // 设置自动更新，默认关闭。
+      },
+    },
+    'lastdate': {
+      get: function () {
+        return PrefBranch.getCharPref('lastdate');
+      },
+      set: function () {
+        PrefBranch.setCharPref('lastdate', Date.now()); // 将目前时间写入设置。
+      },
+    },
+    'period': {
+      get: function () {
+        return PrefBranch.getCharPref('period');
+      },
+      set: function () {
+        PrefBranch.setCharPref('period', '604800000'); // 7天更新周期，单位毫秒。
+      },
+    },
   },
 // Observe preference changes
 // 监视参数变化
   observe: function (aSubject, aTopic, aData) {
     if (aTopic != 'nsPref:changed') return;
-    try {
-      this.branch.getBoolPref('autoupdate');
-    } catch (e) {
-      this.setAuto();
-    }
-    try {
-      this.branch.getCharPref('lastdate');
-    } catch (e) {
-      this.setDate();
-    }
-    try {
-      this.branch.getCharPref('period');
-    } catch (e) {
-      this.setPeriod();
-    }
-    this.initAuto();
+    this.manifest();
+    this.checkAuto();
   },
-// Set default preferences
-// 设置默认参数
+// Check preferences, set to defaults if not exist.
+// 检查参数,如果不存在或值为空则重设默认。
+  manifest: function () {
+    for (var i in this.defaults) {
+      var rule = this.defaults[i];
+      if (!rule.get) return rule.set();
+      try {
+        rule.get();
+      } catch(e) {
+        rule.set();
+      }
+    }
+  },
+// Restore default preferences, not in use now.
+// 恢复默认参数, 暂未使用。
   setDefault: function () {
     this.setAuto();
     this.setDate();
     this.setPeriod();
   },
-  initAuto: function () {
 // If autoupdate is set to false,then do nothing.
 // 如果autoupdate为false的话，则不自动更新。
-    var aUpdate = this.branch.getBoolPref('autoupdate');
+  checkAuto: function () {
+    var aUpdate = this.defaults['autoupdate'].get();
     if (aUpdate == false) return;
-    var aDate = this.branch.getCharPref('lastdate');
-    var aPeriod = this.branch.getCharPref('period');
-    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; //如果当前时间>上一次检查时间与更新周期的和则不更新。
-    this.setDate(); //更新完毕后将现在的时间写入上次更新时间。
+    var aDate = this.defaults['lastdate'].get();
+    var aPeriod = this.defaults['period'].get();
+    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
+    this.defaults['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
   },
 };
@@ -83,7 +101,7 @@ var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download
 
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
-var uAgent = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
+var AppLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 var aLocale = {
   'ja': {
     ext_name: 'soWatch! Mk2',
@@ -146,10 +164,10 @@ var aLocale = {
     rf_interrupted: 'download session has been interrupted due to unknown error',
   },
 };
-if (!aLocale[uAgent]) {
+if (!aLocale[AppLocale]) {
   console.log('Your locale is not supported');
 }
-var aLang = aLocale[uAgent] || aLocale['en-US'];
+var aLang = aLocale[AppLocale] || aLocale['en-US'];
 
 // Player Rules: You can delete ['remote'] if you don't like to keep synchronize.
 // 播放器规则： 删除['remote']项后将不能进行播放器的更新了.
@@ -333,7 +351,7 @@ var FilterRules = {
     'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
-  'hunan': {
+  'hunantv': {
     'object': 'http://res.hunantv.com/',
     'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
   },
@@ -441,12 +459,13 @@ var Toolbar = {
 // 添加工具栏按钮
   addIcon: function () {
     CustomizableUI.createWidget({
-      id: 'mk2-button',
+      id: 'sowatchmk2-button',
       defaultArea: CustomizableUI.AREA_NAVBAR,
       label: aLang.ext_name,
       tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
       onCommand: function () {
-        MozApp.upgrade();
+        Preferences.defaults['lastdate'].set();
+        Download.start();
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
@@ -454,12 +473,12 @@ var Toolbar = {
 // Remove Toolbar button
 // 移除工具栏按钮
   removeIcon: function () {
-    CustomizableUI.destroyWidget('mk2-button');
+    CustomizableUI.destroyWidget('sowatchmk2-button');
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
   },
 };
 
-var Program = {
+var HttpChannel = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -626,29 +645,44 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
+var Observers = {
+  prefsOn: function () {
+    PrefBranch.addObserver('', Preferences, false);
+  },
+  prefsOff: function () {
+    PrefBranch.removeObserver('', Preferences);
+  },
+  httpOn: function () {
+    Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.os.addObserver(HttpChannel, 'http-on-modify-request', false);
+  },
+  httpOff: function () {
+    Services.os.removeObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.os.removeObserver(HttpChannel, 'http-on-modify-request', false);
+  },
+};
+
 var MozApp = {
 // Enable Add-on. Keep soWatch folder alive. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，确保soWatch文件夹一定存在，并检查自动更新参数。
   startup: function () {
     FileIO.addFolder();
     Toolbar.addIcon();
-    Program.iQiyi();
-    Preferences.branch.addObserver('', Preferences, false);
-    Services.os.addObserver(Program, 'http-on-examine-response', false);
-    Services.os.addObserver(Program, 'http-on-modify-request', false);
+    HttpChannel.iQiyi();
+    Preferences.manifest();
+    Observers.prefsOn();
+    Observers.httpOn();
   },
 // Disable Add-on
 // 禁用扩展
   shutdown: function () {
     Toolbar.removeIcon();
-    Preferences.branch.removeObserver('', Preferences);
-    Services.os.removeObserver(Program, 'http-on-examine-response', false);
-    Services.os.removeObserver(Program, 'http-on-modify-request', false);
+    Observers.prefsOff();
+    Observers.httpOff();
   },
 // Run download at once after installed and set default autoupdate preferences.
 // 安装扩展后立即下载播放器并设置默认的自动更新参数。
   install: function () {
-    Preferences.setDefault();
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
   },
