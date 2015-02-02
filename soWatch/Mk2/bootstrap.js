@@ -48,6 +48,7 @@ var Preferences = {
       var rule = PrefValue[i];
       rule.set();
     }
+    this.manifest();
   },
 // Check preferences, set to PrefValue if not exist.
 // 检查参数,如果不存在或值为空则重设默认。
