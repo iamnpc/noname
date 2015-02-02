@@ -51,7 +51,7 @@ var Preferences = {
   },
 // Check preferences, set to PrefValue if not exist.
 // 检查参数,如果不存在或值为空则重设默认。
-  manifest: function () {
+  pending: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
       if (!rule.get) return rule.set();
@@ -66,12 +66,12 @@ var Preferences = {
 // 监视参数变化
   observe: function (aSubject, aTopic, aData) {
     if (aTopic != 'nsPref:changed') return;
+    this.pending();
     this.manifest();
-    this.checkAuto();
   },
 // If autoupdate is set to false,then do nothing.
 // 如果autoupdate为false的话，则不自动更新。
-  checkAuto: function () {
+  manifest: function () {
     var aUpdate = PrefValue['autoupdate'].get();
     if (aUpdate == false) return;
     var aDate = PrefValue['lastdate'].get();
@@ -666,7 +666,7 @@ var MozApp = {
     FileIO.addFolder();
     Toolbar.addIcon();
     HttpChannel.iQiyi();
-    Preferences.manifest();
+    Preferences.pending();
     Observers.prefsOn();
     Observers.httpOn();
   },
