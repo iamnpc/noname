@@ -14,45 +14,45 @@ var Services = {
 // User preferences to toggle functions.
 // 设置用户参数以实现各种功能的开关
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
+var PrefValue = {
+ 'autoupdate': {
+    get: function () {
+      return PrefBranch.getBoolPref('autoupdate');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('autoupdate', false);
+    },
+  },
+  'lastdate': {
+    get: function () {
+      return PrefBranch.getCharPref('lastdate');
+    },
+    set: function () {
+      PrefBranch.setCharPref('lastdate', Date.now());
+    },
+  },
+  'period': {
+    get: function () {
+      return PrefBranch.getCharPref('period');
+    },
+    set: function () {
+      PrefBranch.setCharPref('period', '604800000');
+    },
+  },
+};
 var Preferences = {
-  defaults: {
-   'autoupdate': {
-      get: function () {
-        return PrefBranch.getBoolPref('autoupdate');
-      },
-      set: function () {
-        PrefBranch.setBoolPref('autoupdate', false); // 设置自动更新，默认关闭。
-      },
-    },
-    'lastdate': {
-      get: function () {
-        return PrefBranch.getCharPref('lastdate');
-      },
-      set: function () {
-        PrefBranch.setCharPref('lastdate', Date.now()); // 将目前时间写入设置。
-      },
-    },
-    'period': {
-      get: function () {
-        return PrefBranch.getCharPref('period');
-      },
-      set: function () {
-        PrefBranch.setCharPref('period', '604800000'); // 7天更新周期，单位毫秒。
-      },
-    },
+// Restore default preferences, not in use now.
+// 恢复默认参数, 暂未使用。
+  setDefault: function () {
+    this.setAuto();
+    this.setDate();
+    this.setPeriod();
   },
-// Observe preference changes
-// 监视参数变化
-  observe: function (aSubject, aTopic, aData) {
-    if (aTopic != 'nsPref:changed') return;
-    this.manifest();
-    this.checkAuto();
-  },
-// Check preferences, set to defaults if not exist.
+// Check preferences, set to PrefValue if not exist.
 // 检查参数,如果不存在或值为空则重设默认。
   manifest: function () {
-    for (var i in this.defaults) {
-      var rule = this.defaults[i];
+    for (var i in this.PrefValue) {
+      var rule = this.PrefValue[i];
       if (!rule.get) return rule.set();
       try {
         rule.get();
@@ -61,43 +61,25 @@ var Preferences = {
       }
     }
   },
-// Restore default preferences, not in use now.
-// 恢复默认参数, 暂未使用。
-  setDefault: function () {
-    this.setAuto();
-    this.setDate();
-    this.setPeriod();
+// Observe preference changes
+// 监视参数变化
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic != 'nsPref:changed') return;
+    this.manifest();
+    this.checkAuto();
   },
 // If autoupdate is set to false,then do nothing.
 // 如果autoupdate为false的话，则不自动更新。
   checkAuto: function () {
-    var aUpdate = this.defaults['autoupdate'].get();
+    var aUpdate = this.PrefValue['autoupdate'].get();
     if (aUpdate == false) return;
-    var aDate = this.defaults['lastdate'].get();
-    var aPeriod = this.defaults['period'].get();
+    var aDate = this.PrefValue['lastdate'].get();
+    var aPeriod = this.PrefValue['period'].get();
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-    this.defaults['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
+    this.PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
   },
 };
-
-var FileIO = {
-// You can customize the dir name to store .swf files
-// 你可以自行修改保存 .swf 文件的文件夹名字。
-  path: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
-  addFolder: function () {
-    OS.File.makeDir(this.path);
-  },
-  delFolder: function () {
-    OS.File.removeDir(this.path);
-  },
-};
-
-var aURI = OS.Path.toFileURI(FileIO.path);
-// You can add more domains for now. example: google for player moded by 15536900, github for catcat520
-// 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
-var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
-var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
@@ -168,6 +150,124 @@ if (!aLocale[AppLocale]) {
   console.log('Your locale is not supported');
 }
 var aLang = aLocale[AppLocale] || aLocale['en-US'];
+
+var Toolbar = {
+// Embedded style sheet
+// 内置样式表
+  css: Services.io.newURI(
+    'data:text/css;base64,QC1tb3otZG9jdW1lbnQgdXJsKCJjaHJvbWU6Ly9icm93c2VyL2NvbnRlbnQvYnJvd3Nlci54dWwiKSB7DQogICNtazItYnV0dG9uIHsNCiAgICBsaXN0LXN0eWxlLWltYWdlOiB1cmwoZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFCQUFBQUFRQ0FZQUFBQWY4LzloQUFBQ0pFbEVRVlI0MnEyU1MyZ1RVUlNHcjRMeFRWcnptRXpxd29XVkxnVjFJVDZxb1ZFcVJUZmFoUlRFVFpDNHNWanRUREo1dEZLcExWR3lLSXFWQ3JZb1dGQnFGWXJpQzVTZ3UyYlpUVmRhc0NGdDBzWnBKelAzOTg3Y1NURVVLVUlQL0Z5NG5QUDk1OXg3Q0ZuUHlMVzc2blRGY3dhZHRVNTBrTzI0UUJ6L0JSaHQzbnhsNGFZSGlQbFV4QVNLL3YzaldKZ0phNXAyZU0xaUtLNG1JKzZiUmR5SEt0M2VCMmkvd1NMRHRHZDFZWWhzUXRSOWtDV3JsU0k5SmlKN3F3bGpEOU1ZZXpJTXJVeVIrL2dJZXZySXRDYTVEMVFCWHJVNEdqSnRPNy9ucjd2TjFpM0EzTjBBVXVNbHZNbFNmSm1pU0x5a0tCWVhrZXM3Q2owcUZKWWt6OTRWUU9JRTJmS3MyZEdyS3dLZ2NBQ05pN2pSOHduQmZvcFRUSUU3RkJPVE9wWS8zT05qUllYaDZqRmkzcEJWSEJHeEhQUGpiZGNsbk93dVdJV21HbnVXOER5akFwL1RIQ0NMK2VvM2lIdjdMSURzaDVIY0RYVitGcTJwUEk0bEN6amVWVVN3TzRjZmVRTVliT0Zqc2p4SXp0b0tZd01ESkMyQVZNZmFZK2RvR0wvbXl4aVlLQ0gxdW9TcEdaMzl3V0RGblVzUkp2LzZRcy81NmZBdTBFNlQ3T2VRKzBIZzZ3UGcyMk5ncEkwN1Iyd1RTZFRMaWl1d0FwaTdWbFB6NHV6V3haOVgzWGFDbjd0RWJiRzNzZTc0dllxSWNISFZQZ3cwa2tQWnk4NmhTaUtWUkJ0bVN4WU5JK0x0WmQzVy8zc2JFMlFqbFlWM3B2djcxaDBvZFhncEIvS3UyQTZjVzN1bFEyUWJjMHFPbkhZOEhRcVNlblBGOVlqUURsT3lxNEdzZC93QnFzV1JFYnFiWHhFQUFBQUFTVVZPUks1Q1lJST0pOw0KICB9DQogICNtazItYnV0dG9uW2N1aS1hcmVhdHlwZT0ibWVudS1wYW5lbCJdLA0KICAgIHRvb2xiYXJwYWxldHRlaXRlbVtwbGFjZT0icGFsZXR0ZSJdID4gI21rMi1idXR0b24gew0KICAgIGxpc3Qtc3R5bGUtaW1hZ2U6IHVybChkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFFekVsRVFWUjQydTJYZlV4VmRSakhEOHBMRklpODNYT0JXbStyNVZxdHJiSllJQzhaWTlyU1ZjeW1ybEVyR2k1bTZNekxQZWR3Y1paQW1FcU1nUTZia3Y5NFk4N1FMUnFZS1ZzVU9MTklYbE5lbXBGWDNyeGQ0TDZjKy92Mk8rZmNOKzY5WEVoeDZ3OS8yN01EWi9kNXZwL24rVDIvbDhNd2Q4Zi9kZWdZWnNuNHR0Z0M4R3lkblZmdFJWRjhxdlMrdjRBSlExSGs0OWdScjc2akFIblBNaUYxbWFIRzRROWpnR0sxYkNMUERoS0JGZVcvQlhZUU91YmVPd3JSdWpGQ1Axb1k1d0x3TnJ2K3ZSSDd0YzRCQUIxMnUvMFFmYTdWNi9WTGIxc1l1bVV4ZHA1dG5Fdll4NzVjRDVpTmtJWW9pbjMwa1gzcjRyenFVUWpzMVFXTE84MWtnSE1RT3VpajVMK0xhMVVzcExrTklHUVgxT2pUckVEVHRwZHdiT3RxMUcvTlFrdnAyNUtxb2o0K0JCeDVFMmpJaC8zazlsMDBiTkJDOVlQc25Lb2xrTGlKZndDbnRtZmcrMk1IMFB6RGJ6alJab0wrSnh2T1hKekEyRDhLZ1BIR1gyZ3QzUUFpS0Q2RVZ6VkRFeFU5cjdxb1ZXMm1YUTRicDVvVG9QV1QxM0cxL3dyMk5SSFVuaVU0MDAzUTJrZlFjSUZBMjBEd3k1QUNZUmpvUnEvMmFaY2ZoV2dieUdYdUNRalF1RDc4WW5WYUNNNjlGYUU0Q3I0QXR1WnlsSjRteUN3bjBIY1FkSTlBdHZZQmdrMjFCQnRyQ0laR0ZZZy9UbFY1VFoycVBDQkFaY3FTaXRyMEVFeHJIQlhnL0FDVVBJakNzcDlsQU1uV1ZSSzhVVVd3K2pQaWV2ZjV0M1lad0RSaGdFVkk4cWlDMmdJdU5pbGdEL1RrUmRYS0RqeTFva1MvMDlDdnkwQldtZGtsNkcwNWxkT3UxU0R1VDNiN2FoTkFsellYc0FxdXRjOGxBSnJaQUtLUWdDYmhIV1R2R3BsVFBIMlBGV3RLSjF3QTJML1NIVU5LaUZPM0JRU2cyK3gxSnkwMFNhNCtNR2dmd2ZFZGE3RzM1anVrY05lUi9xbkZSenlqekk3VTRuRzhXM05URWJkTUFUcjNGRWdKRWExNmVrNXh3eFltd3JOY01vQlVDZnEvZWMrVE1KdHV3bUNrUXJwUkNtRkEydTVwV2RTWmVXcnhtQXgzNUp4WkFiaDgyaTB1SmVLSU4xYkFMUE1MTUtOWi9wRExnWE1BZVBiQmxmTnkzUHJ6RmhsQUV2TzIzR29qWnF5T0RhbnVOZmpFazUreHordHpHTi96WXBKdUZqNE9zcFBqWFhVR1lKMlJZNTlvdDJGTjJTUlMrQnZVREZpbEcwZngxek9ZbkhLSVg2ajN5ajVSaWNVNyswbDF5ZjltSkxCRzF5cHdBa2pPemozaHEwMTBiazNLRk5zSXVxNFJYQm9tR0RNUmQrUDkvZzA5QmU2SHozUktjYVRFcElUNCtDTC9xMEJnZjVTYjdxTTRON1U4RlFsdWlBTXZBSjBuNlJxell0YjR1NHZ1LzF0bUwxdk9NeEVGUXVUWXk5S2x4ajhBcDZxd2FGVTQvSElveEowSlBzN09Fc3EyKzJIZ1lEWndlQjFROGN4c1ljRXpjMDl4dFFsQzlGTnpuNFpDWEZwUFhqU3FWb1ZnTUQvV0s0QURRcW9HUDhlQnhUdUZFLzNCVDBHcnpwajNSR3piSE5rcEFiVGtSUGdKNUEzallYNS9xd0NMZ25yWXlzVTl0NkF6dWVHVnNNZStTRm5hV0pNZVlwNzVtQTBBRU1Ba0lGb0p3dE9OVFdCTHNUTTY2bFp1eGNHMEgwcG1aU1lGNWRUelZDWkorbzNGV2hTVExOMnNiK3R1K0djaEUwNjd0dGNsU0FIT2JvaUFUY3NxdlJDZ0F2UnVVYmdvTjJQd3NTdG85NDdLRUJUZ1VHWW9qbWFGb2ZlRDVWS21vakwvdmhBVXZHUFJydWNvaW4yQ0hpVHRFa0REcStHb1NnMG1sU25CSmREZXg0cThLcDkrdkJ5bmE3NkwvbWFjY0FrVEZLeUhMdW1qaS8yWkVBUXU1c1ZmY3lQZjM1Zk1yTHo3N2JoWTQxL3dUTTBGcVZabWh3QUFBQUJKUlU1RXJrSmdnZz09KTsNCiAgfQ0KfQ==',
+    null,
+    null
+  ),
+// Add Toolbar button
+// 添加工具栏按钮
+  addIcon: function () {
+    CustomizableUI.createWidget({
+      id: 'sowatchmk2-button',
+      defaultArea: CustomizableUI.AREA_NAVBAR,
+      label: aLang.ext_name,
+      tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
+      onCommand: function () {
+        PrefValue['lastdate'].set();
+        Download.start();
+      },
+    });
+    Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+  },
+// Remove Toolbar button
+// 移除工具栏按钮
+  removeIcon: function () {
+    CustomizableUI.destroyWidget('sowatchmk2-button');
+    Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+  },
+};
+
+var FileIO = {
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
+  path: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  addFolder: function () {
+    OS.File.makeDir(this.path);
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.path);
+  },
+};
+var aURI = OS.Path.toFileURI(FileIO.path);
+// You can add more domains for now. example: google for player moded by 15536900, github for catcat520
+// 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
+var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
+var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
+
+var Download = {
+// Check for remote files then synchronize local files.
+// 检查远程文件，再检查文件是否需要更新。
+  check: function (aLink, aFile) {
+    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+    aClient.open('HEAD', aLink, true);
+    aClient.timeout = 30000;
+    aClient.ontimeout = function () {
+      console.log(aLink + '\n' + aLang.rf_timeout);
+    }
+    aClient.send();
+    aClient.onload = function () {
+      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      OS.File.stat(aFile).then(function onSuccess(info) {
+        if (aSize == null || aSize < 10000) {
+          console.log(aLink + '\n' + aLang.rf_accessfailed);
+        } else if (aDate > info.lastModificationDate) {
+          console.log(aFile + '\n' + aLang.lf_outofdate);
+          Download.fetch(aLink, aFile, aSize);
+        } else if (aSize != info.size) {
+          console.log(aFile + '\n' + aLang.lf_corrupted);
+          Download.fetch(aLink, aFile, aSize);
+        } else {
+          console.log(aFile + '\n' + aLang.lf_ready);
+        }
+      }, function onFailure(reason) {
+        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
+          console.log(aFile + '\n' + aLang.lf_notexist);
+          Download.fetch(aLink, aFile, aSize);
+        }
+      });
+    }
+  },
+// Download remote file with _sw as temp file, then check and overwrite.
+// 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
+  fetch: function (aLink, aFile, aSize) {
+    var aTemp = aFile + '_sw';
+    Downloads.fetch(aLink, aTemp, {
+      isPrivate: true
+    }).then(function onSuccess() {
+      OS.File.stat(aTemp).then(function onSuccess(info) {
+        if (aSize == info.size) {
+          console.log(aLink + '\n' + aLang.rf_downloaded);
+          OS.File.move(aTemp, aFile);
+        } else {
+          console.log(aLink + '\n' + aLang.rf_interrupted);
+          OS.File.remove(aTemp);
+          Download.fetch(aLink, aFile, aSize);
+        }
+      });
+    }, function onFailure() {
+      console.log(aLink + '\n' + aLang.rf_downfailed);
+      OS.File.remove(aTemp);
+    });
+  },
+// Start download
+// 开始下载
+  start: function () {
+    for (var i in PLAYERS) {
+      var rule = PLAYERS[i];
+      if (rule['remote']) {
+        var aLink = rule['remote'];
+        var aFile = OS.Path.fromFileURI(rule['object']);
+        Download.check(aLink, aFile);
+      }
+    }
+  },
+};
 
 // Player Rules: You can delete ['remote'] if you don't like to keep synchronize.
 // 播放器规则： 删除['remote']项后将不能进行播放器的更新了.
@@ -286,7 +386,6 @@ var PlayerRules = {
     'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
   },
 };
-
 // Filter Rules: May work for most site.
 // 过滤规则： 大多数网站都能正常工作。
 var FilterRules = {
@@ -361,7 +460,6 @@ var FilterRules = {
     'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
   },
 };
-
 //Referer rule： Help resolve problems with HTTP Referer.
 //引用头规则： 用于解决HTTP引用头导致的问题。
 var RefererRules = {
@@ -376,108 +474,6 @@ var RefererRules = {
     'target': /http:\/\/.*\.qiyi\.com/i
   },
 };
-
-var Download = {
-// Check for remote files then synchronize local files.
-// 检查远程文件，再检查文件是否需要更新。
-  check: function (aLink, aFile) {
-    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
-    aClient.open('HEAD', aLink, true);
-    aClient.timeout = 30000;
-    aClient.ontimeout = function () {
-      console.log(aLink + '\n' + aLang.rf_timeout);
-    }
-    aClient.send();
-    aClient.onload = function () {
-      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-      OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aSize == null || aSize < 10000) {
-          console.log(aLink + '\n' + aLang.rf_accessfailed);
-        } else if (aDate > info.lastModificationDate) {
-          console.log(aFile + '\n' + aLang.lf_outofdate);
-          Download.fetch(aLink, aFile, aSize);
-        } else if (aSize != info.size) {
-          console.log(aFile + '\n' + aLang.lf_corrupted);
-          Download.fetch(aLink, aFile, aSize);
-        } else {
-          console.log(aFile + '\n' + aLang.lf_ready);
-        }
-      }, function onFailure(reason) {
-        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aFile + '\n' + aLang.lf_notexist);
-          Download.fetch(aLink, aFile, aSize);
-        }
-      });
-    }
-  },
-// Download remote file with _sw as temp file, then check and overwrite.
-// 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
-  fetch: function (aLink, aFile, aSize) {
-    var aTemp = aFile + '_sw';
-    Downloads.fetch(aLink, aTemp, {
-      isPrivate: true
-    }).then(function onSuccess() {
-      OS.File.stat(aTemp).then(function onSuccess(info) {
-        if (aSize == info.size) {
-          console.log(aLink + '\n' + aLang.rf_downloaded);
-          OS.File.move(aTemp, aFile);
-        } else {
-          console.log(aLink + '\n' + aLang.rf_interrupted);
-          OS.File.remove(aTemp);
-          Download.fetch(aLink, aFile, aSize);
-        }
-      });
-    }, function onFailure() {
-      console.log(aLink + '\n' + aLang.rf_downfailed);
-      OS.File.remove(aTemp);
-    });
-  },
-// Start download
-// 开始下载
-  start: function () {
-    for (var i in PLAYERS) {
-      var rule = PLAYERS[i];
-      if (rule['remote']) {
-        var aLink = rule['remote'];
-        var aFile = OS.Path.fromFileURI(rule['object']);
-        Download.check(aLink, aFile);
-      }
-    }
-  },
-};
-
-var Toolbar = {
-// Embedded style sheet
-// 内置样式表
-  css: Services.io.newURI(
-    'data:text/css;base64,QC1tb3otZG9jdW1lbnQgdXJsKCJjaHJvbWU6Ly9icm93c2VyL2NvbnRlbnQvYnJvd3Nlci54dWwiKSB7DQogICNtazItYnV0dG9uIHsNCiAgICBsaXN0LXN0eWxlLWltYWdlOiB1cmwoZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFCQUFBQUFRQ0FZQUFBQWY4LzloQUFBQ0pFbEVRVlI0MnEyU1MyZ1RVUlNHcjRMeFRWcnptRXpxd29XVkxnVjFJVDZxb1ZFcVJUZmFoUlRFVFpDNHNWanRUREo1dEZLcExWR3lLSXFWQ3JZb1dGQnFGWXJpQzVTZ3UyYlpUVmRhc0NGdDBzWnBKelAzOTg3Y1NURVVLVUlQL0Z5NG5QUDk1OXg3Q0ZuUHlMVzc2blRGY3dhZHRVNTBrTzI0UUJ6L0JSaHQzbnhsNGFZSGlQbFV4QVNLL3YzaldKZ0phNXAyZU0xaUtLNG1JKzZiUmR5SEt0M2VCMmkvd1NMRHRHZDFZWWhzUXRSOWtDV3JsU0k5SmlKN3F3bGpEOU1ZZXpJTXJVeVIrL2dJZXZySXRDYTVEMVFCWHJVNEdqSnRPNy9ucjd2TjFpM0EzTjBBVXVNbHZNbFNmSm1pU0x5a0tCWVhrZXM3Q2owcUZKWWt6OTRWUU9JRTJmS3MyZEdyS3dLZ2NBQ05pN2pSOHduQmZvcFRUSUU3RkJPVE9wWS8zT05qUllYaDZqRmkzcEJWSEJHeEhQUGpiZGNsbk93dVdJV21HbnVXOER5akFwL1RIQ0NMK2VvM2lIdjdMSURzaDVIY0RYVitGcTJwUEk0bEN6amVWVVN3TzRjZmVRTVliT0Zqc2p4SXp0b0tZd01ESkMyQVZNZmFZK2RvR0wvbXl4aVlLQ0gxdW9TcEdaMzl3V0RGblVzUkp2LzZRcy81NmZBdTBFNlQ3T2VRKzBIZzZ3UGcyMk5ncEkwN1Iyd1RTZFRMaWl1d0FwaTdWbFB6NHV6V3haOVgzWGFDbjd0RWJiRzNzZTc0dllxSWNISFZQZ3cwa2tQWnk4NmhTaUtWUkJ0bVN4WU5JK0x0WmQzVy8zc2JFMlFqbFlWM3B2djcxaDBvZFhncEIvS3UyQTZjVzN1bFEyUWJjMHFPbkhZOEhRcVNlblBGOVlqUURsT3lxNEdzZC93QnFzV1JFYnFiWHhFQUFBQUFTVVZPUks1Q1lJST0pOw0KICB9DQogICNtazItYnV0dG9uW2N1aS1hcmVhdHlwZT0ibWVudS1wYW5lbCJdLA0KICAgIHRvb2xiYXJwYWxldHRlaXRlbVtwbGFjZT0icGFsZXR0ZSJdID4gI21rMi1idXR0b24gew0KICAgIGxpc3Qtc3R5bGUtaW1hZ2U6IHVybChkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUNBQUFBQWdDQVlBQUFCemVucjBBQUFFekVsRVFWUjQydTJYZlV4VmRSakhEOHBMRklpODNYT0JXbStyNVZxdHJiSllJQzhaWTlyU1ZjeW1ybEVyR2k1bTZNekxQZWR3Y1paQW1FcU1nUTZia3Y5NFk4N1FMUnFZS1ZzVU9MTklYbE5lbXBGWDNyeGQ0TDZjKy92Mk8rZmNOKzY5WEVoeDZ3OS8yN01EWi9kNXZwL24rVDIvbDhNd2Q4Zi9kZWdZWnNuNHR0Z0M4R3lkblZmdFJWRjhxdlMrdjRBSlExSGs0OWdScjc2akFIblBNaUYxbWFIRzRROWpnR0sxYkNMUERoS0JGZVcvQlhZUU91YmVPd3JSdWpGQ1Axb1k1d0x3TnJ2K3ZSSDd0YzRCQUIxMnUvMFFmYTdWNi9WTGIxc1l1bVV4ZHA1dG5Fdll4NzVjRDVpTmtJWW9pbjMwa1gzcjRyenFVUWpzMVFXTE84MWtnSE1RT3VpajVMK0xhMVVzcExrTklHUVgxT2pUckVEVHRwZHdiT3RxMUcvTlFrdnAyNUtxb2o0K0JCeDVFMmpJaC8zazlsMDBiTkJDOVlQc25Lb2xrTGlKZndDbnRtZmcrMk1IMFB6RGJ6alJab0wrSnh2T1hKekEyRDhLZ1BIR1gyZ3QzUUFpS0Q2RVZ6VkRFeFU5cjdxb1ZXMm1YUTRicDVvVG9QV1QxM0cxL3dyMk5SSFVuaVU0MDAzUTJrZlFjSUZBMjBEd3k1QUNZUmpvUnEvMmFaY2ZoV2dieUdYdUNRalF1RDc4WW5WYUNNNjlGYUU0Q3I0QXR1WnlsSjRteUN3bjBIY1FkSTlBdHZZQmdrMjFCQnRyQ0laR0ZZZy9UbFY1VFoycVBDQkFaY3FTaXRyMEVFeHJIQlhnL0FDVVBJakNzcDlsQU1uV1ZSSzhVVVd3K2pQaWV2ZjV0M1lad0RSaGdFVkk4cWlDMmdJdU5pbGdEL1RrUmRYS0RqeTFva1MvMDlDdnkwQldtZGtsNkcwNWxkT3UxU0R1VDNiN2FoTkFsellYc0FxdXRjOGxBSnJaQUtLUWdDYmhIV1R2R3BsVFBIMlBGV3RLSjF3QTJML1NIVU5LaUZPM0JRU2cyK3gxSnkwMFNhNCtNR2dmd2ZFZGE3RzM1anVrY05lUi9xbkZSenlqekk3VTRuRzhXM05URWJkTUFUcjNGRWdKRWExNmVrNXh3eFltd3JOY01vQlVDZnEvZWMrVE1KdHV3bUNrUXJwUkNtRkEydTVwV2RTWmVXcnhtQXgzNUp4WkFiaDgyaTB1SmVLSU4xYkFMUE1MTUtOWi9wRExnWE1BZVBiQmxmTnkzUHJ6RmhsQUV2TzIzR29qWnF5T0RhbnVOZmpFazUreHordHpHTi96WXBKdUZqNE9zcFBqWFhVR1lKMlJZNTlvdDJGTjJTUlMrQnZVREZpbEcwZngxek9ZbkhLSVg2ajN5ajVSaWNVNyswbDF5ZjltSkxCRzF5cHdBa2pPemozaHEwMTBiazNLRk5zSXVxNFJYQm9tR0RNUmQrUDkvZzA5QmU2SHozUktjYVRFcElUNCtDTC9xMEJnZjVTYjdxTTRON1U4RlFsdWlBTXZBSjBuNlJxell0YjR1NHZ1LzF0bUwxdk9NeEVGUXVUWXk5S2x4ajhBcDZxd2FGVTQvSElveEowSlBzN09Fc3EyKzJIZ1lEWndlQjFROGN4c1ljRXpjMDl4dFFsQzlGTnpuNFpDWEZwUFhqU3FWb1ZnTUQvV0s0QURRcW9HUDhlQnhUdUZFLzNCVDBHcnpwajNSR3piSE5rcEFiVGtSUGdKNUEzallYNS9xd0NMZ25yWXlzVTl0NkF6dWVHVnNNZStTRm5hV0pNZVlwNzVtQTBBRU1Ba0lGb0p3dE9OVFdCTHNUTTY2bFp1eGNHMEgwcG1aU1lGNWRUelZDWkorbzNGV2hTVExOMnNiK3R1K0djaEUwNjd0dGNsU0FIT2JvaUFUY3NxdlJDZ0F2UnVVYmdvTjJQd3NTdG85NDdLRUJUZ1VHWW9qbWFGb2ZlRDVWS21vakwvdmhBVXZHUFJydWNvaW4yQ0hpVHRFa0REcStHb1NnMG1sU25CSmREZXg0cThLcDkrdkJ5bmE3NkwvbWFjY0FrVEZLeUhMdW1qaS8yWkVBUXU1c1ZmY3lQZjM1Zk1yTHo3N2JoWTQxL3dUTTBGcVZabWh3QUFBQUJKUlU1RXJrSmdnZz09KTsNCiAgfQ0KfQ==',
-    null,
-    null
-  ),
-// Add Toolbar button
-// 添加工具栏按钮
-  addIcon: function () {
-    CustomizableUI.createWidget({
-      id: 'sowatchmk2-button',
-      defaultArea: CustomizableUI.AREA_NAVBAR,
-      label: aLang.ext_name,
-      tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
-      onCommand: function () {
-        Preferences.defaults['lastdate'].set();
-        Download.start();
-      },
-    });
-    Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
-  },
-// Remove Toolbar button
-// 移除工具栏按钮
-  removeIcon: function () {
-    CustomizableUI.destroyWidget('sowatchmk2-button');
-    Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
-  },
-};
-
 var HttpChannel = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
