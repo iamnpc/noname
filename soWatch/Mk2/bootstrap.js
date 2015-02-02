@@ -61,13 +61,13 @@ var Preferences = {
         rule.set();
       }
     }
+    this.manifest();
   },
 // Observe preference changes
 // 监视参数变化
   observe: function (aSubject, aTopic, aData) {
     if (aTopic != 'nsPref:changed') return;
     this.pending();
-    this.manifest();
   },
 // If autoupdate is set to false,then do nothing.
 // 如果autoupdate为false的话，则不自动更新。
