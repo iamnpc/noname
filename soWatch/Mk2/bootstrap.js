@@ -509,22 +509,21 @@ var HttpChannel = {
   },
   observe: function (aSubject, aTopic, aData) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-
     if (aTopic == 'http-on-modify-request') {
-    for (var i in RefererRules) {
-      var domain = RefererRules[i];
+      for (var i in RefererRules) {
+      var rule = RefererRules[i];
+        if (!rule) continue;
         try {
-        var URL = httpChannel.originalURI.spec;
-          if (domain['target'].test(URL)) {
-            httpChannel.setRequestHeader('Referer', domain['host'], false);
+          if (rule['target'].test(httpChannel.originalURI.spec)) {
+            httpChannel.setRequestHeader('Referer', rule['host'], false);
           }
         } catch (e) {}
       }
     }
-
     if (aTopic != 'http-on-examine-response') return;
     for (var i in FilterRules) {
       var rule = FilterRules[i];
+      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
@@ -539,13 +538,12 @@ var HttpChannel = {
         break;
       }
     }
-
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
-
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
+      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
         if (typeof rule['preHandle'] === 'function')
