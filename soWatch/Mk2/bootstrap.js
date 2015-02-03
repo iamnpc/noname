@@ -511,7 +511,7 @@ var HttpChannel = {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     if (aTopic == 'http-on-modify-request') {
       for (var i in RefererRules) {
-      var rule = RefererRules[i];
+        var rule = RefererRules[i];
         if (!rule) continue;
         try {
           if (rule['target'].test(httpChannel.originalURI.spec)) {
