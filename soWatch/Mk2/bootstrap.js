@@ -17,7 +17,7 @@ var FileIO = {
   path: function () {
     return OS.Path.toFileURI(this.prefDir) + '/';
   },
-  link: 'https://haoutil.googlecode.com/svn/trunk/player/testmod/', // 添加远程本地切换后只能用一个服务器了
+  link: 'http://opengg.guodafanli.com/swf/kafan/', // 添加远程本地切换后只能用一个服务器了，这里的样例为某盗用者的服务器
 };
 
 var Services = {
@@ -100,7 +100,6 @@ var Preferences = {
     if (aRemote == true) return PrefValue['autoupdate'].set();
     var aUpdate = PrefValue['autoupdate'].get();
     if (aUpdate == false) return;
-    PrefValue['enable_remote'].set();
     var aDate = PrefValue['lastdate'].get();
     var aPeriod = PrefValue['period'].get();
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
