@@ -8,147 +8,165 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
+var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk3.enable_player_rule.');
+var PrefValue = {
+ 'youku': {
+    get: function () {
+      return PrefBranch.getBoolPref('youku');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('youku', true);
+    },
+  },
+  'tudou': {
+    get: function () {
+      return PrefBranch.getBoolPref('tudou');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('tudou', true);
+    },
+  },
+  'iqiyi': {
+    get: function () {
+      return PrefBranch.getBoolPref('iqiyi');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('iqiyi', true);
+    },
+  },
+  'pps': {
+    get: function () {
+      return PrefBranch.getBoolPref('pps');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('pps', true);
+    },
+  },
+  'letv': {
+    get: function () {
+      return PrefBranch.getBoolPref('letv');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('letv', false);
+    },
+  },
+  'sohu': {
+    get: function () {
+      return PrefBranch.getBoolPref('sohu');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('sohu', false);
+    },
+  },
+  'pptv': {
+    get: function () {
+      return PrefBranch.getBoolPref('pptv');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('pptv', false);
+    },
+  },
+  '17173': {
+    get: function () {
+      return PrefBranch.getBoolPref('17173');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('17173', true);
+    },
+  },
+  'ku6': {
+    get: function () {
+      return PrefBranch.getBoolPref('ku6');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('ku6', false);
+    },
+  },
+};
 var Preferences = {
-  branch: Services.prefs.getBranch('extensions.sowatchmk3.'),
-  setYouku: function () {
-    this.branch.setBoolPref('youku', true);
-  },
-  setTudou: function () {
-    this.branch.setBoolPref('tudou', true);
-  },
-  setTudouOut: function () {
-    this.branch.setBoolPref('tudou_out', false);
-  },
-  setQiyi: function () {
-    this.branch.setBoolPref('iqiyi', true);
-  },
-  setPPS: function () {
-    this.branch.setBoolPref('pps', true);
-  },
-  setLetv: function () {
-    this.branch.setBoolPref('letv', false);
-  },
-  setSohu: function () {
-    this.branch.setBoolPref('sohu', false);
-  },
-  setPPTV: function () {
-    this.branch.setBoolPref('pptv', false);
-  },
-  set17173: function () {
-    this.branch.setBoolPref('17173', true);
-  },
-  setKu6: function () {
-    this.branch.setBoolPref('ku6', true);
-  },
-  setBaidu: function () {
-    this.branch.setBoolPref('baidu', true);
-  },
-  setQQ: function () {
-    this.branch.setBoolPref('qq', false);
-  },
-  set56: function () {
-    this.branch.setBoolPref('56', false);
-  },
-  set163: function () {
-    this.branch.setBoolPref('163', false);
-  },
-  setSina: function () {
-    this.branch.setBoolPref('sina', false);
-  },
-  setHunanTV: function () {
-    this.branch.setBoolPref('hunantv', false);
-  },
-  setDuowan: function () {
-    this.branch.setBoolPref('duowan', false);
-  },
   setDefault: function () {
-    this.setYouku();
-    this.setTudou();
-    this.setTudouOut();
-    this.setQiyi();
-    this.setPPS();
-    this.setLetv();
-    this.setSohu();
-    this.setPPTV();
-    this.set17173();
-    this.setKu6();
-    this.setBaidu();
-    this.setQQ();
-    this.set56();
-    this.set163();
-    this.setSina();
-    this.setHunanTV();
-    this.setDuowan();
-
-    this.startCheck();
+    for (var i in PrefValue) {
+      var rule = PrefValue[i];
+      rule.set();
+    }
+  },
+  pending: function () {
+    for (var i in PrefValue) {
+      var rule = PrefValue[i];
+      try {
+        rule.get();
+      } catch(e) {
+        rule.set();
+      }
+    }
+    this.manifest();
   },
   observe: function (aSubject, aTopic, aData) {
     if (aTopic != 'nsPref:changed') return;
-    try {
-      this.branch.getBoolPref('youku');
-    } catch (e) {
-      this.setYouku();
-    }
-    try {
-      this.branch.getBoolPref('tudou');
-    } catch (e) {
-      this.setTudou();
-    }
-    try {
-      this.branch.getBoolPref('tudou_out');
-    } catch (e) {
-      this.setTudouOut();
-    }
-    try {
-      this.branch.getBoolPref('iqiyi');
-    } catch (e) {
-      this.setQiyi();
-    }
-    try {
-      this.branch.getBoolPref('pps');
-    } catch (e) {
-      this.setPPS();
-    }
-    try {
-      this.branch.getBoolPref('letv');
-    } catch (e) {
-      this.setLetv();
-    }
-    try {
-      this.branch.getBoolPref('sohu');
-    } catch (e) {
-      this.setSohu();
-    }
-    try {
-      this.branch.getBoolPref('pptv');
-    } catch (e) {
-      this.setPPTV();
-    }
-    try {
-      this.branch.getBoolPref('17173');
-    } catch (e) {
-      this.set17173();
-    }
-    try {
-      this.branch.getBoolPref('ku6');
-    } catch (e) {
-      this.setKu6();
-    }
-    this.setBaidu();
-    this.setQQ();
-    this.set56();
-    this.set163();
-    this.setSina();
-    this.setHunanTV();
-    this.setDuowan();
-
-    this.startCheck();
+    this.pending();
   },
-  startCheck: function () {
-    var Youku = this.branch.getBoolPref('youku');
-    var Tudou = this.branch.getBoolPref('tudou');
-    var TdOut = this.branch.getBoolPref('tudou_out');
+  manifest: function () {
+    var Youku = PrefValue['youku'].get();
     if (Youku == true) {
+      RuleResolver['youku'].playerOn();
+    } else {
+      RuleResolver['youku'].playerOff();
+    }
+    var Tudou = PrefValue['tudou'].get();
+    if (Tudou == true) {
+      RuleResolver['tudou'].playerOn();
+    } else {
+      RuleResolver['tudou'].playerOff();
+    }
+    var Qiyi = PrefValue['iqiyi'].get();
+    if (Qiyi == true) {
+      RuleResolver['iqiyi'].playerOn();
+    } else {
+      RuleResolver['iqiyi'].playerOff();
+    }
+    var PPS = PrefValue['pps'].get();
+    if (PPS == true) {
+      RuleResolver['pps'].playerOn();
+    } else {
+      RuleResolver['pps'].playerOff();
+    }
+    var Letv = PrefValue['letv'].get();
+    if (Letv == true) {
+      RuleResolver['letv'].playerOn();
+	}
+    else {
+      RuleResolver['letv'].playerOff();
+    }
+    var Sohu = PrefValue['sohu'].get();
+    if (Sohu == true) {
+      RuleResolver['sohu'].playerOn();
+	} else {
+      RuleResolver['sohu'].playerOff();
+    }
+    var PPTV = PrefValue['pptv'].get();
+    if (PPTV == true) {
+      RuleResolver['pptv'].playerOn();
+	} else {
+      RuleResolver['pptv'].playerOff();
+    }
+    var v17173 = PrefValue['17173'].get();
+    if (v17173 == true) {
+      RuleResolver['17173'].playerOn();
+    } else {
+      RuleResolver['17173'].playerOff();
+    }
+    var Ku6 = PrefValue['ku6'].get();
+    if (Ku6 == true) {
+      RuleResolver['ku6'].playerOn();
+    } else {
+      RuleResolver['ku6'].playerOff();
+    }
+  },
+};
+
+var RuleResolver = {
+  'youku': {
+    playerOn: function () {
       PlayerRules['youku_loader'] = {
         'object': aURI + '/loader.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
@@ -157,32 +175,39 @@ var Preferences = {
         'object': aURI + '/player.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
       };
-    }
-    if (Tudou == true) {
+	},
+    playerOff: function () {
+      PlayerRules['youku_loader'] = null;
+      PlayerRules['youku_player'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'tudou': {
+    playerOn: function () {
       PlayerRules['tudou_portal'] = {
         'object': aURI + '/tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
-    }
-    if (TdOut == true) {
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
       };
-      PlayerRules['youku_social'] = {
+      PlayerRules['tudou_social'] = {
         'object': aURI + '/sp.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
       };
-    }
-    else if (Youku == false || Tudou == false || TdOut == false) {
-      FilterRules['youku_tudou'] = {
-        'object': 'http://valf.atm.youku.com/vf?vip=0',
-        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
-      };
-    }
-    var Qiyi = this.branch.getBoolPref('iqiyi');
-    var PPS = this.branch.getBoolPref('pps');
-    if (Qiyi == true) {
+	},
+    playerOff: function () {
+      PlayerRules['tudou_portal'] = null;
+      PlayerRules['tudou_olc'] = null;
+      PlayerRules['tudou_social'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'iqiyi': {
+    playerOn: function () {
       PlayerRules['iqiyi5'] = {
         'object': aURI + '/iqiyi5.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
@@ -191,8 +216,16 @@ var Preferences = {
         'object': aURI + '/iqiyi_out.swf',
         'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
       };
-	}
-    if (PPS == true) {
+	},
+    playerOff: function () {
+      PlayerRules['iqiyi5'] = null;
+      PlayerRules['iqiyi_out'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'pps': {
+    playerOn: function () {
       PlayerRules['pps'] = {
         'object': aURI + '/iqiyi.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
@@ -201,15 +234,16 @@ var Preferences = {
         'object': aURI + '/pps.swf',
         'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
       };
-    }
-    else if (Qiyi == false || PPS == false) {
-      FilterRules['iqiyi_pps'] = {
-        'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
-      };
-    }
-    var Letv = this.branch.getBoolPref('letv');
-    if (Letv == true) {
+	},
+    playerOff: function () {
+      PlayerRules['pps'] = null;
+      PlayerRules['pps_out'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'letv': {
+    playerOn: function () {
       PlayerRules['letv'] = {
         'object': aURI + '/letv.swf',
         'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
@@ -218,28 +252,29 @@ var Preferences = {
         'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
         'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
       };
-	}
-    else if (Letv == false) {
-      FilterRules['letv'] = {
-        'object': 'http://ark.letv.com/s',
-        'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i
-      };
-    }
-    var Sohu = this.branch.getBoolPref('sohu');
-    if (Sohu == true) {
+	},
+    playerOff: function () {
+      PlayerRules['letv'] = null;
+      PlayerRules['letv_skin'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'sohu': {
+    playerOn: function () {
       PlayerRules['sohu'] = {
         'object': aURI + '/sohu_live.swf',
         'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
       };
-	}
-    else if (Sohu == false) {
-      FilterRules['sohu'] = {
-        'object': 'http://v.aty.sohu.com/v',
-        'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i
-      };
-    }
-    var PPTV = this.branch.getBoolPref('pptv');
-    if (PPTV == true) {
+	},
+    playerOff: function () {
+      PlayerRules['sohu'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'pptv': {
+    playerOn: function () {
       PlayerRules['pptv'] = {
         'object': aURI + '/pptv.in.Ikan.swf',
         'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
@@ -248,15 +283,16 @@ var Preferences = {
         'object': aURI + '/pptv.in.Live.swf',
         'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
       };
-    }
-    else if (PPTV == false) {
-      FilterRules['pptv_live'] = {
-        'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
-        'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
-      };
-    }
-    var v17173 = this.branch.getBoolPref('17173');
-    if (v17173 == true) {
+	},
+    playerOff: function () {
+      PlayerRules['pptv'] == null;
+      PlayerRules['pptv_live'] == null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  '17173': {
+    playerOn: function () {
       PlayerRules['17173'] = {
         'object': aURI + '/17173.in.Vod.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
@@ -273,15 +309,18 @@ var Preferences = {
         'object': aURI + '/17173.out.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
       };
-    }
-    else if (v17173 == false) {
-      FilterRules['pptv_live'] = {
-        'object': 'http://17173im.allyes.com/crossdomain.xml',
-        'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
-      };
-    }
-    var Ku6 = this.branch.getBoolPref('ku6');
-    if (Ku6 == true) {
+	},
+    playerOff: function () {
+      PlayerRules['17173'] = null;
+      PlayerRules['17173_out'] = null;
+      PlayerRules['17173_live'] = null;
+      PlayerRules['17173_live_out'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
+  },
+  'ku6': {
+    playerOn: function () {
       PlayerRules['ku6'] = {
         'object': aURI + '/ku6_in_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
@@ -290,122 +329,89 @@ var Preferences = {
         'object': aURI + '/ku6_out_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
       };
-    }
-    else if (Ku6 == false) {
-      FilterRules['ku6'] = {
-        'object': 'http://p1.sdo.com',
-        'target': /http:\/\/g1\.sdo\.com/i
-      };
-    }
-    var Baidu = this.branch.getBoolPref('baidu');
-    if (Baidu == true) {
-      PlayerRules['baidu'] = {
-        'object': aURI + '/baidu.call.swf',
-        'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
-      };
-    }
-    else if (Baidu == false) {
-      FilterRules['baidu'] = {
-        'object': 'null',
-        'target': null
-      };
-    }
-    var QQ = this.branch.getBoolPref('qq');
-    if (QQ == true) {
-      PlayerRules['qq'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-    }
-    else if (QQ == false) {
-      FilterRules['qq'] = {
-        'object': 'http://livep.l.qq.com/livemsg',
-        'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i
-      };
-    }
-    var v56 = this.branch.getBoolPref('56');
-    if (v56 == true) {
-      PlayerRules['56'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-	}
-    else if (v56 == false) {
-      FilterRules['56'] = {
-        'object': 'http://www.56.com',
-        'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
-      };
-    }
-    var v163 = this.branch.getBoolPref('163');
-    if (v163 == true) {
-      PlayerRules['163'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-    }
-    else if (v163 == false) {
-      FilterRules['163'] = {
-        'object': 'http://v.163.com',
-        'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i
-      };
-    }
-    var Sina = this.branch.getBoolPref('sina');
-    if (Sina == true) {
-      PlayerRules['sina'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-    }
-    else if (Sina == false) {
-      FilterRules['sina'] = {
-        'object': 'http://sax.sina.com.cn/video/newimpress',
-        'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
-      };
-    }
-    var HunanTV = this.branch.getBoolPref('hunantv');
-    if (HunanTV == true) {
-      PlayerRules['hunantv'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-    }
-    else if (HunanTV == false) {
-      FilterRules['hunantv'] = {
-        'object': 'http://res.hunantv.com/',
-        'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
-      };
-    }
-    var Duowan = this.branch.getBoolPref('duowan');
-    if (Duowan == true) {
-      PlayerRules['duowan'] = {
-        'object': aURI + '/null.swf',
-        'target': null
-      };
-    }
-    else if (Duowan == false) {
-      FilterRules['duowan'] = {
-        'object': 'http://yuntv.letv.com/bcloud.swf',
-        'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
-      };
-    }
+	},
+    playerOff: function () {
+      PlayerRules['ku6'] = null;
+      PlayerRules['ku6_out'] = null;
+	},
+    filterOn: function () {},
+    filterOff: function () {},
   },
 };
 
-var PlayerRules = {
-  'baidu': {
-    'object': aURI + '/baidu.call.swf',
-    'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
-  },
-};
-
+var PlayerRules = {};
 var FilterRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'tudou_css': {
     'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
     'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
   },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'youku_tudou': {
+    'object': 'http://valf.atm.youku.com/vf?vip=0',
+    'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'iqiyi_pps': {
+    'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
+    'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'letv': {
+    'object': 'http://ark.letv.com/s',
+    'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'pptv_pplive': {
+    'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
+    'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'sohu': {
+    'object': 'http://v.aty.sohu.com/v',
+    'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  '17173': {
+    'object': 'http://17173im.allyes.com/crossdomain.xml',
+    'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'ku6': {
+    'object': 'http://p1.sdo.com',
+    'target': /http:\/\/g1\.sdo\.com/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'qq': {
+    'object': 'http://livep.l.qq.com/livemsg',
+    'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  '56': {
+    'object': 'http://www.56.com',
+    'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  '163': {
+    'object': 'http://v.163.com',
+    'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'sina': {
+    'object': 'http://sax.sina.com.cn/video/newimpress',
+    'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'hunantv': {
+    'object': 'http://res.hunantv.com/',
+    'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
+  },
+/**  -------------------------------------------------------------------------------------------------------  */
+  'duowan': {
+    'object': 'http://yuntv.letv.com/bcloud.swf',
+    'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
+  },
 };
-
 var RefererRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'youku': {
@@ -418,8 +424,6 @@ var RefererRules = {
     'target': /http:\/\/.*\.qiyi\.com/i
   },
 };
-
-var RefererRules = {};
 var HttpChannel = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
@@ -456,10 +460,10 @@ var HttpChannel = {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     if (aTopic == 'http-on-modify-request') {
       for (var i in RefererRules) {
-        var rule = RefererRules[i];
-        if (!rule) continue;
+      var rule = RefererRules[i];
         try {
-          if (rule['target'].test(httpChannel.originalURI.spec)) {
+        var aSpec = httpChannel.originalURI.spec;
+          if (rule['target'].test(aSpec)) {
             httpChannel.setRequestHeader('Referer', rule['host'], false);
           }
         } catch (e) {}
@@ -468,7 +472,6 @@ var HttpChannel = {
     if (aTopic != 'http-on-examine-response') return;
     for (var i in FilterRules) {
       var rule = FilterRules[i];
-      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
@@ -486,9 +489,8 @@ var HttpChannel = {
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
-    for (var i in PlayerRules) {
+      for (var i in PlayerRules) {
       var rule = PlayerRules[i];
-      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
         if (typeof rule['preHandle'] === 'function')
@@ -584,10 +586,10 @@ HttpHeaderVisitor.prototype = {
 
 var Observers = {
   prefsOn: function () {
-    Preferences.branch.addObserver('', Preferences, false);
+    PrefBranch.addObserver('', Preferences, false);
   },
   prefsOff: function () {
-    Preferences.branch.removeObserver('', Preferences);
+    PrefBranch.removeObserver('', Preferences);
   },
   httpOn: function () {
     Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
@@ -601,8 +603,8 @@ var Observers = {
 
 var MozApp = {
   startup: function () {
-    Preferences.startCheck();
     HttpChannel.iQiyi();
+    Preferences.pending();
     Observers.prefsOn();
     Observers.httpOn();
   },
