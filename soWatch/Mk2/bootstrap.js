@@ -4,6 +4,22 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
+var FileIO = {
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
+  prefDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  addFolder: function () {
+    OS.File.makeDir(this.prefDir);
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.prefDir);
+  },
+  path: function () {
+    return OS.Path.toFileURI(this.prefDir) + '/';
+  },
+  link: 'https://haoutil.googlecode.com/svn/trunk/player/testmod/', // 添加远程本地切换后只能用一个服务器了
+};
+
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
@@ -21,6 +37,14 @@ var PrefValue = {
     },
     set: function () {
       PrefBranch.setBoolPref('autoupdate', false);
+    },
+  },
+ 'enable_remote': {
+    get: function () {
+      return PrefBranch.getBoolPref('enable_remote');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('enable_remote', false);
     },
   },
   'lastdate': {
@@ -69,11 +93,14 @@ var Preferences = {
     if (aTopic != 'nsPref:changed') return;
     this.pending();
   },
-// If autoupdate is set to false,then do nothing.
-// 如果autoupdate为false的话，则不自动更新。
+// If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
+// 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
+    var aRemote = PrefValue['enable_remote'].get();
+    if (aRemote == true) return PrefValue['autoupdate'].set();
     var aUpdate = PrefValue['autoupdate'].get();
     if (aUpdate == false) return;
+    PrefValue['enable_remote'].set();
     var aDate = PrefValue['lastdate'].get();
     var aPeriod = PrefValue['period'].get();
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
@@ -81,6 +108,13 @@ var Preferences = {
     Download.start();
   },
 };
+var aRemote = PrefValue['enable_remote'].get();
+if (aRemote == true) {
+  var aURI = aURL = FileIO.link;
+} else {
+  var aURI = FileIO.path();
+  var aURL = FileIO.link;
+}
 
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
@@ -169,6 +203,10 @@ var Toolbar = {
       label: aLang.ext_name,
       tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
       onCommand: function () {
+// If use_remote is true，don‘t synchronize files on click.
+// 如果use_remote为true，那么点击图标不更新文件。
+        var aRemote = PrefValue['enable_remote'].get();
+        if (aRemote == true) return;
         PrefValue['lastdate'].set();
         Download.start();
       },
@@ -182,23 +220,6 @@ var Toolbar = {
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
   },
 };
-
-var FileIO = {
-// You can customize the dir name to store .swf files
-// 你可以自行修改保存 .swf 文件的文件夹名字。
-  path: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
-  addFolder: function () {
-    OS.File.makeDir(this.path);
-  },
-  delFolder: function () {
-    OS.File.removeDir(this.path);
-  },
-};
-var aURI = OS.Path.toFileURI(FileIO.path);
-// You can add more domains for now. example: google for player moded by 15536900, github for catcat520
-// 现在方便添加更多的服务器了，如：为15536900破解的播放器使用google，而catcat520使用github
-var aURL_google = 'https://haoutil.googlecode.com/svn/trunk/player/testmod/';
-var aURL_github = 'https://github.com/jc3213/Anti-ads-Solution/releases/download/6666/';
 
 var Download = {
 // Check for remote files then synchronize local files.
