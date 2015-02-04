@@ -5,8 +5,6 @@ var aURI = 'chrome://mk3-flash/content';
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
-  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
-  io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
@@ -421,7 +419,8 @@ var RefererRules = {
   },
 };
 
-var Program = {
+var RefererRules = {};
+var HttpChannel = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -455,22 +454,21 @@ var Program = {
   },
   observe: function (aSubject, aTopic, aData) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-
     if (aTopic == 'http-on-modify-request') {
-    for (var i in RefererRules) {
-      var domain = RefererRules[i];
+      for (var i in RefererRules) {
+        var rule = RefererRules[i];
+        if (!rule) continue;
         try {
-        var URL = httpChannel.originalURI.spec;
-          if (domain['target'].test(URL)) {
-            httpChannel.setRequestHeader('Referer', domain['host'], false);
+          if (rule['target'].test(httpChannel.originalURI.spec)) {
+            httpChannel.setRequestHeader('Referer', rule['host'], false);
           }
         } catch (e) {}
       }
     }
-
     if (aTopic != 'http-on-examine-response') return;
     for (var i in FilterRules) {
       var rule = FilterRules[i];
+      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
@@ -485,13 +483,12 @@ var Program = {
         break;
       }
     }
-
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
-
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
+      if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
         if (typeof rule['preHandle'] === 'function')
@@ -513,8 +510,7 @@ var Program = {
     }
   },
   QueryInterface: function (aIID) {
-    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver))
-      return this;
+    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
   iQiyi: function () {
@@ -586,18 +582,33 @@ HttpHeaderVisitor.prototype = {
   }
 }
 
+var Observers = {
+  prefsOn: function () {
+    Preferences.branch.addObserver('', Preferences, false);
+  },
+  prefsOff: function () {
+    Preferences.branch.removeObserver('', Preferences);
+  },
+  httpOn: function () {
+    Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.os.addObserver(HttpChannel, 'http-on-modify-request', false);
+  },
+  httpOff: function () {
+    Services.os.removeObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.os.removeObserver(HttpChannel, 'http-on-modify-request', false);
+  },
+};
+
 var MozApp = {
   startup: function () {
     Preferences.startCheck();
-    Program.iQiyi();
-    Preferences.branch.addObserver('', Preferences, false);
-    Services.os.addObserver(Program, 'http-on-examine-response', false);
-    Services.os.addObserver(Program, 'http-on-modify-request', false);
+    HttpChannel.iQiyi();
+    Observers.prefsOn();
+    Observers.httpOn();
   },
   shutdown: function () {
-    Preferences.branch.removeObserver('', Preferences);
-    Services.os.removeObserver(Program, 'http-on-examine-response', false);
-    Services.os.removeObserver(Program, 'http-on-modify-request', false);
+    Observers.prefsOff();
+    Observers.httpOff();
   },
 };
 
