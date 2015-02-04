@@ -17,7 +17,9 @@ var FileIO = {
   path: function () {
     return OS.Path.toFileURI(this.prefDir) + '/';
   },
-  link: 'http://opengg.guodafanli.com/swf/kafan/', // 添加远程本地切换后只能用一个服务器了，这里的样例为某盗用者的服务器
+// Only one domain available now. Set Privates'(reseller) server to default. Caution: file version may not be the latest.
+// 添加远程本地切换后只能用一个服务器了，这里的样例为某盗用者的服务器，注意：这个服务器上的播放器版本不一定为最新版。
+  link: 'http://opengg.guodafanli.com/swf/kafan/',
 };
 
 var Services = {
@@ -97,16 +99,23 @@ var Preferences = {
 // 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
     var aRemote = PrefValue['enable_remote'].get();
-    if (aRemote == true) return PrefValue['autoupdate'].set();
-    var aUpdate = PrefValue['autoupdate'].get();
-    if (aUpdate == false) return;
-    var aDate = PrefValue['lastdate'].get();
-    var aPeriod = PrefValue['period'].get();
-    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-    PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
-    Download.start();
+    if (aRemote == true) {
+      aURI = aURL = FileIO.link;
+      PrefValue['autoupdate'].set();
+    } else {
+      aURI = FileIO.path();
+      aURL = FileIO.link;
+      var aUpdate = PrefValue['autoupdate'].get();
+      if (aUpdate == false) return;
+      var aDate = PrefValue['lastdate'].get();
+      var aPeriod = PrefValue['period'].get();
+      if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
+      PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
+      Download.start();
+    }
   },
 };
+
 var aRemote = PrefValue['enable_remote'].get();
 if (aRemote == true) {
   var aURI = aURL = FileIO.link;
