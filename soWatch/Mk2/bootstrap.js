@@ -348,7 +348,7 @@ var PlayerRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'pptv': {
     'object': aURI + 'pptv.in.Ikan.swf',
-    'remote': aURL + 'pptv.in.Ikan.swf',
+    'remote': aURL_github + 'pptv.in.Ikan.swf',
     'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
   },
   'pptv_live': {
