@@ -1,7 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
-Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Geck 29 and later
-Cu.import('resource://gre/modules/osfile.jsm'); //Require Geck 27 and later
-Cu.import('resource://gre/modules/Downloads.jsm'); //Require Geck 26 and later
+Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Gecko 29 and later
+Cu.import('resource://gre/modules/osfile.jsm'); //Require Gecko 27 and later
+Cu.import('resource://gre/modules/Downloads.jsm'); //Require Gecko 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
 var FileIO = {
@@ -17,10 +17,14 @@ var FileIO = {
   path: function () {
     return OS.Path.toFileURI(this.prefDir) + '/';
   },
-// Only one domain available now. Set Privates'(reseller) server to default. Caution: file version may not be the latest.
-// 添加远程本地切换后只能用一个服务器了，这里的样例为某盗用者的服务器，注意：这个服务器上的播放器版本不一定为最新版。
-  link: 'http://opengg.guodafanli.com/swf/kafan/',
+// Add your domain here.
+// 在这里添加你的服务器，
+  google: 'https://haoutil.googlecode.com/svn/trunk/player/testmod/',
+  guodafanli: 'http://opengg.guodafanli.com/swf/kafan/',
 };
+var aURI = FileIO.path();
+var aURL_google = FileIO.google;
+var aURL_github = FileIO.guodafanli;
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
@@ -39,14 +43,6 @@ var PrefValue = {
     },
     set: function () {
       PrefBranch.setBoolPref('autoupdate', false);
-    },
-  },
- 'enable_remote': {
-    get: function () {
-      return PrefBranch.getBoolPref('enable_remote');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('enable_remote', false);
     },
   },
   'lastdate': {
@@ -98,31 +94,16 @@ var Preferences = {
 // If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
-    var aRemote = PrefValue['enable_remote'].get();
-    if (aRemote == true) {
-      aURI = aURL = FileIO.link;
-      PrefValue['autoupdate'].set();
-    } else {
-      aURI = FileIO.path();
-      aURL = FileIO.link;
-      var aUpdate = PrefValue['autoupdate'].get();
-      if (aUpdate == false) return;
-      var aDate = PrefValue['lastdate'].get();
-      var aPeriod = PrefValue['period'].get();
-      if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-      PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
-      Download.start();
+    var aUpdate = PrefValue['autoupdate'].get();
+    if (aUpdate == false) return;
+    var aDate = PrefValue['lastdate'].get();
+    var aPeriod = PrefValue['period'].get();
+    if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
+    PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
+    Download.start();
     }
   },
 };
-
-var aRemote = PrefValue['enable_remote'].get();
-if (aRemote == true) {
-  var aURI = aURL = FileIO.link;
-} else {
-  var aURI = FileIO.path();
-  var aURL = FileIO.link;
-}
 
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
@@ -213,8 +194,6 @@ var Toolbar = {
       onCommand: function () {
 // If use_remote is true，don‘t synchronize files on click.
 // 如果use_remote为true，那么点击图标不更新文件。
-        var aRemote = PrefValue['enable_remote'].get();
-        if (aRemote == true) return;
         PrefValue['lastdate'].set();
         Download.start();
       },
