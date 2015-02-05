@@ -97,7 +97,9 @@ var Preferences = {
     var aUpdate = PrefValue['autoupdate'].get();
     if (aUpdate == false) return;
     var aDate = PrefValue['lastdate'].get();
+    if (isNaN(aDate)) PrefValue['lastdate'].set(); // 如果'lastdate'不是数字则返回预设值(当前时间)
     var aPeriod = PrefValue['period'].get();
+    if (isNaN(aPeriod)) PrefValue['period'].set(); // 如果'period'不是数字则返回预设置
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
     PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
