@@ -1,7 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aURI = 'chrome://sowatch/content';
+var aURI = 'chrome://sowatch/content/';
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
@@ -196,11 +196,11 @@ var RuleResolver = {
   'youku': {
     playerOn: function () {
       PlayerRules['youku_loader'] = {
-        'object': aURI + '/loader.swf',
+        'object': aURI + 'loader.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
       };
       PlayerRules['youku_player'] = {
-        'object': aURI + '/player.swf',
+        'object': aURI + 'player.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
       };
 	},
@@ -221,7 +221,7 @@ var RuleResolver = {
   'tudou': {
     playerOn: function () {
       PlayerRules['tudou_portal'] = {
-        'object': aURI + '/tudou.swf',
+        'object': aURI + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
       PlayerRules['tudou_olc'] = {
@@ -229,7 +229,7 @@ var RuleResolver = {
         'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
       };
       PlayerRules['tudou_social'] = {
-        'object': aURI + '/sp.swf',
+        'object': aURI + 'sp.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
       };
 	},
@@ -242,11 +242,11 @@ var RuleResolver = {
   'iqiyi': {
     playerOn: function () {
       PlayerRules['iqiyi5'] = {
-        'object': aURI + '/iqiyi5.swf',
+        'object': aURI + 'iqiyi5.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
       };
       PlayerRules['iqiyi_out'] = {
-        'object': aURI + '/iqiyi_out.swf',
+        'object': aURI + 'iqiyi_out.swf',
         'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
       };
 	},
@@ -267,11 +267,11 @@ var RuleResolver = {
   'pps': {
     playerOn: function () {
       PlayerRules['pps'] = {
-        'object': aURI + '/iqiyi.swf',
+        'object': aURI + 'iqiyi.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
       };
       PlayerRules['pps_out'] = {
-        'object': aURI + '/pps.swf',
+        'object': aURI + 'pps.swf',
         'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
       };
 	},
@@ -283,7 +283,7 @@ var RuleResolver = {
   'letv': {
     playerOn: function () {
       PlayerRules['letv'] = {
-        'object': aURI + '/letv.swf',
+        'object': aURI + 'letv.swf',
         'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
       };
       PlayerRules['letv_skin'] = {
@@ -299,7 +299,7 @@ var RuleResolver = {
   'sohu': {
     playerOn: function () {
       PlayerRules['sohu'] = {
-        'object': aURI + '/sohu_live.swf',
+        'object': aURI + 'sohu_live.swf',
         'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
       };
 	},
@@ -310,11 +310,11 @@ var RuleResolver = {
   'pptv': {
     playerOn: function () {
       PlayerRules['pptv'] = {
-        'object': aURI + '/pptv.in.Ikan.swf',
+        'object': aURI + 'pptv.in.Ikan.swf',
         'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
       };
       PlayerRules['pptv_live'] = {
-        'object': aURI + '/pptv.in.Live.swf',
+        'object': aURI + 'pptv.in.Live.swf',
         'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
       };
 	},
@@ -326,19 +326,19 @@ var RuleResolver = {
   '17173': {
     playerOn: function () {
       PlayerRules['17173'] = {
-        'object': aURI + '/17173.in.Vod.swf',
+        'object': aURI + '17173.in.Vod.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
       };
       PlayerRules['17173_out'] = {
-        'object': aURI + '/17173.out.Vod.swf',
+        'object': aURI + '17173.out.Vod.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
       };
       PlayerRules['17173_live'] = {
-        'object': aURI + '/17173.in.Live.swf',
+        'object': aURI + '17173.in.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
       };
       PlayerRules['17173_live_out'] = {
-        'object': aURI + '/17173.out.Live.swf',
+        'object': aURI + '17173.out.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
       };
 	},
@@ -352,11 +352,11 @@ var RuleResolver = {
   'ku6': {
     playerOn: function () {
       PlayerRules['ku6'] = {
-        'object': aURI + '/ku6_in_player.swf',
+        'object': aURI + 'ku6_in_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
       };
       PlayerRules['ku6_out'] = {
-        'object': aURI + '/ku6_out_player.swf',
+        'object': aURI + 'ku6_out_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
       };
 	},
@@ -371,7 +371,7 @@ var RuleResolver = {
 var PlayerRules = {
 /**  -------------------------------------------------------------------------------------------------------  */
   'baidu': {
-    'object': aURI + '/baidu.call.swf',
+    'object': aURI + 'baidu.call.swf',
     'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
   },
 };
