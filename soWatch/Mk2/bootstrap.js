@@ -461,11 +461,6 @@ var FilterRules = {
     'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
   },
 /**  -------------------------------------------------------------------------------------------------------  */
-  'hunantv': {
-    'object': 'http://res.hunantv.com/',
-    'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
   'duowan': {
     'object': 'http://yuntv.letv.com/bcloud.swf',
     'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
