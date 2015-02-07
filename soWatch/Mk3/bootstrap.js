@@ -117,14 +117,6 @@ var PrefValue = {
       PrefBranch['enable_rule'].setCharPref('sina', 'filter');
     },
   },
-  'hunantv': {
-    get: function () {
-      return PrefBranch['enable_rule'].getCharPref('hunantv');
-    },
-    set: function () {
-      PrefBranch['enable_rule'].setCharPref('hunantv', 'filter');
-    },
-  },
   'duowan': {
     get: function () {
       return PrefBranch['enable_rule'].getCharPref('duowan');
@@ -326,14 +318,6 @@ var Preferences = {
       RuleResolver['sina'].filterOn();
     } else {
       PrefValue['sina'].set();
-    }
-
-    var HunanTV = PrefValue['hunantv'].get();
-    if (HunanTV == 'filter') {
-      RuleResolver['hunantv'].playerOff();
-      RuleResolver['hunantv'].filterOn();
-    } else {
-      PrefValue['hunantv'].set();
     }
 
     var Duowan = PrefValue['duowan'].get();
@@ -663,19 +647,6 @@ var RuleResolver = {
     },
     filterOff: function () {
       FilterRules['sina'] = null;
-    },
-  },
-  'hunantv': {
-    playerOn: function () {},
-    playerOff: function () {},
-    filterOn: function () {
-      FilterRules['hunantv'] = {
-        'object': 'http://res.hunantv.com/',
-        'target': /http:\/\/image\.res\.hunantv\.com\/mediafiles\/.+\.swf/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['hunantv'] = null;
     },
   },
   'duowan': {
