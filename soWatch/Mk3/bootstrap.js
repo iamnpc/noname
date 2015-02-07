@@ -1,7 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aURI = 'chrome://mk3-flash/content';
+var aURI = 'chrome://mk3-flash/content/';
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
