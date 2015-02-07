@@ -7,15 +7,15 @@ Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Ge
 var FileIO = {
 // You can customize the dir name to store .swf files
 // 你可以自行修改保存 .swf 文件的文件夹名字。
-  prefDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  extDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
   addFolder: function () {
-    OS.File.makeDir(this.prefDir);
+    OS.File.makeDir(this.extDir);
   },
   delFolder: function () {
-    OS.File.removeDir(this.prefDir);
+    OS.File.removeDir(this.extDir);
   },
   path: function () {
-    return OS.Path.toFileURI(this.prefDir) + '/';
+    return OS.Path.toFileURI(this.extDir) + '/';
   },
 // Add your domain here.
 // 在这里添加你的服务器，
@@ -35,30 +35,32 @@ var Services = {
 
 // User preferences to toggle functions.
 // 设置用户参数以实现各种功能的开关
-var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
+var PrefBranch = {
+  'autoupdate': Services.prefs.getBranch('extensions.sowatchmk2.autoupdate.'),
+};
 var PrefValue = {
- 'autoupdate': {
+ 'enable': {
     get: function () {
-      return PrefBranch.getBoolPref('autoupdate');
+      return PrefBranch['autoupdate'].getBoolPref('enable');
     },
     set: function () {
-      PrefBranch.setBoolPref('autoupdate', false);
+      PrefBranch['autoupdate'].setBoolPref('enable', false);
     },
   },
   'lastdate': {
     get: function () {
-      return PrefBranch.getCharPref('lastdate');
+      return PrefBranch['autoupdate'].getCharPref('lastdate');
     },
     set: function () {
-      PrefBranch.setCharPref('lastdate', Date.now());
+      PrefBranch['autoupdate'].setCharPref('lastdate', Date.now());
     },
   },
   'period': {
     get: function () {
-      return PrefBranch.getCharPref('period');
+      return PrefBranch['autoupdate'].getCharPref('period');
     },
     set: function () {
-      PrefBranch.setCharPref('period', '604800000');
+      PrefBranch['autoupdate'].setCharPref('period', '604800000');
     },
   },
 };
@@ -76,7 +78,6 @@ var Preferences = {
   pending: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
-      if (!rule.get) return rule.set();
       try {
         rule.get();
       } catch(e) {
@@ -94,7 +95,7 @@ var Preferences = {
 // If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
-    var aUpdate = PrefValue['autoupdate'].get();
+    var aUpdate = PrefValue['enable'].get();
     if (aUpdate == false) return;
     var aDate = PrefValue['lastdate'].get();
     if (isNaN(aDate)) PrefValue['lastdate'].set(); // 如果'lastdate'不是数字则返回预设值(当前时间)
@@ -103,7 +104,6 @@ var Preferences = {
     if (parseInt(aDate) + parseInt(aPeriod) > Date.now()) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
     PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
-    }
   },
 };
 
@@ -652,10 +652,16 @@ HttpHeaderVisitor.prototype = {
 
 var Observers = {
   prefsOn: function () {
-    PrefBranch.addObserver('', Preferences, false);
+    for (var i in PrefBranch) {
+       var rule = PrefBranch[i];
+       rule.addObserver('', Preferences, false);
+    }
   },
   prefsOff: function () {
-    PrefBranch.removeObserver('', Preferences);
+    for (var i in PrefBranch) {
+       var rule = PrefBranch[i];
+       rule.removeObserver('', Preferences);
+    }
   },
   httpOn: function () {
     Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
