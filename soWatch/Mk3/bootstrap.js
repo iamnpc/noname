@@ -1,14 +1,10 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
-Cu.import('resource://gre/modules/osfile.jsm');
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'sowatch');
-var aURI = OS.Path.toFileURI(aPath) + '/';
+var aURI = 'chrome://mk3-flash/content';
 
 var Services = {
   os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
-  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
-  io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
