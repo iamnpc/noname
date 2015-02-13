@@ -122,63 +122,18 @@ var Preferences = {
     this.pending();
   },
   manifest: function () {
-    var Youku = PrefValue['youku'].get();
-    if (Youku == true) {
-      RuleResolver['youku'].playerOn();
-    } else {
-      RuleResolver['youku'].playerOff();
+    for (var i in PrefValue) {
+      if (i == 'youku_referer' || i == 'iqiyi_referer') continue;
+      var rule = PrefValue[i];
+      var resolver = RuleResolver[i];
+      if (rule.get() == true) {
+        resolver.playerOn();
+      } else {
+        resolver.playerOff();
+      }
     }
-    var Tudou = PrefValue['tudou'].get();
-    if (Tudou == true) {
-      RuleResolver['tudou'].playerOn();
-    } else {
-      RuleResolver['tudou'].playerOff();
-    }
-    var Qiyi = PrefValue['iqiyi'].get();
-    if (Qiyi == true) {
-      RuleResolver['iqiyi'].playerOn();
-    } else {
-      RuleResolver['iqiyi'].playerOff();
-    }
-    var PPS = PrefValue['pps'].get();
-    if (PPS == true) {
-      RuleResolver['pps'].playerOn();
-    } else {
-      RuleResolver['pps'].playerOff();
-    }
-    var Letv = PrefValue['letv'].get();
-    if (Letv == true) {
-      RuleResolver['letv'].playerOn();
-	} else {
-      RuleResolver['letv'].playerOff();
-    }
-    var Sohu = PrefValue['sohu'].get();
-    if (Sohu == true) {
-      RuleResolver['sohu'].playerOn();
-	} else {
-      RuleResolver['sohu'].playerOff();
-    }
-    var PPTV = PrefValue['pptv'].get();
-    if (PPTV == true) {
-      RuleResolver['pptv'].playerOn();
-	} else {
-      RuleResolver['pptv'].playerOff();
-    }
-    var v17173 = PrefValue['17173'].get();
-    if (v17173 == true) {
-      RuleResolver['17173'].playerOn();
-	} else {
-      RuleResolver['17173'].playerOff();
-    }
-    var Ku6 = PrefValue['ku6'].get();
-    if (Ku6 == 'player') {
-      RuleResolver['ku6'].playerOn();
-	} else {
-      RuleResolver['ku6'].playerOff();
-    }
-
-    var YoukuReferer = PrefValue['youku_referer'].get();
-    if (YoukuReferer == true) {
+    var QiyiReferer = PrefValue['youku_referer'].get();
+    if (QiyiReferer == true) {
       RuleResolver['youku'].refererOn();
     } else {
       RuleResolver['youku'].refererOff();
@@ -224,6 +179,10 @@ var RuleResolver = {
         'object': aURI + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
+      FilterRules['tudou_css'] = {
+        'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
+        'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
+      };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
@@ -232,12 +191,13 @@ var RuleResolver = {
         'object': aURI + 'sp.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['tudou_portal'] = null;
+      FilterRules['tudou_css'] = null;
       PlayerRules['tudou_olc'] = null;
       PlayerRules['tudou_social'] = null;
-	},
+    },
   },
   'iqiyi': {
     playerOn: function () {
@@ -367,21 +327,8 @@ var RuleResolver = {
   },
 };
 
-
-var PlayerRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'baidu': {
-    'object': aURI + 'baidu.call.swf',
-    'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
-  },
-};
-var FilterRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'tudou_css': {
-    'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
-    'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
-  },
-};
+var PlayerRules = {};
+var FilterRules = {};
 var RefererRules = {};
 var HttpChannel = {
   getObject: function (rule, callback) {
