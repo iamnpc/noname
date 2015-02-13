@@ -9,136 +9,136 @@ var Services = {
 };
 
 var PrefBranch = {
-  'enable_rule': Services.prefs.getBranch('extensions.sowatchmk3.enable_rule.'),
-  'referer_rule': Services.prefs.getBranch('extensions.sowatchmk3.referer_rule.'),
+  'defined_rule': Services.prefs.getBranch('extensions.sowatchmk3.defined_rule.'),
+  'modify_referer': Services.prefs.getBranch('extensions.sowatchmk3.modify_referer.'),
 };
 var PrefValue = {
  'youku': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('youku');
+      return PrefBranch['defined_rule'].getCharPref('youku');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('youku', 'player');
+      PrefBranch['defined_rule'].setCharPref('youku', 'player');
     },
   },
   'tudou': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('tudou');
+      return PrefBranch['defined_rule'].getCharPref('tudou');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('tudou', 'player');
+      PrefBranch['defined_rule'].setCharPref('tudou', 'player');
     },
   },
   'iqiyi': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('iqiyi');
+      return PrefBranch['defined_rule'].getCharPref('iqiyi');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('iqiyi', 'player');
+      PrefBranch['defined_rule'].setCharPref('iqiyi', 'player');
     },
   },
   'pps': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('pps');
+      return PrefBranch['defined_rule'].getCharPref('pps');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('pps', 'player');
+      PrefBranch['defined_rule'].setCharPref('pps', 'player');
     },
   },
   'letv': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('letv');
+      return PrefBranch['defined_rule'].getCharPref('letv');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('letv', 'filter');
+      PrefBranch['defined_rule'].setCharPref('letv', 'filter');
     },
   },
   'sohu': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('sohu');
+      return PrefBranch['defined_rule'].getCharPref('sohu');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('sohu', 'filter');
+      PrefBranch['defined_rule'].setCharPref('sohu', 'filter');
     },
   },
   'pptv': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('pptv');
+      return PrefBranch['defined_rule'].getCharPref('pptv');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('pptv', 'filter');
+      PrefBranch['defined_rule'].setCharPref('pptv', 'filter');
     },
   },
   '17173': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('17173');
+      return PrefBranch['defined_rule'].getCharPref('17173');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('17173', 'player');
+      PrefBranch['defined_rule'].setCharPref('17173', 'player');
     },
   },
   'ku6': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('ku6');
+      return PrefBranch['defined_rule'].getCharPref('ku6');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('ku6', 'filter');
+      PrefBranch['defined_rule'].setCharPref('ku6', 'filter');
     },
   },
   '56': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('56');
+      return PrefBranch['defined_rule'].getCharPref('56');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('56', 'filter');
+      PrefBranch['defined_rule'].setCharPref('56', 'filter');
     },
   },
   'qq': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('qq');
+      return PrefBranch['defined_rule'].getCharPref('qq');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('qq', 'filter');
+      PrefBranch['defined_rule'].setCharPref('qq', 'filter');
     },
   },
   '163': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('163');
+      return PrefBranch['defined_rule'].getCharPref('163');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('163', 'filter');
+      PrefBranch['defined_rule'].setCharPref('163', 'filter');
     },
   },
   'sina': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('sina');
+      return PrefBranch['defined_rule'].getCharPref('sina');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('sina', 'filter');
+      PrefBranch['defined_rule'].setCharPref('sina', 'filter');
     },
   },
   'duowan': {
     get: function () {
-      return PrefBranch['enable_rule'].getCharPref('duowan');
+      return PrefBranch['defined_rule'].getCharPref('duowan');
     },
     set: function () {
-      PrefBranch['enable_rule'].setCharPref('duowan', 'filter');
+      PrefBranch['defined_rule'].setCharPref('duowan', 'filter');
     },
   },
   'youku_referer': {
     get: function () {
-      return PrefBranch['referer_rule'].getBoolPref('youku');
+      return PrefBranch['modify_referer'].getBoolPref('youku');
     },
     set: function () {
-      PrefBranch['referer_rule'].setBoolPref('youku', true);
+      PrefBranch['modify_referer'].setBoolPref('youku', true);
     },
   },
   'iqiyi_referer': {
     get: function () {
-      return PrefBranch['referer_rule'].getBoolPref('iqiyi');
+      return PrefBranch['modify_referer'].getBoolPref('iqiyi');
     },
     set: function () {
-      PrefBranch['referer_rule'].setBoolPref('iqiyi', true);
+      PrefBranch['modify_referer'].setBoolPref('iqiyi', true);
     },
   },
 };
@@ -168,168 +168,33 @@ var Preferences = {
     var Youku = PrefValue['youku'].get();
     var Tudou = PrefValue['tudou'].get();
     if ((Youku == 'filter' && Tudou == 'none') || (Youku == 'none' && Tudou == 'filter')) {
-      PrefBranch['enable_rule'].setCharPref('youku', 'filter');
-      PrefBranch['enable_rule'].setCharPref('tudou', 'filter');
+      PrefBranch['defined_rule'].setCharPref('youku', 'filter');
+      PrefBranch['defined_rule'].setCharPref('tudou', 'filter');
     }
-    if (Youku == 'player') {
-      RuleResolver['youku'].playerOn();
-    } else if (Youku == 'filter') {
-      RuleResolver['youku'].playerOff();
-      RuleResolver['youku'].filterOn();
-    } else if (Youku == 'none') {
-      RuleResolver['youku'].playerOff();
-      RuleResolver['youku'].filterOff();
-    } else {
-      PrefValue['youku'].set();
-    }
-    if (Tudou == 'player') {
-      RuleResolver['tudou'].playerOn();
-    } else if (Tudou == 'filter') {
-      RuleResolver['tudou'].playerOff();
-      RuleResolver['youku'].filterOn();
-    } else if (Tudou == 'none') {
-      RuleResolver['tudou'].playerOff();
-      RuleResolver['youku'].filterOff();
-    } else {
-      PrefValue['tudou'].set();
-    }
-
     var Qiyi = PrefValue['iqiyi'].get();
     var PPS = PrefValue['pps'].get();
     if ((Qiyi == 'filter' && PPS == 'none') || (Qiyi == 'none' && PPS == 'filter')) {
-      PrefBranch['enable_rule'].setCharPref('iqiyi', 'filter');
-      PrefBranch['enable_rule'].setCharPref('pps', 'filter');
-    } 
-    if (Qiyi == 'player') {
-      RuleResolver['iqiyi'].playerOn();
-    } else if (Qiyi == 'filter') {
-      RuleResolver['iqiyi'].playerOff();
-      RuleResolver['iqiyi'].filterOn();
-    } else if (Qiyi == 'none') {
-      RuleResolver['iqiyi'].playerOff();
-      RuleResolver['iqiyi'].filterOff();
-    } else {
-      PrefValue['iqiyi'].set();
+      PrefBranch['defined_rule'].setCharPref('iqiyi', 'filter');
+      PrefBranch['defined_rule'].setCharPref('pps', 'filter');
     }
-    if (PPS == 'player') {
-      RuleResolver['pps'].playerOn();
-    } else if (PPS == 'filter') {
-      RuleResolver['pps'].playerOff();
-      RuleResolver['iqiyi'].filterOn();
-    } else if (PPS == 'none') {
-      RuleResolver['pps'].playerOff();
-      RuleResolver['iqiyi'].filterOff();
-    } else {
-      PrefValue['pps'].set();
+    for (var i in PrefValue) {
+      if (i == 'youku_referer' || i == 'iqiyi_referer') continue;
+      var rule = PrefValue[i];
+      var resolver = RuleResolver[i];
+      if (rule.get() == 'player') {
+        resolver.playerOn();
+      } else if (rule.get() == 'filter') {
+        resolver.playerOff();
+        resolver.filterOn();
+      } else if (rule.get() == 'none'){
+        resolver.playerOff();
+        resolver.filterOff();
+      } else {
+        rule.set();
+      }
     }
-
-    var Letv = PrefValue['letv'].get();
-    if (Letv == 'player') {
-      RuleResolver['letv'].playerOn();
-    } else if (Letv == 'filter') {
-      RuleResolver['letv'].playerOff();
-      RuleResolver['letv'].filterOn();
-    } else if (Letv == 'none') {
-      RuleResolver['letv'].playerOff();
-      RuleResolver['letv'].filterOff();
-    } else {
-      PrefValue['letv'].set();
-    }
-
-    var Sohu = PrefValue['sohu'].get();
-    if (Sohu == 'player') {
-      RuleResolver['sohu'].playerOn();
-    } else if (Sohu == 'filter') {
-      RuleResolver['sohu'].playerOff();
-      RuleResolver['sohu'].filterOn();
-    } else if (Sohu == 'none') {
-      RuleResolver['sohu'].playerOff();
-      RuleResolver['sohu'].filterOff();
-    } else {
-      PrefValue['sohu'].set();
-    }
-
-    var PPTV = PrefValue['pptv'].get();
-    if (PPTV == 'player') {
-      RuleResolver['pptv'].playerOn();
-    } else if (PPTV == 'filter') {
-      RuleResolver['pptv'].playerOff();
-      RuleResolver['pptv'].filterOn();
-    } else if (PPTV == 'none') {
-      RuleResolver['pptv'].playerOff();
-      RuleResolver['pptv'].filterOff();
-    } else {
-      PrefValue['pptv'].set();
-    }
-
-    var v17173 = PrefValue['17173'].get();
-    if (v17173 == 'player') {
-      RuleResolver['17173'].playerOn();
-    } else if (v17173 == 'filter') {
-      RuleResolver['17173'].playerOff();
-      RuleResolver['17173'].filterOn();
-    } else if (v17173 == 'none') {
-      RuleResolver['17173'].playerOff();
-      RuleResolver['17173'].filterOff();
-    } else {
-      PrefValue['17173'].set();
-    }
-
-    var Ku6 = PrefValue['ku6'].get();
-    if (Ku6 == 'player') {
-      RuleResolver['ku6'].playerOn();
-    } else if (Ku6 == 'filter') {
-      RuleResolver['ku6'].playerOff();
-      RuleResolver['ku6'].filterOn();
-    } else if (Ku6 == 'none') {
-      RuleResolver['ku6'].playerOff();
-      RuleResolver['ku6'].filterOff();
-    } else {
-      PrefValue['ku6'].set();
-    }
-
-    var v56 = PrefValue['56'].get();
-    if (v56 == 'filter') {
-      RuleResolver['56'].playerOff();
-      RuleResolver['56'].filterOn();
-    } else {
-     PrefValue['56'].set();
-    }
-
-    var QQ = PrefValue['qq'].get();
-    if (QQ == 'filter') {
-      RuleResolver['qq'].playerOff();
-      RuleResolver['qq'].filterOn();
-    } else {
-      PrefValue['qq'].set();
-    }
-
-    var v163 = PrefValue['163'].get();
-    if (v163 == 'filter') {
-      RuleResolver['163'].playerOff();
-      RuleResolver['163'].filterOn();
-    } else {
-      PrefValue['163'].set();
-    }
-
-    var Sina = PrefValue['sina'].get();
-    if (Sina == 'filter') {
-      RuleResolver['sina'].playerOff();
-      RuleResolver['sina'].filterOn();
-    } else {
-      PrefValue['sina'].set();
-    }
-
-    var Duowan = PrefValue['duowan'].get();
-    if (Duowan == 'filter') {
-      RuleResolver['duowan'].playerOff();
-      RuleResolver['duowan'].filterOn();
-    } else {
-      PrefValue['duowan'].set();
-    }
-
-    var YoukuReferer = PrefValue['youku_referer'].get();
-    if (YoukuReferer == true) {
+    var QiyiReferer = PrefValue['youku_referer'].get();
+    if (QiyiReferer == true) {
       RuleResolver['youku'].refererOn();
     } else {
       RuleResolver['youku'].refererOff();
@@ -384,6 +249,10 @@ var RuleResolver = {
         'object': aURI + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
+      FilterRules['tudou_css'] = {
+        'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
+        'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
+      };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
@@ -395,6 +264,7 @@ var RuleResolver = {
     },
     playerOff: function () {
       PlayerRules['tudou_portal'] = null;
+      FilterRules['tudou_css'] = null;
       PlayerRules['tudou_olc'] = null;
       PlayerRules['tudou_social'] = null;
     },
@@ -664,21 +534,8 @@ var RuleResolver = {
   },
 };
 
-
-var PlayerRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'baidu': {
-    'object': aURI + 'baidu.call.swf',
-    'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
-  },
-};
-var FilterRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'tudou_css': {
-    'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
-    'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
-  },
-};
+var PlayerRules = {};
+var FilterRules = {};
 var RefererRules = {};
 var HttpChannel = {
   getObject: function (rule, callback) {
