@@ -194,8 +194,6 @@ var Toolbar = {
       label: aLang.ext_name,
       tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
       onCommand: function () {
-// If use_remote is true，don‘t synchronize files on click.
-// 如果use_remote为true，那么点击图标不更新文件。
         PrefValue['lastdate'].set();
         Download.start();
       },
