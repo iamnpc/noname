@@ -390,12 +390,6 @@ var PlayerRules = {
     'remote': aURL_github + 'ku6_out_player.swf',
     'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
   },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'baidu': {
-    'object': aURI + 'baidu.call.swf',
-    'remote': aURL_github + 'baidu.call.swf',
-    'target': /http:\/\/list\.video\.baidu\.com\/swf\/advPlayer\.swf/i
-  },
 };
 // Filter Rules: May work for most site.
 // 过滤规则： 大多数网站都能正常工作。
