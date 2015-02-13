@@ -1,6 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
+// 文件储存在FPlayer文件夹中
 var aURI = 'chrome://mk3-flash/content/';
 
 var Services = {
@@ -143,12 +144,14 @@ var PrefValue = {
   },
 };
 var Preferences = {
+// 恢复默认设置(暂时未添加)
   setDefault: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
       rule.set();
     }
   },
+// 监听所有设置
   pending: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
@@ -164,6 +167,7 @@ var Preferences = {
     if (aTopic != 'nsPref:changed') return;
     this.pending();
   },
+// 优酷与土豆，爱奇艺与PPS因为Filter规则通用，那么当其中一个为Filter，另一个为none时强制都改为Filter
   manifest: function () {
     var Youku = PrefValue['youku'].get();
     var Tudou = PrefValue['tudou'].get();
@@ -208,6 +212,7 @@ var Preferences = {
   },
 };
 
+// 以下用来细化规则，土豆css代码因为跟破解播放器有关，如果原版播放器则会出现上下黑边，所以和播放器规则合并在一起。
 var RuleResolver = {
   'youku': {
     playerOn: function () {
@@ -630,6 +635,7 @@ var HttpChannel = {
     if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
     return Cr.NS_ERROR_NO_INTERFACE;
   },
+// 爱奇艺的专属功能，现在基本派不上用场了。
   iQiyi: function () {
     var rule = PlayerRules['iqiyi'];
     if (!rule) return;
@@ -683,6 +689,7 @@ TrackingListener.prototype = {
   }
 }
 
+//判断是否是SWF文件，总感觉意义不太大
 function HttpHeaderVisitor() {
   this._isFlash = false;
 }
