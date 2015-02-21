@@ -729,25 +729,16 @@ var Observers = {
   },
 };
 
-var MozApp = {
-  startup: function () {
-    HttpChannel.iQiyi();
-    Preferences.pending();
-    Observers.prefsOn();
-    Observers.httpOn();
-  },
-  shutdown: function () {
-    Observers.prefsOff();
-    Observers.httpOff();
-  },
-};
-
 function startup(data, reason) {
-  MozApp.startup();
+  HttpChannel.iQiyi();
+  Preferences.pending();
+  Observers.prefsOn();
+  Observers.httpOn();
 }
 
 function shutdown(data, reason) {
-  MozApp.shutdown();
+  Observers.prefsOff();
+  Observers.httpOff();
 }
 
 function install(data, reason) {
