@@ -658,66 +658,49 @@ var Observers = {
   },
 };
 
-var MozApp = {
 // Enable Add-on. Keep soWatch folder alive. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，确保soWatch文件夹一定存在，并检查自动更新参数。
-  startup: function () {
-    FileIO.addFolder();
-    Toolbar.addIcon();
-    HttpChannel.iQiyi();
-    Preferences.pending();
-    Observers.prefsOn();
-    Observers.httpOn();
-  },
-// Disable Add-on
-// 禁用扩展
-  shutdown: function () {
-    Toolbar.removeIcon();
-    Observers.prefsOff();
-    Observers.httpOff();
-  },
+function startup(data, reason) {
+  FileIO.addFolder();
+  Toolbar.addIcon();
+  HttpChannel.iQiyi();
+  Preferences.pending();
+  Observers.prefsOn();
+  Observers.httpOn();
+}
+
+function shutdown(data, reason) {
+  Toolbar.removeIcon();
+  Observers.prefsOff();
+  Observers.httpOff();
+}
+
 // Run download at once after installed and set default autoupdate preferences.
 // 安装扩展后立即下载播放器并设置默认的自动更新参数。
-  install: function () {
+function install(data, reason) {
+  if (reason == ADDON_INSTALL) {
     Download.start();
     console.log(aLang.ext_name + ' ' + aLang.ext_install);
-  },
-// Only delete soWatch folder when uninstalled.
-// 仅在卸载时才删除soWatch文件夹。
-  uninstall: function () {
-    FileIO.delFolder();
-    console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
-  },
-/*
+  }
 //Remove useless files after update.
 //升级后删除无用的文件。
-  upgrade: function () {
+/*
+  if (reason == ADDON_UPGRADE) {
     OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
     OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
-  },
-*/
-};
-
-function startup(data, reason) {
-  MozApp.startup();
-}
-
-function shutdown(data, reason) {
-  MozApp.shutdown();
-}
-
-function install(data, reason) {
-  if (reason == ADDON_INSTALL) {
-    MozApp.install();
   }
+*/
 }
 
+// Only delete soWatch folder when uninstalled.
+// 仅在卸载时才删除soWatch文件夹。
 function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
-    MozApp.uninstall();
+    FileIO.delFolder();
+    console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
   }
 }
