@@ -206,12 +206,6 @@ var renderBlacklists = function() {
         var groupKey, i;
         var groupKeys = [
             'default',
-            'ads',
-            'privacy',
-            'malware',
-            'social',
-            'multipurpose',
-            'regions',
             'custom'
         ];
         for ( i = 0; i < groupKeys.length; i++ ) {
