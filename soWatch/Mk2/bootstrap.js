@@ -27,10 +27,11 @@ var aURL_google = FileIO.google;
 var aURL_github = FileIO.guodafanli;
 
 var Services = {
-  os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+  obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
   io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
-  prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefBranch),
+  strings: Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService),
+  prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
 // User preferences to toggle functions.
@@ -107,73 +108,48 @@ var Preferences = {
 
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
-var AppLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
 var aLocale = {
-  'ja': {
-    ext_name: 'soWatch! Mk2',
-    ext_tooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
-    ext_install: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    ext_uninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    lf_outofdate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    lf_corrupted: '\u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    lf_ready: '\u304C\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-    lf_notexist: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    rf_downloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86',
-    rf_timeout: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-    rf_accessfailed: '\u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-    rf_downfailed: '\u306E\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    rf_interrupted: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
+  string: Services.strings.createBundle('chrome://sw2locale/locale/global.properties?' + Math.random()),
+  extName: function () {
+    return this.string.GetStringFromName('extension_name');
   },
-  'zh-CN': {
-    ext_name: 'soWatch! Mk2',
-    ext_tooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
-    ext_install: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
-    ext_uninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-    lf_outofdate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-    lf_ready: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-    lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
-    rf_downloaded: '\u4E0B\u8F7D\u5B8C\u6210',
-    rf_timeout: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
-    rf_accessfailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    rf_downfailed: '\u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    rf_interrupted: '\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
+  extTooltip: function () {
+    return this.string.GetStringFromName('extension_tooltip');
   },
-  'zh-TW': {
-    ext_name: 'soWatch! Mk2',
-    ext_tooltip: '\u7ACB\u5373\u57F7\u884C\u66F4\u65B0\u6AA2\u67E5',
-    ext_install: '\u5DF2\u7D93\u6210\u529F\u6DFB\u52A0',
-    ext_uninstall: '\u5DF2\u7D93\u6210\u529F\u6E05\u9664',
-    lf_outofdate: '\u5DF2\u767C\u73FE\u66F4\u65B0\u7248\u672C',
-    lf_corrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7D93\u640D\u58DE',
-    lf_ready: '\u6587\u4EF6\u5DF2\u7D93\u5C31\u7DD2',
-    lf_notexist: '\u6587\u4EF6\u4E0D\u5B58\u5728',
-    rf_downloaded: '\u4E0B\u8F09\u6210\u529F',
-    rf_timeout: '\u9060\u7A0B\u8A2A\u554F\u670D\u52D9\u5668\u6C92\u6709\u97FF\u61C9',
-    rf_accessfailed: '\u7121\u6CD5\u8A2A\u554F\u9060\u7A0B\u6587\u4EF6',
-    rf_downfailed: '\u7121\u6CD5\u4E0B\u8F09\u9060\u7A0B\u6587\u4EF6',
-    rf_interrupted: '\u4E0B\u8F09\u4E2D\u65B7\uFF0C\u672A\u77E5\u539F\u56E0\u932F\u8AA4',
+  extInstall: function () {
+    return this.string.GetStringFromName('extension_install');
   },
-  'en-US': {
-    ext_name: 'soWatch! Mk2',
-    ext_tooltip: 'Run update check now...',
-    ext_install: 'has been installed...',
-    ext_uninstall: 'has been uninstalled...',
-    lf_outofdate: 'is out of date',
-    lf_corrupted: 'may be corrupted',
-    lf_ready: 'is ready to serve',
-    lf_notexist: 'is not exist',
-    rf_downloaded: 'download session complete',
-    rf_timeout: 'no response from remote server',
-    rf_accessfailed: 'failed to access remote file',
-    rf_downfailed: 'failed to download remote file',
-    rf_interrupted: 'download session has been interrupted due to unknown error',
+  extUninstall: function () {
+    return this.string.GetStringFromName('extension_uninstall');
+  },
+  localOutofdate: function () {
+    return this.string.GetStringFromName('local_file_out_of_date');
+  },
+  localCurrupted: function () {
+    return this.string.GetStringFromName('local_file_currupted');
+  },
+  localReady: function () {
+    return this.string.GetStringFromName('local_file_ready');
+  },
+  localNotexsit: function () {
+    return this.string.GetStringFromName('local_file_not_exsit');
+  },
+  remoteDownloaded: function () {
+    return this.string.GetStringFromName('remote_file_downloaded');
+  },
+  remoteTimeout: function () {
+    return this.string.GetStringFromName('remote_file_time_out');
+  },
+  remoteAccessfailed: function () {
+    return this.string.GetStringFromName('remote_file_access_failed');
+  },
+  remoteDownfailed: function () {
+    return this.string.GetStringFromName('remote_file_download_failed');
+  },
+  remoteInterrupted: function () {
+    return this.string.GetStringFromName('remote_file_download_interrupted');
   },
 };
-if (!aLocale[AppLocale]) {
-  console.log('Your locale is not supported');
-}
-var aLang = aLocale[AppLocale] || aLocale['en-US'];
 
 var Toolbar = {
 // Embedded style sheet
@@ -189,8 +165,8 @@ var Toolbar = {
     CustomizableUI.createWidget({
       id: 'sowatchmk2-button',
       defaultArea: CustomizableUI.AREA_NAVBAR,
-      label: aLang.ext_name,
-      tooltiptext: aLang.ext_name + ':\n' + aLang.ext_tooltip,
+      label: aLocale.extName(),
+      tooltiptext: aLocale.extName() + ':\n' + aLocale.extTooltip(),
       onCommand: function () {
         PrefValue['lastdate'].set();
         Download.start();
@@ -214,7 +190,7 @@ var Download = {
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
     aClient.ontimeout = function () {
-      console.log(aLink + '\n' + aLang.rf_timeout);
+      console.log(aLink + '\n' + aLocale.remoteTimeout());
     }
     aClient.send();
     aClient.onload = function () {
@@ -222,19 +198,19 @@ var Download = {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
       OS.File.stat(aFile).then(function onSuccess(info) {
         if (aSize == null || aSize < 10000) {
-          console.log(aLink + '\n' + aLang.rf_accessfailed);
+          console.log(aLink + '\n' + aLocale.remoteAccessfailed());
         } else if (aDate > info.lastModificationDate) {
-          console.log(aFile + '\n' + aLang.lf_outofdate);
+          console.log(aFile + '\n' + aLocale.localOutofdate());
           Download.fetch(aLink, aFile, aSize);
         } else if (aSize != info.size) {
-          console.log(aFile + '\n' + aLang.lf_corrupted);
+          console.log(aFile + '\n' + aLocale.localCurrupted());
           Download.fetch(aLink, aFile, aSize);
         } else {
-          console.log(aFile + '\n' + aLang.lf_ready);
+          console.log(aFile + '\n' + aLocale.localReady());
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aFile + '\n' + aLang.lf_notexist);
+          console.log(aFile + '\n' + aLocale.localNotexsit());
           Download.fetch(aLink, aFile, aSize);
         }
       });
@@ -249,16 +225,16 @@ var Download = {
     }).then(function onSuccess() {
       OS.File.stat(aTemp).then(function onSuccess(info) {
         if (aSize == info.size) {
-          console.log(aLink + '\n' + aLang.rf_downloaded);
+          console.log(aLink + '\n' + aLocale.remoteDownloaded());
           OS.File.move(aTemp, aFile);
         } else {
-          console.log(aLink + '\n' + aLang.rf_interrupted);
+          console.log(aLink + '\n' + aLocale.remoteInterrupted());
           OS.File.remove(aTemp);
           Download.fetch(aLink, aFile, aSize);
         }
       });
     }, function onFailure() {
-      console.log(aLink + '\n' + aLang.rf_downfailed);
+      console.log(aLink + '\n' + aLocale.remoteDownfailed());
       OS.File.remove(aTemp);
     });
   },
@@ -649,12 +625,12 @@ var Observers = {
     }
   },
   httpOn: function () {
-    Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.os.addObserver(HttpChannel, 'http-on-modify-request', false);
+    Services.obs.addObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.obs.addObserver(HttpChannel, 'http-on-modify-request', false);
   },
   httpOff: function () {
-    Services.os.removeObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.os.removeObserver(HttpChannel, 'http-on-modify-request', false);
+    Services.obs.removeObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.obs.removeObserver(HttpChannel, 'http-on-modify-request', false);
   },
 };
 
@@ -680,7 +656,7 @@ function shutdown(data, reason) {
 function install(data, reason) {
   if (reason == ADDON_INSTALL) {
     Download.start();
-    console.log(aLang.ext_name + ' ' + aLang.ext_install);
+    console.log(aLocale.extName() + ' ' + aLocale.extInstall());
   }
 //Remove useless files after update.
 //升级后删除无用的文件。
@@ -701,6 +677,6 @@ function install(data, reason) {
 function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
     FileIO.delFolder();
-    console.log(aLang.ext_name + ' ' + aLang.ext_uninstall);
+    console.log(aLocale.extName() + ' ' + aLocale.extUninstall());
   }
 }
