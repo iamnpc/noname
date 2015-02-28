@@ -109,7 +109,7 @@ var Preferences = {
 // Localize debugging console logs to help improve user experience.
 // 本地化Debug控制台记录以方便改善用户体验。
 var aLocale = {
-  string: Services.strings.createBundle('chrome://sw2locale/locale/global.properties?' + Math.random()),
+  string: Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random()),
   extName: function () {
     return this.string.GetStringFromName('extension_name');
   },
