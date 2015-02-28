@@ -262,7 +262,6 @@ var cachedAssetsManager = (function() {
         var onEntries = function() {
             // Careful! do not remove 'assets/user/'
             exports.remove(/^https?:\/\/[a-z0-9]+/);
-            exports.remove(/^assets\/(ublock|thirdparties)\//);
             exports.remove(/^cache:\/\//);
             exports.remove('assets/checksums.txt');
             if ( typeof callback === 'function' ) {
