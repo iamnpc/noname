@@ -21,11 +21,12 @@
 
 /* global vAPI */
 /* exported µBlock */
-'use strict';
 
 /******************************************************************************/
 
 var µBlock = (function() {
+
+'use strict';
 
 /******************************************************************************/
 
@@ -57,35 +58,57 @@ return {
         collapseBlocked: true,
         contextMenuEnabled: true,
         dynamicFilteringString: '',
-        dynamicFilteringSelfie: '',
         dynamicFilteringEnabled: false,
         experimentalEnabled: false,
         externalLists: defaultExternalLists,
+        firewallPaneMinimized: true,
         parseAllABPHideFilters: true,
         showIconBadge: true
     },
 
     // https://github.com/gorhill/uBlock/issues/180
     // Whitelist directives need to be loaded once the PSL is available
-    netExceptionList: {}, // TODO: remove once all users are up to date
     netWhitelist: {},
     netWhitelistModifyTime: 0,
+    netWhitelistDefault: [
+        'behind-the-scene',
+        'chrome-extension-scheme',
+        'chrome-scheme',
+        'opera-scheme',
+        ''
+    ].join('\n').trim(),
 
     localSettings: {
         blockedRequestCount: 0,
         allowedRequestCount: 0
     },
 
+    // read-only
+    systemSettings: {
+        compiledMagic: 'riimnrvxjchy',
+        selfieMagic: 'spqmeuaftfra'
+    },
+
     // EasyList, EasyPrivacy and many others have an 4-day update period,
     // as per list headers.
-    updateAssetsEvery: 75 * oneHour + 23 * oneMinute + 53 * oneSecond + 605,
+    updateAssetsEvery: 97 * oneHour,
     projectServerRoot: 'https://raw.githubusercontent.com/gorhill/uBlock/master/',
     userFiltersPath: 'assets/user/filters.txt',
+    pslPath: 'assets/thirdparties/publicsuffix.org/list/effective_tld_names.dat',
 
     // permanent lists
     permanentLists: {
         // User
         'assets/user/filters.txt': {
+            group: 'default'
+        },
+        // uBlock
+        'assets/ublock/filters.txt': {
+            title: 'µBlock filters',
+            group: 'default'
+        },
+        'assets/ublock/privacy.txt': {
+            title: 'µBlock filters – Privacy',
             group: 'default'
         }
     },
@@ -94,11 +117,7 @@ return {
     remoteBlacklists: {
     },
 
-    firstUpdateAfter: 5 * oneMinute,
-    nextUpdateAfter: 7 * oneHour,
-
-    selfieMagic: 'qidcglrwobsm',
-    selfieAfter: 7 * oneMinute,
+    selfieAfter: 23 * oneMinute,
 
     pageStores: {},
 
