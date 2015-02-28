@@ -65,6 +65,7 @@ var metadata = {
 };
 
 var hashToContentMap = {};
+var urlKeyPendingMap = {};
 
 var loaded = false;
 
@@ -331,7 +332,7 @@ var updateMetadataNow = function() {
 
 var updateMetadataAsync = function() {
     if ( metadataPersistTimer === null ) {
-        setTimeout(updateMetadata, 60 * 1000);
+        metadataPersistTimer = setTimeout(updateMetadata, 60 * 1000);
     }
 };
 
@@ -377,8 +378,14 @@ var cacheAsset = function(url) {
     if ( metadataExists(urlKey) ) {
         return;
     }
+    // Avoid re-entrancy
+    if ( urlKeyPendingMap.hasOwnProperty(urlKey) ) {
+        return;
+    }
+    urlKeyPendingMap[urlKey] = true;
 
     var onRemoteAssetLoaded = function() {
+        delete urlKeyPendingMap[urlKey];
         this.onload = this.onerror = null;
         if ( this.status !== 200 ) {
             return;
@@ -410,6 +417,7 @@ var cacheAsset = function(url) {
     };
 
     var onRemoteAssetError = function() {
+        delete urlKeyPendingMap[urlKey];
         this.onload = this.onerror = null;
     };
 
@@ -422,7 +430,11 @@ var cacheAsset = function(url) {
 
 /******************************************************************************/
 
-var toURL = function(url, cache) {
+var toURL = function(url, type, cache) {
+    // Unsupported types
+    if ( type === 'font' ) {
+        return '';
+    }
     exports.tryCount += 1;
     var urlKey = toUrlKey(url);
     if ( urlKey === '' ) {
@@ -486,6 +498,9 @@ var parseMirrorCandidates = function(rawText) {
 /******************************************************************************/
 
 var load = function() {
+    if ( loaded ) {
+        return;
+    }
     loaded = true;
 
     var onMirrorCandidatesReady = function(details) {
@@ -535,7 +550,7 @@ var load = function() {
     };
 
     vAPI.storage.get({ 'mirrors_metadata': metadata }, onMetadataReady);
-    µBlock.assets.get('', onMirrorCandidatesReady);
+    µBlock.assets.get('assets/ublock/mirror-candidates.txt', onMirrorCandidatesReady);
 };
 
 /******************************************************************************/
