@@ -241,7 +241,7 @@
     }
 
     // get built-in block lists.
-    this.assets.get('assets/ublock/filter-lists.json', onBuiltinListsLoaded);
+    this.assets.get('', onBuiltinListsLoaded);
 };
 
 /******************************************************************************/
@@ -508,7 +508,7 @@
     var µb = this;
 
     var onFilterListsReady = function() {
-        µb.loadUpdatableAssets({ update: update, psl: update });
+        µb.loadUpdatableAssets({ update: update });
     };
 
     var onPurgeDone = function() {
@@ -553,13 +553,6 @@
                 continue;
             }
             µb.purgeCompiledFilterList(path);
-        }
-        // Purge obsolete PSL
-        if ( metadata.hasOwnProperty(µb.pslPath) === false ) {
-            entry = metadata[µb.pslPath];
-            if ( entry.repoObsolete === true ) {
-                µb.assets.purge('cache://compiled-publicsuffixlist');
-            }
         }
         onPurgeDone();
     };
@@ -685,8 +678,6 @@
         }
     };
     this.getAvailableLists(onListsReady);
-    this.assetUpdater.add(this.pslPath);
-    this.assetUpdater.add('assets/ublock/mirror-candidates.txt');
 };
 
 /******************************************************************************/
@@ -730,18 +721,6 @@
             onFiltersReady();
         }
     };
-
-    if ( details.hasOwnProperty('assets/ublock/mirror-candidates.txt') ) {
-        /* TODO */
-    }
-
-    if ( details.hasOwnProperty(this.pslPath) ) {
-        //console.debug('storage.js > µBlock.updateCompleteHandler: reloading PSL');
-        this.loadPublicSuffixList(onPSLReady);
-        updatedCount -= 1;
-    } else {
-        onPSLReady();
-    }
 };
 
 /******************************************************************************/
@@ -761,11 +740,6 @@
             if ( this.remoteBlacklists.hasOwnProperty(path) ) {
                 //console.debug('µBlock.assetCacheRemovedHandler: decompiling "%s"', path);
                 this.purgeCompiledFilterList(path);
-                continue;
-            }
-            if ( path === this.pslPath ) {
-                //console.debug('µBlock.assetCacheRemovedHandler: decompiling "%s"', path);
-                this.assets.purge('cache://compiled-publicsuffixlist');
                 continue;
             }
         }
