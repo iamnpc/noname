@@ -4,28 +4,6 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Gecko 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Gecko 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
-var FileIO = {
-// You can customize the dir name to store .swf files
-// 你可以自行修改保存 .swf 文件的文件夹名字。
-  extDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
-  addFolder: function () {
-    OS.File.makeDir(this.extDir);
-  },
-  delFolder: function () {
-    OS.File.removeDir(this.extDir);
-  },
-  path: function () {
-    return OS.Path.toFileURI(this.extDir) + '/';
-  },
-// Add your domain here.
-// 在这里添加你的服务器，
-  google: 'https://haoutil.googlecode.com/svn/trunk/player/testmod/',
-  guodafanli: 'http://opengg.guodafanli.com/swf/kafan/',
-};
-var aURI = FileIO.path();
-var aURL_google = FileIO.google;
-var aURL_github = FileIO.guodafanli;
-
 var Services = {
   obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
@@ -38,6 +16,7 @@ var Services = {
 // 设置用户参数以实现各种功能的开关
 var PrefBranch = {
   'autoupdate': Services.prefs.getBranch('extensions.sowatchmk2.autoupdate.'),
+  'use_remote': Services.prefs.getBranch('extensions.sowatchmk2.use_remote.'),
 };
 var PrefValue = {
  'enable': {
@@ -62,6 +41,14 @@ var PrefValue = {
     },
     set: function () {
       PrefBranch['autoupdate'].setIntPref('period', 7);
+    },
+  },
+ 'use_remote': {
+    get: function () {
+      return PrefBranch['use_remote'].getBoolPref('enable');
+    },
+    set: function () {
+      PrefBranch['use_remote'].setBoolPref('enable', false);
     },
   },
 };
@@ -96,6 +83,17 @@ var Preferences = {
 // If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
+    for (var i in RuleResolver) {
+      var rule = RuleResolver[i];
+      if (rule.playerOn)
+        rule.playerOn();
+	  if (rule.filterOn)
+        rule.playerOn();
+	  if (rule.refererOn)
+        rule.refererOn();
+    }
+    var aRemote = PrefValue['use_remote'].get();
+    if (aRemote == true) PrefValue['enable'].set(); // 使用远程服务器的时候强制停止自动更新
     var aUpdate = PrefValue['enable'].get();
     if (aUpdate == false) return;
     var aDate = PrefValue['lastdate'].get();
@@ -103,6 +101,27 @@ var Preferences = {
     if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
     PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
+  },
+};
+
+var FileIO = {
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
+  extDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  addFolder: function () {
+    OS.File.makeDir(this.extDir);
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.extDir);
+  },
+// Add your domain here.
+// 在这里添加你的服务器，
+  link: 'https://your.domain/uri/',
+  path: function () {
+    var aRemote = PrefValue['use_remote'].get();
+    if (aRemote == true)
+      return this.link;
+    return OS.Path.toFileURI(this.extDir) + '/';
   },
 };
 
@@ -168,6 +187,8 @@ var Toolbar = {
       label: aLocale.extName(),
       tooltiptext: aLocale.extName() + ':\n' + aLocale.extTooltip(),
       onCommand: function () {
+        var aRemote = PrefValue['use_remote'].get();
+        if (aRemote == true) return;
         PrefValue['lastdate'].set();
         Download.start();
       },
@@ -219,6 +240,7 @@ var Download = {
 // Download remote file with _sw as temp file, then check and overwrite.
 // 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
   fetch: function (aLink, aFile, aSize) {
+    FileIO.addFolder();  // 仅当下载时才创建文件夹
     var aTemp = aFile + '_sw';
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
@@ -252,200 +274,354 @@ var Download = {
   },
 };
 
-// Player Rules: You can delete ['remote'] if you don't like to keep synchronize.
-// 播放器规则： 删除['remote']项后将不能进行播放器的更新了.
-var PlayerRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'youku_loader': {
-    'object': aURI + 'loader.swf',
-    'remote': aURL_google + 'loader.swf',
-    'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
-  },
-  'youku_player': {
-    'object': aURI + 'player.swf',
-    'remote': aURL_google + 'player.swf',
-    'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'tudou_portal': {
-    'object': aURI + 'tudou.swf',
-    'remote': aURL_google + 'tudou.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
-  },
-  'tudou_olc': {
-    'object': 'http://js.tudouui.com/bin/player2/olc.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
-  },
-  'tudou_social': {
-    'object': aURI + 'sp.swf',
-    'remote': aURL_google + 'sp.swf',
-    'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'iqiyi5': {
-    'object': aURI + 'iqiyi5.swf',
-    'remote': aURL_google + 'iqiyi5.swf',
-    'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
-  },
-  'iqiyi_out': {
-    'object': aURI + 'iqiyi_out.swf',
-    'remote': aURL_google + 'iqiyi_out.swf',
-    'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'pps': {
-    'object': aURI + 'iqiyi.swf',
-    'remote': aURL_google + 'iqiyi.swf',
-    'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
-  },
-  'pps_out': {
-    'object': aURI + 'pps.swf',
-    'remote': aURL_google + 'pps.swf',
-    'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'letv': {
-    'object': aURI + 'letv.swf',
-    'remote': aURL_google + 'letv.swf',
-    'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
-  },
-  'letv_skin': {
-    'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
-    'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'sohu': {
-    'object': aURI + 'sohu_live.swf',
-    'remote': aURL_google + 'sohu_live.swf',
-    'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'pptv': {
-    'object': aURI + 'pptv.in.Ikan.swf',
-    'remote': aURL_github + 'pptv.in.Ikan.swf',
-    'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
-  },
-  'pptv_live': {
-    'object': aURI + 'pptv.in.Live.swf',
-    'remote': aURL_github + 'pptv.in.Live.swf',
-    'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  '17173': {
-    'object': aURI + '17173.in.Vod.swf',
-    'remote': aURL_github + '17173.in.Vod.swf',
-    'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
-  },
-  '17173_out': {
-    'object': aURI + '17173.out.Vod.swf',
-    'remote': aURL_github + '17173.out.Vod.swf',
-    'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
-  },
-  '17173_live': {
-    'object': aURI + '17173.in.Live.swf',
-    'remote': aURL_github + '17173.in.Live.swf',
-    'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
-  },
-  '17173_live_out': {
-    'object': aURI + '17173.out.Live.swf',
-    'remote': aURL_github + '17173.out.Live.swf',
-    'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'ku6': {
-    'object': aURI + 'ku6_in_player.swf',
-    'remote': aURL_github + 'ku6_in_player.swf',
-    'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
-  },
-  'ku6_out': {
-    'object': aURI + 'ku6_out_player.swf',
-    'remote': aURL_github + 'ku6_out_player.swf',
-    'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-  },
-};
-// Filter Rules: May work for most site.
-// 过滤规则： 大多数网站都能正常工作。
-var FilterRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
-  'tudou_css': {
-    'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
-    'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'youku_tudou': {
-    'object': 'http://valf.atm.youku.com/vf?vip=0',
-    'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'iqiyi_pps': {
-    'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-    'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'letv': {
-    'object': 'http://ark.letv.com/s',
-    'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'pptv_pplive': {
-    'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
-    'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'sohu': {
-    'object': 'http://v.aty.sohu.com/v',
-    'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  '17173': {
-    'object': 'http://17173im.allyes.com/crossdomain.xml',
-    'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'ku6': {
-    'object': 'http://p1.sdo.com',
-    'target': /http:\/\/g1\.sdo\.com/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'qq': {
-    'object': 'http://livep.l.qq.com/livemsg',
-    'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  '56': {
-    'object': 'http://www.56.com',
-    'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  '163': {
-    'object': 'http://v.163.com',
-    'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'sina': {
-    'object': 'http://sax.sina.com.cn/video/newimpress',
-    'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
-  },
-/**  -------------------------------------------------------------------------------------------------------  */
-  'duowan': {
-    'object': 'http://yuntv.letv.com/bcloud.swf',
-    'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
-  },
-};
-//Referer rule： Help resolve problems with HTTP Referer.
-//引用头规则： 用于解决HTTP引用头导致的问题。
-var RefererRules = {
-/**  -------------------------------------------------------------------------------------------------------  */
+var RuleResolver = {
   'youku': {
-    'host': 'http://www.youku.com/',
-    'target': /http:\/\/.*\.youku\.com/i
+    playerOn: function () {
+      PlayerRules['youku_loader'] = {
+        'object': FileIO.path() + 'loader.swf',
+        'remote': FileIO.link + 'loader.swf',
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
+      };
+      PlayerRules['youku_player'] = {
+        'object': FileIO.path() + 'player.swf',
+        'remote': FileIO.link + 'player.swf',
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['youku_loader'] = null;
+      PlayerRules['youku_player'] = null;
+    },
+    filterOn: function () {
+      FilterRules['youku_tudou'] = {
+        'object': 'http://valf.atm.youku.com/vf?vip=0',
+        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['youku_tudou'] = null;
+    },
+    refererOn: function () {
+      RefererRules['youku'] = {
+        'object': 'http://www.youku.com/',
+        'target': /http:\/\/.*\.youku\.com/i
+      };
+    },
+    refererOff: function () {
+      RefererRules['youku'] = null;
+    },
   },
-/**  -------------------------------------------------------------------------------------------------------  */
+  'tudou': {
+    playerOn: function () {
+      PlayerRules['tudou_portal'] = {
+        'object': FileIO.path() + 'tudou.swf',
+        'remote': FileIO.link + 'tudou.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
+      };
+      FilterRules['tudou_css'] = {
+        'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
+        'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
+      };
+      PlayerRules['tudou_olc'] = {
+        'object': 'http://js.tudouui.com/bin/player2/olc.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
+      };
+      PlayerRules['tudou_social'] = {
+        'object': FileIO.path() + 'sp.swf',
+        'remote': FileIO.link + 'sp.swf',
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['tudou_portal'] = null;
+      FilterRules['tudou_css'] = null;
+      PlayerRules['tudou_olc'] = null;
+      PlayerRules['tudou_social'] = null;
+    },
+    filterOn: function () {
+      FilterRules['youku_tudou'] = {
+        'object': 'http://valf.atm.youku.com/vf?vip=0',
+        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['youku_tudou'] = null;
+    },
+  },
   'iqiyi': {
-    'host': 'http://www.iqiyi.com/',
-    'target': /http:\/\/.*\.qiyi\.com/i
+    playerOn: function () {
+      PlayerRules['iqiyi5'] = {
+        'object': FileIO.path() + 'iqiyi5.swf',
+        'remote': FileIO.link + 'iqiyi5.swf',
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
+      };
+      PlayerRules['iqiyi_out'] = {
+        'object': FileIO.path() + 'iqiyi_out.swf',
+        'remote': FileIO.link + 'iqiyi_out.swf',
+        'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['iqiyi5'] = null;
+      PlayerRules['iqiyi_out'] = null;
+    },
+    filterOn: function () {
+      FilterRules['iqiyi_pps'] = {
+        'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['iqiyi_pps'] = null;
+    },
+    refererOn: function () {
+      RefererRules['iqiyi'] = {
+        'object': 'http://www.iqiyi.com/',
+        'target': /http:\/\/.*\.qiyi\.com/i
+      };
+    },
+    refererOff: function () {
+      RefererRules['iqiyi'] = null;
+    },
+  },
+  'pps': {
+    playerOn: function () {
+      PlayerRules['pps'] = {
+        'object': FileIO.path() + 'iqiyi.swf',
+        'remote': FileIO.link + 'iqiyi.swf',
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
+      };
+      PlayerRules['pps_out'] = {
+        'object': FileIO.path() + 'pps.swf',
+        'remote': FileIO.link + 'pps.swf',
+        'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['pps'] = null;
+      PlayerRules['pps_out'] = null;
+    },
+    filterOn: function () {
+      FilterRules['iqiyi_pps'] = {
+        'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['iqiyi_pps'] = null;
+    },
+  },
+  'letv': {
+    playerOn: function () {
+      PlayerRules['letv'] = {
+        'object': FileIO.path() + 'letv.swf',
+        'remote': FileIO.link + 'letv.swf',
+        'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
+      };
+      PlayerRules['letv_skin'] = {
+        'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
+        'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['letv'] = null;
+      PlayerRules['letv_skin'] = null;
+    },
+    filterOn: function () {
+      FilterRules['letv'] = {
+        'object': 'http://ark.letv.com/s',
+        'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['letv'] = null;
+    },
+  },
+  'sohu': {
+    playerOn: function () {
+      PlayerRules['sohu'] = {
+        'object': FileIO.path() + 'sohu_live.swf',
+        'remote': FileIO.link + 'sohu_live.swf',
+        'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['sohu'] = null;
+    },
+    filterOn: function () {
+      FilterRules['sohu'] = {
+        'object': 'http://v.aty.sohu.com/v',
+        'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['sohu'] = null;
+    },
+  },
+  'pptv': {
+    playerOn: function () {
+      PlayerRules['pptv'] = {
+        'object': FileIO.path() + 'pptv.in.Ikan.swf',
+        'remote': FileIO.link + 'pptv.in.Ikan.swf',
+        'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
+      };
+      PlayerRules['pptv_live'] = {
+        'object': FileIO.path() + 'pptv.in.Live.swf',
+        'remote': FileIO.link + 'pptv.in.Live.swf',
+        'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['pptv'] == null;
+      PlayerRules['pptv_live'] == null;
+    },
+    filterOn: function () {
+      FilterRules['pptv'] = {
+        'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
+        'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['pptv'] = null;
+    },
+  },
+  '17173': {
+    playerOn: function () {
+      PlayerRules['17173'] = {
+        'object': FileIO.path() + '17173.in.Vod.swf',
+        'remote': FileIO.link + '17173.in.Vod.swf',
+        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
+      };
+      PlayerRules['17173_out'] = {
+        'object': FileIO.path() + '17173.out.Vod.swf',
+        'remote': FileIO.link + '17173.out.Vod.swf',
+        'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
+      };
+      PlayerRules['17173_live'] = {
+        'object': FileIO.path() + '17173.in.Live.swf',
+        'remote': FileIO.link + '17173.in.Live.swf',
+        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
+      };
+      PlayerRules['17173_live_out'] = {
+        'object': FileIO.path() + '17173.out.Live.swf',
+        'remote': FileIO.link + '17173.out.Live.swf',
+        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['17173'] = null;
+      PlayerRules['17173_out'] = null;
+      PlayerRules['17173_live'] = null;
+      PlayerRules['17173_live_out'] = null;
+    },
+    filterOn: function () {
+      FilterRules['pptv'] = {
+        'object': 'http://17173im.allyes.com/crossdomain.xml',
+        'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['pptv'] = null;
+    },
+  },
+  'ku6': {
+    playerOn: function () {
+      PlayerRules['ku6'] = {
+        'object': FileIO.path() + 'ku6_in_player.swf',
+        'remote': FileIO.link + 'ku6_in_player.swf',
+        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
+      };
+      PlayerRules['ku6_out'] = {
+        'object': FileIO.path() + 'ku6_out_player.swf',
+        'remote': FileIO.link + 'ku6_out_player.swf',
+        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['ku6'] = null;
+      PlayerRules['ku6_out'] = null;
+    },
+    filterOn: function () {
+      FilterRules['ku6'] = {
+        'object': 'http://p1.sdo.com',
+        'target': /http:\/\/g1\.sdo\.com/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['ku6'] = null;
+    },
+  },
+  '56': {
+    playerOn: function () {},
+    playerOff: function () {},
+    filterOn: function () {
+      FilterRules['56'] = {
+        'object': 'http://www.56.com',
+        'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['56'] = null;
+    },
+  },
+  'qq': {
+    playerOn: function () {},
+    playerOff: function () {},
+    filterOn: function () {
+      FilterRules['qq'] = {
+        'object': 'http://livep.l.qq.com/livemsg',
+        'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['qq'] = null;
+    },
+  },
+  '163': {
+    playerOn: function () {},
+    playerOff: function () {},
+    filterOn: function () {
+      FilterRules['163'] = {
+        'object': 'http://v.163.com',
+        'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['163'] = null;
+    },
+  },
+  'sina': {
+    playerOn: function () {},
+    playerOff: function () {},
+    filterOn: function () {
+      FilterRules['sina'] = {
+        'object': 'http://sax.sina.com.cn/video/newimpress',
+        'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['sina'] = null;
+    },
+  },
+  'duowan': {
+    playerOn: function () {},
+    playerOff: function () {},
+    filterOn: function () {
+      FilterRules['duowan'] = {
+        'object': 'http://yuntv.letv.com/bcloud.swf',
+        'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
+      };
+    },
+    filterOff: function () {
+      FilterRules['duowan'] = null;
+    },
   },
 };
+
+var PlayerRules = {};
+var FilterRules = {};
+var RefererRules = {};
+
 var HttpChannel = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
@@ -634,10 +810,9 @@ var Observers = {
   },
 };
 
-// Enable Add-on. Keep soWatch folder alive. Add Toolbar icon，Check for autoupdate preferences.
-// 启用扩展，添加工具栏图标，确保soWatch文件夹一定存在，并检查自动更新参数。
+// Enable Add-on. Add Toolbar icon，Check for autoupdate preferences.
+// 启用扩展，添加工具栏图标，并检查自动更新参数。
 function startup(data, reason) {
-  FileIO.addFolder();
   Toolbar.addIcon();
   HttpChannel.iQiyi();
   Preferences.pending();
