@@ -4,7 +4,7 @@ Cu.import('resource://gre/modules/NetUtil.jsm');
 var aURI = 'chrome://sowatch/content/';
 
 var Services = {
-  os: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
+  obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
@@ -500,12 +500,12 @@ var Observers = {
     PrefBranch.removeObserver('', Preferences);
   },
   httpOn: function () {
-    Services.os.addObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.os.addObserver(HttpChannel, 'http-on-modify-request', false);
+    Services.obs.addObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.obs.addObserver(HttpChannel, 'http-on-modify-request', false);
   },
   httpOff: function () {
-    Services.os.removeObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.os.removeObserver(HttpChannel, 'http-on-modify-request', false);
+    Services.obs.removeObserver(HttpChannel, 'http-on-examine-response', false);
+    Services.obs.removeObserver(HttpChannel, 'http-on-modify-request', false);
   },
 };
 
