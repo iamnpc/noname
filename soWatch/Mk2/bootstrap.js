@@ -4,16 +4,22 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Gecko 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Gecko 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
+// Services.jsm like thing. better performance and compatibility
+// 仿Services.jsm,不过更好用
 var Services = {
-  obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
-  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
   io: Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService),
-  strings: Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService),
+  obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
+  sss: Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService),
+  strings: Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService),
 };
 
-// User preferences to toggle functions.
-// 设置用户参数以实现各种功能的开关
+// Import localizeable debug logs
+// 加载本地化Debug记录
+var Logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
+
+// User preferences to toggle functions. may be modifed later
+// 设置用户参数以实现各种功能的开关,这里可能会改写
 var PrefBranch = {
   'autoupdate': Services.prefs.getBranch('extensions.sowatchmk2.autoupdate.'),
   'use_remote': Services.prefs.getBranch('extensions.sowatchmk2.use_remote.'),
@@ -85,12 +91,9 @@ var Preferences = {
   manifest: function () {
     for (var i in RuleResolver) {
       var rule = RuleResolver[i];
-      if (rule.playerOn)
-        rule.playerOn();
-	  if (rule.filterOn)
-        rule.playerOn();
-	  if (rule.refererOn)
-        rule.refererOn();
+      if (rule.playerOn) rule.playerOn();
+      if (rule.filterOn) rule.playerOn();
+      if (rule.refererOn) rule.refererOn();
     }
     var aRemote = PrefValue['use_remote'].get();
     if (aRemote == true) PrefValue['enable'].set(); // 使用远程服务器的时候强制停止自动更新
@@ -119,54 +122,8 @@ var FileIO = {
   link: 'https://your.domain/uri/',
   path: function () {
     var aRemote = PrefValue['use_remote'].get();
-    if (aRemote == true)
-      return this.link;
+    if (aRemote == true) return this.link;
     return OS.Path.toFileURI(this.extDir) + '/';
-  },
-};
-
-// Localize debugging console logs to help improve user experience.
-// 本地化Debug控制台记录以方便改善用户体验。
-var aLocale = {
-  string: Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random()),
-  extName: function () {
-    return this.string.GetStringFromName('extension_name');
-  },
-  extTooltip: function () {
-    return this.string.GetStringFromName('extension_tooltip');
-  },
-  extInstall: function () {
-    return this.string.GetStringFromName('extension_install');
-  },
-  extUninstall: function () {
-    return this.string.GetStringFromName('extension_uninstall');
-  },
-  localOutofdate: function () {
-    return this.string.GetStringFromName('local_file_out_of_date');
-  },
-  localCurrupted: function () {
-    return this.string.GetStringFromName('local_file_currupted');
-  },
-  localReady: function () {
-    return this.string.GetStringFromName('local_file_ready');
-  },
-  localNotexsit: function () {
-    return this.string.GetStringFromName('local_file_not_exsit');
-  },
-  remoteDownloaded: function () {
-    return this.string.GetStringFromName('remote_file_downloaded');
-  },
-  remoteTimeout: function () {
-    return this.string.GetStringFromName('remote_file_time_out');
-  },
-  remoteAccessfailed: function () {
-    return this.string.GetStringFromName('remote_file_access_failed');
-  },
-  remoteDownfailed: function () {
-    return this.string.GetStringFromName('remote_file_download_failed');
-  },
-  remoteInterrupted: function () {
-    return this.string.GetStringFromName('remote_file_download_interrupted');
   },
 };
 
@@ -206,12 +163,12 @@ var Toolbar = {
 var Download = {
 // Check for remote files then synchronize local files.
 // 检查远程文件，再检查文件是否需要更新。
-  check: function (aLink, aFile) {
+  check: function (aLink, aFile, aName) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
     aClient.ontimeout = function () {
-      console.log(aLink + '\n' + aLocale.remoteTimeout());
+      console.log(aName + ' ' + Logs.GetStringFromName('remoteTimeOut'));
     }
     aClient.send();
     aClient.onload = function () {
@@ -219,20 +176,20 @@ var Download = {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
       OS.File.stat(aFile).then(function onSuccess(info) {
         if (aSize == null || aSize < 10000) {
-          console.log(aLink + '\n' + aLocale.remoteAccessfailed());
+          console.log(aName + ' ' + Logs.GetStringFromName('remoteAccessFailed'));
         } else if (aDate > info.lastModificationDate) {
-          console.log(aFile + '\n' + aLocale.localOutofdate());
-          Download.fetch(aLink, aFile, aSize);
+          console.log(aName + ' ' + Logs.GetStringFromName('localOutofDate'));
+          Download.fetch(aLink, aFile, aName, aSize);
         } else if (aSize != info.size) {
-          console.log(aFile + '\n' + aLocale.localCurrupted());
-          Download.fetch(aLink, aFile, aSize);
+          console.log(aName + ' ' + Logs.GetStringFromName('localCurrupted'));
+          Download.fetch(aLink, aFile, aName, aSize);
         } else {
-          console.log(aFile + '\n' + aLocale.localReady());
+          console.log(aName + ' ' + Logs.GetStringFromName('localReady'));
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aFile + '\n' + aLocale.localNotexsit());
-          Download.fetch(aLink, aFile, aSize);
+          console.log(aName + ' ' + Logs.GetStringFromName('localFileNotExsit'));
+          Download.fetch(aLink, aFile, aName, aSize);
         }
       });
     }
@@ -247,29 +204,29 @@ var Download = {
     }).then(function onSuccess() {
       OS.File.stat(aTemp).then(function onSuccess(info) {
         if (aSize == info.size) {
-          console.log(aLink + '\n' + aLocale.remoteDownloaded());
+          console.log(aName + ' ' + Logs.GetStringFromName('remoteDownloaded'));
           OS.File.move(aTemp, aFile);
         } else {
-          console.log(aLink + '\n' + aLocale.remoteInterrupted());
+          console.log(aName + ' ' + Logs.GetStringFromName('remoteConnectInterrupted'));
           OS.File.remove(aTemp);
-          Download.fetch(aLink, aFile, aSize);
+          Download.fetch(aLink, aFile, aName, aSize);
         }
       });
     }, function onFailure() {
-      console.log(aLink + '\n' + aLocale.remoteDownfailed());
+      console.log(aName + ' ' + Logs.GetStringFromName('remoteFetchFailed'));
       OS.File.remove(aTemp);
     });
   },
 // Start download
 // 开始下载
   start: function () {
-    for (var i in PLAYERS) {
-      var rule = PLAYERS[i];
-      if (rule['remote']) {
-        var aLink = rule['remote'];
-        var aFile = OS.Path.fromFileURI(rule['object']);
-        Download.check(aLink, aFile);
-      }
+    for (var i in PlayerRules) {
+      var rule = PlayerRules[i];
+      if (!rule['remote']) continue;
+      var aLink = rule['remote'];
+      var aFile = OS.Path.fromFileURI(rule['object']);
+      var aName = OS.Path.split(aFile).components[10];
+      Download.check(aLink, aFile, aName);
     }
   },
 };
@@ -826,12 +783,12 @@ function shutdown(data, reason) {
   Observers.httpOff();
 }
 
-// Run download at once after installed and set default autoupdate preferences.
-// 安装扩展后立即下载播放器并设置默认的自动更新参数。
+// Run download session after installed
+// 安装扩展后立即下载播放器
 function install(data, reason) {
   if (reason == ADDON_INSTALL) {
     Download.start();
-    console.log(aLocale.extName() + ' ' + aLocale.extInstall());
+    console.log(Logs.GetStringFromName('extName') + ' ' + Logs.GetStringFromName('extInstall'));
   }
 //Remove useless files after update.
 //升级后删除无用的文件。
@@ -852,6 +809,6 @@ function install(data, reason) {
 function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
     FileIO.delFolder();
-    console.log(aLocale.extName() + ' ' + aLocale.extUninstall());
+    console.log(Logs.GetStringFromName('extName') + ' ' + Logs.GetStringFromName('extUninstall'));
   }
 }
