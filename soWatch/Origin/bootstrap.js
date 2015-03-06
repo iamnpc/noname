@@ -8,94 +8,94 @@ var Services = {
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
-var PrefBranch = Services.prefs.getBranch('extensions.sowatch.enable_player_rule.');
+var PrefBranch = Services.prefs.getBranch('extensions.sowatch.');
 var PrefValue = {
  'youku': {
     get: function () {
-      return PrefBranch.getBoolPref('youku');
+      return PrefBranch.getBoolPref('override_player.youku');
     },
     set: function () {
-      PrefBranch.setBoolPref('youku', true);
+      PrefBranch.setBoolPref('override_player.youku', true);
     },
   },
   'tudou': {
     get: function () {
-      return PrefBranch.getBoolPref('tudou');
+      return PrefBranch.getBoolPref('override_player.tudou');
     },
     set: function () {
-      PrefBranch.setBoolPref('tudou', true);
+      PrefBranch.setBoolPref('override_player.tudou', true);
     },
   },
   'iqiyi': {
     get: function () {
-      return PrefBranch.getBoolPref('iqiyi');
+      return PrefBranch.getBoolPref('override_player.iqiyi');
     },
     set: function () {
-      PrefBranch.setBoolPref('iqiyi', true);
+      PrefBranch.setBoolPref('override_player.iqiyi', true);
     },
   },
   'pps': {
     get: function () {
-      return PrefBranch.getBoolPref('pps');
+      return PrefBranch.getBoolPref('override_player.pps');
     },
     set: function () {
-      PrefBranch.setBoolPref('pps', true);
+      PrefBranch.setBoolPref('override_player.pps', true);
     },
   },
   'letv': {
     get: function () {
-      return PrefBranch.getBoolPref('letv');
+      return PrefBranch.getBoolPref('override_player.letv');
     },
     set: function () {
-      PrefBranch.setBoolPref('letv', true);
+      PrefBranch.setBoolPref('override_player.letv', true);
     },
   },
   'sohu': {
     get: function () {
-      return PrefBranch.getBoolPref('sohu');
+      return PrefBranch.getBoolPref('override_player.sohu');
     },
     set: function () {
-      PrefBranch.setBoolPref('sohu', true);
+      PrefBranch.setBoolPref('override_player.sohu', true);
     },
   },
   'pptv': {
     get: function () {
-      return PrefBranch.getBoolPref('pptv');
+      return PrefBranch.getBoolPref('override_player.pptv');
     },
     set: function () {
-      PrefBranch.setBoolPref('pptv', true);
+      PrefBranch.setBoolPref('override_player.pptv', true);
     },
   },
   '17173': {
     get: function () {
-      return PrefBranch.getBoolPref('17173');
+      return PrefBranch.getBoolPref('override_player.17173');
     },
     set: function () {
-      PrefBranch.setBoolPref('17173', true);
+      PrefBranch.setBoolPref('override_player.17173', true);
     },
   },
   'ku6': {
     get: function () {
-      return PrefBranch.getBoolPref('ku6');
+      return PrefBranch.getBoolPref('override_player.ku6');
     },
     set: function () {
-      PrefBranch.setBoolPref('ku6', true);
+      PrefBranch.setBoolPref('override_player.ku6', true);
     },
   },
   'youku_referer': {
     get: function () {
-      return PrefBranch.getBoolPref('youku_referer');
+      return PrefBranch.getBoolPref('spoof_referer.youku');
     },
     set: function () {
-      PrefBranch.setBoolPref('youku_referer', true);
+      PrefBranch.setBoolPref('spoof_referer.youku', true);
     },
   },
   'iqiyi_referer': {
     get: function () {
-      return PrefBranch.getBoolPref('iqiyi_referer');
+      return PrefBranch.getBoolPref('spoof_referer.iqiyi');
     },
     set: function () {
-      PrefBranch.setBoolPref('iqiyi_referer', true);
+      PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
     },
   },
 };
@@ -117,10 +117,6 @@ var Preferences = {
     }
     this.manifest();
   },
-  observe: function (aSubject, aTopic, aData) {
-    if (aTopic != 'nsPref:changed') return;
-    this.pending();
-  },
   manifest: function () {
     for (var i in PrefValue) {
       if (i == 'youku_referer' || i == 'iqiyi_referer') continue;
@@ -132,8 +128,8 @@ var Preferences = {
         resolver.playerOff();
       }
     }
-    var QiyiReferer = PrefValue['youku_referer'].get();
-    if (QiyiReferer == true) {
+    var YoukuReferer = PrefValue['youku_referer'].get();
+    if (YoukuReferer == true) {
       RuleResolver['youku'].refererOn();
     } else {
       RuleResolver['youku'].refererOff();
@@ -330,7 +326,8 @@ var RuleResolver = {
 var PlayerRules = {};
 var FilterRules = {};
 var RefererRules = {};
-var HttpChannel = {
+
+var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -361,63 +358,6 @@ var HttpChannel = {
       } catch (e) {}
     }
     return null;
-  },
-  observe: function (aSubject, aTopic, aData) {
-    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    if (aTopic == 'http-on-modify-request') {
-      for (var i in RefererRules) {
-        var rule = RefererRules[i];
-        if (!rule) continue;
-        try {
-          if (rule['target'].test(httpChannel.originalURI.spec)) {
-            httpChannel.setRequestHeader('Referer', rule['host'], false);
-          }
-        } catch (e) {}
-      }
-    }
-    if (aTopic != 'http-on-examine-response') return;
-    for (var i in FilterRules) {
-      var rule = FilterRules[i];
-      if (!rule) continue;
-      if (rule['target'].test(httpChannel.URI.spec)) {
-        if (!rule['storageStream'] || !rule['count']) {
-          httpChannel.suspend();
-          this.getObject(rule, function () {
-            httpChannel.resume();
-          });
-        }
-        var newListener = new TrackingListener();
-        aSubject.QueryInterface(Ci.nsITraceableChannel);
-        newListener.originalListener = aSubject.setNewListener(newListener);
-        newListener.rule = rule;
-        break;
-      }
-    }
-    var aVisitor = new HttpHeaderVisitor();
-    httpChannel.visitResponseHeaders(aVisitor);
-    if (!aVisitor.isFlash()) return;
-    for (var i in PlayerRules) {
-      var rule = PlayerRules[i];
-      if (!rule) continue;
-      if (rule['target'].test(httpChannel.URI.spec)) {
-        var fn = this, args = Array.prototype.slice.call(arguments);
-        if (typeof rule['preHandle'] === 'function')
-          rule['preHandle'].apply(fn, args);
-        if (!rule['storageStream'] || !rule['count']) {
-          httpChannel.suspend();
-          this.getObject(rule, function () {
-            httpChannel.resume();
-            if (typeof rule['callback'] === 'function')
-              rule['callback'].apply(fn, args);
-          });
-        }
-        var newListener = new TrackingListener();
-        aSubject.QueryInterface(Ci.nsITraceableChannel);
-        newListener.originalListener = aSubject.setNewListener(newListener);
-        newListener.rule = rule;
-        break;
-      }
-    }
   },
   QueryInterface: function (aIID) {
     if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
@@ -493,32 +433,90 @@ HttpHeaderVisitor.prototype = {
 }
 
 var Observers = {
-  prefsOn: function () {
-    PrefBranch.addObserver('', Preferences, false);
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic == 'nsPref:changed') {
+      Preferences.pending();
+    }
+
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
+    if (aTopic == 'http-on-modify-request') {
+      for (var i in RefererRules) {
+        var rule = RefererRules[i];
+        if (!rule) continue;
+        try {
+          if (rule['target'].test(httpChannel.originalURI.spec)) {
+            httpChannel.setRequestHeader('Referer', rule['host'], false);
+          }
+        } catch (e) {}
+      }
+    }
+
+    if (aTopic == 'http-on-examine-response') {
+      for (var i in FilterRules) {
+        var rule = FilterRules[i];
+        if (!rule) continue;
+        if (rule['target'].test(httpChannel.URI.spec)) {
+          if (!rule['storageStream'] || !rule['count']) {
+            httpChannel.suspend();
+            RuleExecution.getObject(rule, function () {
+              httpChannel.resume();
+            });
+          }
+          var newListener = new TrackingListener();
+          aSubject.QueryInterface(Ci.nsITraceableChannel);
+          newListener.originalListener = aSubject.setNewListener(newListener);
+          newListener.rule = rule;
+          break;
+        }
+      }
+
+      var aVisitor = new HttpHeaderVisitor();
+      httpChannel.visitResponseHeaders(aVisitor);
+      if (!aVisitor.isFlash()) return;
+
+      for (var i in PlayerRules) {
+        var rule = PlayerRules[i];
+        if (!rule) continue;
+        if (rule['target'].test(httpChannel.URI.spec)) {
+          var fn = RuleExecution, args = Array.prototype.slice.call(arguments);
+          if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
+          if (!rule['storageStream'] || !rule['count']) {
+            httpChannel.suspend();
+            RuleExecution.getObject(rule, function () {
+              httpChannel.resume();
+              if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
+            });
+          }
+          var newListener = new TrackingListener();
+          aSubject.QueryInterface(Ci.nsITraceableChannel);
+          newListener.originalListener = aSubject.setNewListener(newListener);
+          newListener.rule = rule;
+          break;
+        }
+      }
+    }
   },
-  prefsOff: function () {
-    PrefBranch.removeObserver('', Preferences);
+  startUp: function () {
+    PrefBranch.addObserver('', this, false);
+    Services.obs.addObserver(this, 'http-on-examine-response', false);
+    Services.obs.addObserver(this, 'http-on-modify-request', false);
   },
-  httpOn: function () {
-    Services.obs.addObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.addObserver(HttpChannel, 'http-on-modify-request', false);
-  },
-  httpOff: function () {
-    Services.obs.removeObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.removeObserver(HttpChannel, 'http-on-modify-request', false);
+  shutDown: function () {
+    PrefBranch.removeObserver('', this);
+    Services.obs.removeObserver(this, 'http-on-examine-response', false);
+    Services.obs.removeObserver(this, 'http-on-modify-request', false);
   },
 };
 
 function startup(data, reason) {
-  HttpChannel.iQiyi();
+  RuleExecution.iQiyi();
   Preferences.pending();
-  Observers.prefsOn();
-  Observers.httpOn();
+  Observers.startUp();
 }
 
 function shutdown(data, reason) {
-  Observers.prefsOff();
-  Observers.httpOff();
+  Observers.shutDown();
 }
 
 function install(data, reason) {
