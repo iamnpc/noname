@@ -118,17 +118,18 @@ var Preferences = {
     Download.start();
   },
 };
-Preferences.pending();
 
 var FileIO = {
 // You can customize the dir name to store .swf files
 // 你可以自行修改保存 .swf 文件的文件夹名字。
-  extDir: PrefValue['directory'].get(),
+  extDir: function () {
+    return PrefValue['directory'].get();
+  },
   addFolder: function () {
-    OS.File.makeDir(this.extDir);
+    OS.File.makeDir(this.extDir());
   },
   delFolder: function () {
-    OS.File.removeDir(this.extDir);
+    OS.File.removeDir(this.extDir());
   },
 // Now bytebucket.org for 15536900's work and other for catcat520.
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
@@ -141,7 +142,7 @@ var FileIO = {
     }
   },
   path: function () {
-    return OS.Path.toFileURI(this.extDir) + '/';
+    return OS.Path.toFileURI(this.extDir()) + '/';
   },
 };
 
@@ -803,6 +804,7 @@ var Observers = {
 function startup(data, reason) {
   RuleExecution.iqiyi();
   Toolbar.addIcon();
+  Preferences.pending();
   Observers.startUp();
 }
 
