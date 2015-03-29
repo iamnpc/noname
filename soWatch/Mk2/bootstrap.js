@@ -20,45 +20,63 @@ var Logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.prop
 
 // User preferences to toggle functions. may be modifed later
 // 设置用户参数以实现各种功能的开关,这里可能会改写
-var PrefBranch = {
-  'autoupdate': Services.prefs.getBranch('extensions.sowatchmk2.autoupdate.'),
-  'use_remote': Services.prefs.getBranch('extensions.sowatchmk2.use_remote.'),
-};
+var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
 var PrefValue = {
- 'enable': {
+ 'remote': {
     get: function () {
-      return PrefBranch['autoupdate'].getBoolPref('enable');
+      return PrefBranch.getBoolPref('access_remote.enable');
     },
     set: function () {
-      PrefBranch['autoupdate'].setBoolPref('enable', false);
+      PrefBranch.setBoolPref('access_remote.enable', false);
+    },
+  },
+ 'autoupdate': {
+    get: function () {
+      return PrefBranch.getBoolPref('autoupdate.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('autoupdate.enable', false);
     },
   },
   'lastdate': {
     get: function () {
-      return PrefBranch['autoupdate'].getIntPref('lastdate');
+      return PrefBranch.getIntPref('autoupdate.lastdate');
     },
     set: function () {
-      PrefBranch['autoupdate'].setIntPref('lastdate', Date.now() / 1000);
+      PrefBranch.setIntPref('autoupdate.lastdate', Date.now() / 1000);
     },
   },
   'period': {
     get: function () {
-      return PrefBranch['autoupdate'].getIntPref('period');
+      return PrefBranch.getIntPref('autoupdate.period');
     },
     set: function () {
-      PrefBranch['autoupdate'].setIntPref('period', 7);
+      PrefBranch.setIntPref('autoupdate.period', 7);
     },
   },
- 'use_remote': {
+  'directory': {
     get: function () {
-      return PrefBranch['use_remote'].getBoolPref('enable');
+      return PrefBranch.getCharPref('autoupdate.file_directory');
     },
     set: function () {
-      PrefBranch['use_remote'].setBoolPref('enable', false);
+      PrefBranch.setCharPref('autoupdate.file_directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
+    },
+  },
+  'hosting': {
+    get: function () {
+      return PrefBranch.getCharPref('autoupdate.file_hosting');
+    },
+    set: function () {
+      PrefBranch.setCharPref('autoupdate.file_hosting', 'http://your.domain/soWatch/'); //用户设定catcat520所修改的播放器服务器
     },
   },
 };
 var Preferences = {
+// Remove all prefs from app.
+// 移除所有参数设置
+  remove: function () {
+    Services.prefs.deleteBranch('extensions.sowatchmk2.');
+  },
 // Restore default preferences, not in use now.
 // 恢复默认参数, 暂未使用。
   setDefault: function () {
@@ -80,12 +98,6 @@ var Preferences = {
     }
     this.manifest();
   },
-// Observe preference changes
-// 监视参数变化
-  observe: function (aSubject, aTopic, aData) {
-    if (aTopic != 'nsPref:changed') return;
-    this.pending();
-  },
 // If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
   manifest: function () {
@@ -106,6 +118,7 @@ var Preferences = {
     Download.start();
   },
 };
+Preferences.pending();
 
 var FileIO = {
 // You can customize the dir name to store .swf files
@@ -117,12 +130,17 @@ var FileIO = {
   delFolder: function () {
     OS.File.removeDir(this.extDir);
   },
-// Add your domain here.
-// 在这里添加你的服务器，
-  link: 'https://your.domain/uri/',
+// Now bytebucket.org for 15536900's work and other for catcat520.
+// 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
+  link: function (aMod) {
+    for (var i in RuleResolver) {
+      if (aMod === RuleResolver[i]) {
+        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
+        return 'https://bytebucket.org/kafan15536900/haoutil/raw/d210c02ab8cec4bb9ff3e4baa9a9009cbfabc9f4/player/testmod/'; //这里可能也会被改成用户设置
+      }
+    }
+  },
   path: function () {
-    var aRemote = PrefValue['use_remote'].get();
-    if (aRemote == true) return this.link;
     return OS.Path.toFileURI(this.extDir) + '/';
   },
 };
@@ -234,14 +252,15 @@ var Download = {
 var RuleResolver = {
   'youku': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['youku_loader'] = {
         'object': FileIO.path() + 'loader.swf',
-        'remote': FileIO.link + 'loader.swf',
+        'remote': FileIO.link(aMod) + 'loader.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
       };
       PlayerRules['youku_player'] = {
         'object': FileIO.path() + 'player.swf',
-        'remote': FileIO.link + 'player.swf',
+        'remote': FileIO.link(aMod) + 'player.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
       };
     },
@@ -270,9 +289,10 @@ var RuleResolver = {
   },
   'tudou': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['tudou_portal'] = {
         'object': FileIO.path() + 'tudou.swf',
-        'remote': FileIO.link + 'tudou.swf',
+        'remote': FileIO.link(aMod) + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
       FilterRules['tudou_css'] = {
@@ -285,7 +305,7 @@ var RuleResolver = {
       };
       PlayerRules['tudou_social'] = {
         'object': FileIO.path() + 'sp.swf',
-        'remote': FileIO.link + 'sp.swf',
+        'remote': FileIO.link(aMod) + 'sp.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
       };
     },
@@ -307,14 +327,15 @@ var RuleResolver = {
   },
   'iqiyi': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['iqiyi5'] = {
         'object': FileIO.path() + 'iqiyi5.swf',
-        'remote': FileIO.link + 'iqiyi5.swf',
+        'remote': FileIO.link(aMod) + 'iqiyi5.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
       };
       PlayerRules['iqiyi_out'] = {
         'object': FileIO.path() + 'iqiyi_out.swf',
-        'remote': FileIO.link + 'iqiyi_out.swf',
+        'remote': FileIO.link(aMod) + 'iqiyi_out.swf',
         'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
       };
     },
@@ -343,14 +364,15 @@ var RuleResolver = {
   },
   'pps': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['pps'] = {
         'object': FileIO.path() + 'iqiyi.swf',
-        'remote': FileIO.link + 'iqiyi.swf',
+        'remote': FileIO.link(aMod) + 'iqiyi.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
       };
       PlayerRules['pps_out'] = {
         'object': FileIO.path() + 'pps.swf',
-        'remote': FileIO.link + 'pps.swf',
+        'remote': FileIO.link(aMod) + 'pps.swf',
         'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
       };
     },
@@ -370,9 +392,10 @@ var RuleResolver = {
   },
   'letv': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['letv'] = {
         'object': FileIO.path() + 'letv.swf',
-        'remote': FileIO.link + 'letv.swf',
+        'remote': FileIO.link(aMod) + 'letv.swf',
         'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
       };
       PlayerRules['letv_skin'] = {
@@ -396,9 +419,10 @@ var RuleResolver = {
   },
   'sohu': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['sohu'] = {
         'object': FileIO.path() + 'sohu_live.swf',
-        'remote': FileIO.link + 'sohu_live.swf',
+        'remote': FileIO.link(aMod) + 'sohu_live.swf',
         'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
       };
     },
@@ -417,14 +441,15 @@ var RuleResolver = {
   },
   'pptv': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['pptv'] = {
         'object': FileIO.path() + 'pptv.in.Ikan.swf',
-        'remote': FileIO.link + 'pptv.in.Ikan.swf',
+        'remote': FileIO.link(aMod) + 'pptv.in.Ikan.swf',
         'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
       };
       PlayerRules['pptv_live'] = {
         'object': FileIO.path() + 'pptv.in.Live.swf',
-        'remote': FileIO.link + 'pptv.in.Live.swf',
+        'remote': FileIO.link(aMod) + 'pptv.in.Live.swf',
         'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
       };
     },
@@ -444,24 +469,25 @@ var RuleResolver = {
   },
   '17173': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['17173'] = {
         'object': FileIO.path() + '17173.in.Vod.swf',
-        'remote': FileIO.link + '17173.in.Vod.swf',
+        'remote': FileIO.link(aMod) + '17173.in.Vod.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
       };
       PlayerRules['17173_out'] = {
         'object': FileIO.path() + '17173.out.Vod.swf',
-        'remote': FileIO.link + '17173.out.Vod.swf',
+        'remote': FileIO.link(aMod) + '17173.out.Vod.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
       };
       PlayerRules['17173_live'] = {
         'object': FileIO.path() + '17173.in.Live.swf',
-        'remote': FileIO.link + '17173.in.Live.swf',
+        'remote': FileIO.link(aMod) + '17173.in.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
       };
       PlayerRules['17173_live_out'] = {
         'object': FileIO.path() + '17173.out.Live.swf',
-        'remote': FileIO.link + '17173.out.Live.swf',
+        'remote': FileIO.link(aMod) + '17173.out.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
       };
     },
@@ -472,25 +498,26 @@ var RuleResolver = {
       PlayerRules['17173_live_out'] = null;
     },
     filterOn: function () {
-      FilterRules['pptv'] = {
+      FilterRules['17173'] = {
         'object': 'http://17173im.allyes.com/crossdomain.xml',
         'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
       };
     },
     filterOff: function () {
-      FilterRules['pptv'] = null;
+      FilterRules['17173'] = null;
     },
   },
   'ku6': {
     playerOn: function () {
+      var aMod = this;
       PlayerRules['ku6'] = {
         'object': FileIO.path() + 'ku6_in_player.swf',
-        'remote': FileIO.link + 'ku6_in_player.swf',
+        'remote': FileIO.link(aMod) + 'ku6_in_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
       };
       PlayerRules['ku6_out'] = {
         'object': FileIO.path() + 'ku6_out_player.swf',
-        'remote': FileIO.link + 'ku6_out_player.swf',
+        'remote': FileIO.link(aMod) + 'ku6_out_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
       };
     },
@@ -575,11 +602,8 @@ var RuleResolver = {
   },
 };
 
-var PlayerRules = {};
-var FilterRules = {};
-var RefererRules = {};
-
-var HttpChannel = {
+var PlayerRules = {}, FilterRules = {}, RefererRules = {};
+var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -596,35 +620,26 @@ var HttpChannel = {
       }
     });
   },
-  getWindowForRequest: function (request) {
-    if (request instanceof Ci.nsIRequest) {
-      try {
-        if (request.notificationCallbacks) {
-          return request.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
-        }
-      } catch (e) {}
-      try {
-        if (request.loadGroup && request.loadGroup.notificationCallbacks) {
-          return request.loadGroup.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
-        }
-      } catch (e) {}
-    }
-    return null;
+  QueryInterface: function (aIID) {
+    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
+    return Cr.NS_ERROR_NO_INTERFACE;
   },
-  observe: function (aSubject, aTopic, aData) {
+// Spoof HTTP Referer
+// 伪造HTTP Referer
+  referer: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    if (aTopic == 'http-on-modify-request') {
-      for (var i in RefererRules) {
-        var rule = RefererRules[i];
-        if (!rule) continue;
-        try {
-          if (rule['target'].test(httpChannel.originalURI.spec)) {
-            httpChannel.setRequestHeader('Referer', rule['host'], false);
-          }
-        } catch (e) {}
+    for (var i in RefererRules) {
+      var rule = RefererRules[i];
+      if (!rule) continue;
+      if (rule['target'].test(httpChannel.originalURI.spec)) {
+        httpChannel.setRequestHeader('Referer', rule['host'], false);
       }
     }
-    if (aTopic != 'http-on-examine-response') return;
+  },
+// Filter XML Requests
+// 拦截XML请求
+  filter: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in FilterRules) {
       var rule = FilterRules[i];
       if (!rule) continue;
@@ -642,22 +657,27 @@ var HttpChannel = {
         break;
       }
     }
+  },
+// Override Player,will support use_remote in the future
+// 替换播放器,将修改来支持use_remote
+  player: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
+
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
       if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
-        if (typeof rule['preHandle'] === 'function')
-          rule['preHandle'].apply(fn, args);
+        if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
           this.getObject(rule, function () {
             httpChannel.resume();
-            if (typeof rule['callback'] === 'function')
-              rule['callback'].apply(fn, args);
+            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
           });
         }
         var newListener = new TrackingListener();
@@ -668,15 +688,24 @@ var HttpChannel = {
       }
     }
   },
-  QueryInterface: function (aIID) {
-    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver))
-      return this;
-    return Cr.NS_ERROR_NO_INTERFACE;
+// 以下所有代码都是iQiyi专用并且没有支持use_remote也不打算支持了.毕竟已经没被使用了.
+  getWindowForRequest: function (request) {
+    if (request instanceof Ci.nsIRequest) {
+      try {
+        if (request.notificationCallbacks) {
+          return request.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
+        }
+      } catch (e) {}
+      try {
+        if (request.loadGroup && request.loadGroup.notificationCallbacks) {
+          return request.loadGroup.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
+        }
+      } catch (e) {}
+    }
+    return null;
   },
-// Resolver for iQiyi.May not help since iQiyi uses one player now.
-// 爱奇艺专用代码,似乎已经派不上用场了.
-  iQiyi: function () {
-    var rule = PLAYERS['iqiyi'];
+  iqiyi: function () {
+    var rule = PlayerRules['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
       var wnd = this.getWindowForRequest(aSubject);
@@ -710,7 +739,7 @@ var HttpChannel = {
       }
     };
   },
-}
+};
 
 function TrackingListener() {
   this.originalListener = null;
@@ -745,42 +774,41 @@ HttpHeaderVisitor.prototype = {
 }
 
 var Observers = {
-  prefsOn: function () {
-    for (var i in PrefBranch) {
-       var rule = PrefBranch[i];
-       rule.addObserver('', Preferences, false);
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic == 'nsPref:changed') {
+      Preferences.pending();
+    }
+    if (aTopic == 'http-on-modify-request') {
+      RuleExecution.referer(aSubject);
+    }
+    if (aTopic == 'http-on-examine-response') {
+      RuleExecution.filter(aSubject);
+      RuleExecution.player(aSubject);
     }
   },
-  prefsOff: function () {
-    for (var i in PrefBranch) {
-       var rule = PrefBranch[i];
-       rule.removeObserver('', Preferences);
-    }
+  startUp: function () {
+    PrefBranch.addObserver('', this, false);
+    Services.obs.addObserver(this, 'http-on-examine-response', false);
+    Services.obs.addObserver(this, 'http-on-modify-request', false);
   },
-  httpOn: function () {
-    Services.obs.addObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.addObserver(HttpChannel, 'http-on-modify-request', false);
-  },
-  httpOff: function () {
-    Services.obs.removeObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.removeObserver(HttpChannel, 'http-on-modify-request', false);
+  shutDown: function () {
+    PrefBranch.removeObserver('', this);
+    Services.obs.removeObserver(this, 'http-on-examine-response', false);
+    Services.obs.removeObserver(this, 'http-on-modify-request', false);
   },
 };
 
 // Enable Add-on. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，并检查自动更新参数。
 function startup(data, reason) {
+  RuleExecution.iqiyi();
   Toolbar.addIcon();
-  HttpChannel.iQiyi();
-  Preferences.pending();
-  Observers.prefsOn();
-  Observers.httpOn();
+  Observers.startUp();
 }
 
 function shutdown(data, reason) {
   Toolbar.removeIcon();
-  Observers.prefsOff();
-  Observers.httpOff();
+  Observers.shutDown();
 }
 
 // Run download session after installed
@@ -809,6 +837,7 @@ function install(data, reason) {
 function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
     FileIO.delFolder();
+    Preferences.remove();
     console.log(Logs.GetStringFromName('extName') + ' ' + Logs.GetStringFromName('extUninstall'));
   }
 }
