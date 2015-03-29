@@ -123,7 +123,7 @@ Preferences.pending();
 var FileIO = {
 // You can customize the dir name to store .swf files
 // 你可以自行修改保存 .swf 文件的文件夹名字。
-  extDir: OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'),
+  extDir: PrefValue['directory'].get(),
   addFolder: function () {
     OS.File.makeDir(this.extDir);
   },
