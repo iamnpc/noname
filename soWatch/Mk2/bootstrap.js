@@ -108,7 +108,7 @@ var Preferences = {
       if (rule.refererOn) rule.refererOn();
     }
     var aRemote = PrefValue['remote'].get();
-    if (aRemote == true) PrefValue['enable'].set(); // 使用远程服务器的时候强制停止自动更新
+    if (aRemote == true) return PrefValue['enable'].set(); // 使用远程服务器的时候强制停止自动更新
     var aUpdate = PrefValue['enable'].get();
     if (aUpdate == false) return;
     var aDate = PrefValue['lastdate'].get();
@@ -216,7 +216,6 @@ var Download = {
 // Download remote file with _sw as temp file, then check and overwrite.
 // 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
   fetch: function (aLink, aFile, aSize) {
-    FileIO.addFolder();  // 仅当下载时才创建文件夹
     var aTemp = aFile + '_sw';
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
@@ -239,6 +238,7 @@ var Download = {
 // Start download
 // 开始下载
   start: function () {
+    FileIO.addFolder();  // 即使文件夹不存在也能自动创建避免出错
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
       if (!rule['remote']) continue;
