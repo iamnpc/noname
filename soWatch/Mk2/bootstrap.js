@@ -680,6 +680,7 @@ var RuleExecution = {
   player: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     var aRemote = PrefValue['remote'].get();
+
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
