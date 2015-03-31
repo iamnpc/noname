@@ -1,7 +1,9 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
+Cu.import('resource://gre/modules/osfile.jsm');
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aURI = 'chrome://sowatch/content/';
+var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'sowatch');
+var aURI = OS.Path.toFileURI(aPath) + '/';
 
 var Services = {
   obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
@@ -100,6 +102,9 @@ var PrefValue = {
   },
 };
 var Preferences = {
+  remove: function () {
+    Services.prefs.deleteBranch('extensions.sowatch.');
+  },
   setDefault: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
@@ -323,10 +328,7 @@ var RuleResolver = {
   },
 };
 
-var PlayerRules = {};
-var FilterRules = {};
-var RefererRules = {};
-
+var PlayerRules = {}, FilterRules = {}, RefererRules = {};
 var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
@@ -344,6 +346,68 @@ var RuleExecution = {
       }
     });
   },
+  QueryInterface: function (aIID) {
+    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
+    return Cr.NS_ERROR_NO_INTERFACE;
+  },
+  referer: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+    for (var i in RefererRules) {
+      var rule = RefererRules[i];
+      if (!rule) continue;
+      if (rule['target'].test(httpChannel.originalURI.spec)) {
+        httpChannel.setRequestHeader('Referer', rule['host'], false);
+      }
+    }
+  },
+  filter: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+    for (var i in FilterRules) {
+      var rule = FilterRules[i];
+      if (!rule) continue;
+      if (rule['target'].test(httpChannel.URI.spec)) {
+        if (!rule['storageStream'] || !rule['count']) {
+          httpChannel.suspend();
+          this.getObject(rule, function () {
+            httpChannel.resume();
+          });
+        }
+        var newListener = new TrackingListener();
+        aSubject.QueryInterface(Ci.nsITraceableChannel);
+        newListener.originalListener = aSubject.setNewListener(newListener);
+        newListener.rule = rule;
+        break;
+      }
+    }
+  },
+  player: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
+    var aVisitor = new HttpHeaderVisitor();
+    httpChannel.visitResponseHeaders(aVisitor);
+    if (!aVisitor.isFlash()) return;
+
+    for (var i in PlayerRules) {
+      var rule = PlayerRules[i];
+      if (!rule) continue;
+      if (rule['target'].test(httpChannel.URI.spec)) {
+        var fn = this, args = Array.prototype.slice.call(arguments);
+        if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
+        if (!rule['storageStream'] || !rule['count']) {
+          httpChannel.suspend();
+          this.getObject(rule, function () {
+            httpChannel.resume();
+            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
+          });
+        }
+        var newListener = new TrackingListener();
+        aSubject.QueryInterface(Ci.nsITraceableChannel);
+        newListener.originalListener = aSubject.setNewListener(newListener);
+        newListener.rule = rule;
+        break;
+      }
+    }
+  },
   getWindowForRequest: function (request) {
     if (request instanceof Ci.nsIRequest) {
       try {
@@ -359,11 +423,7 @@ var RuleExecution = {
     }
     return null;
   },
-  QueryInterface: function (aIID) {
-    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
-    return Cr.NS_ERROR_NO_INTERFACE;
-  },
-  iQiyi: function () {
+  iqiyi: function () {
     var rule = PlayerRules['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
@@ -437,64 +497,12 @@ var Observers = {
     if (aTopic == 'nsPref:changed') {
       Preferences.pending();
     }
-
-    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-
     if (aTopic == 'http-on-modify-request') {
-      for (var i in RefererRules) {
-        var rule = RefererRules[i];
-        if (!rule) continue;
-        try {
-          if (rule['target'].test(httpChannel.originalURI.spec)) {
-            httpChannel.setRequestHeader('Referer', rule['host'], false);
-          }
-        } catch (e) {}
-      }
+      RuleExecution.referer(aSubject);
     }
-
     if (aTopic == 'http-on-examine-response') {
-      for (var i in FilterRules) {
-        var rule = FilterRules[i];
-        if (!rule) continue;
-        if (rule['target'].test(httpChannel.URI.spec)) {
-          if (!rule['storageStream'] || !rule['count']) {
-            httpChannel.suspend();
-            RuleExecution.getObject(rule, function () {
-              httpChannel.resume();
-            });
-          }
-          var newListener = new TrackingListener();
-          aSubject.QueryInterface(Ci.nsITraceableChannel);
-          newListener.originalListener = aSubject.setNewListener(newListener);
-          newListener.rule = rule;
-          break;
-        }
-      }
-
-      var aVisitor = new HttpHeaderVisitor();
-      httpChannel.visitResponseHeaders(aVisitor);
-      if (!aVisitor.isFlash()) return;
-
-      for (var i in PlayerRules) {
-        var rule = PlayerRules[i];
-        if (!rule) continue;
-        if (rule['target'].test(httpChannel.URI.spec)) {
-          var fn = RuleExecution, args = Array.prototype.slice.call(arguments);
-          if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
-          if (!rule['storageStream'] || !rule['count']) {
-            httpChannel.suspend();
-            RuleExecution.getObject(rule, function () {
-              httpChannel.resume();
-              if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
-            });
-          }
-          var newListener = new TrackingListener();
-          aSubject.QueryInterface(Ci.nsITraceableChannel);
-          newListener.originalListener = aSubject.setNewListener(newListener);
-          newListener.rule = rule;
-          break;
-        }
-      }
+      RuleExecution.filter(aSubject);
+      RuleExecution.player(aSubject);
     }
   },
   startUp: function () {
@@ -509,18 +517,21 @@ var Observers = {
   },
 };
 
-function startup(data, reason) {
-  RuleExecution.iQiyi();
+function startup(aData, aReason) {
+  RuleExecution.iqiyi();
   Preferences.pending();
   Observers.startUp();
 }
 
-function shutdown(data, reason) {
+function shutdown(aData, aReason) {
   Observers.shutDown();
 }
 
-function install(data, reason) {
+function install(aData, aReason) {
 }
 
-function uninstall(data, reason) {
+function uninstall(aData, aReason) {
+  if (aReason == ADDON_UNINSTALL) {
+    Preferences.remove();
+  }
 }
