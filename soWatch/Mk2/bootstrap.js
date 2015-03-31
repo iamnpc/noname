@@ -107,7 +107,7 @@ var Preferences = {
       if (rule.filterOn) rule.playerOn();
       if (rule.refererOn) rule.refererOn();
     }
-    var aRemote = PrefValue['use_remote'].get();
+    var aRemote = PrefValue['remote'].get();
     if (aRemote == true) PrefValue['enable'].set(); // 使用远程服务器的时候强制停止自动更新
     var aUpdate = PrefValue['enable'].get();
     if (aUpdate == false) return;
@@ -621,6 +621,22 @@ var RuleExecution = {
       }
     });
   },
+  getRemoteObject: function (rule, callback) {
+    NetUtil.asyncFetch(rule['remote'], function (inputStream, status) {
+      var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
+      var storageStream = Cc['@mozilla.org/storagestream;1'].createInstance(Ci['nsIStorageStream']);
+      var count = inputStream.available();
+      var data = NetUtil.readInputStreamToString(inputStream, count);
+        storageStream.init(512, count, null);
+        binaryOutputStream.setOutputStream(storageStream.getOutputStream(0));
+        binaryOutputStream.writeBytes(data, count);
+        rule['storageStream'] = storageStream;
+        rule['count'] = count;
+      if (typeof callback === 'function') {
+        callback();
+      }
+    });
+  },
   QueryInterface: function (aIID) {
     if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
     return Cr.NS_ERROR_NO_INTERFACE;
@@ -663,7 +679,7 @@ var RuleExecution = {
 // 替换播放器,将修改来支持use_remote
   player: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-
+    var aRemote = PrefValue['remote'].get();
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
@@ -676,10 +692,17 @@ var RuleExecution = {
         if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
+          if (aRemote == true) {
+          this.getRemoteObject(rule, function () {
+            httpChannel.resume();
+            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
+          });
+          } else {
           this.getObject(rule, function () {
             httpChannel.resume();
             if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
           });
+          }
         }
         var newListener = new TrackingListener();
         aSubject.QueryInterface(Ci.nsITraceableChannel);
