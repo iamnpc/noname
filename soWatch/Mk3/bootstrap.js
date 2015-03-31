@@ -2,148 +2,149 @@ const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
 // 文件储存在FPlayer文件夹中
-var aURI = 'chrome://mk3-flash/content/';
+var aURI = 'chrome://sowatchmk3/content/';
 
 var Services = {
   obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
 
-var PrefBranch = {
-  'defined_rule': Services.prefs.getBranch('extensions.sowatchmk3.defined_rule.'),
-  'modify_referer': Services.prefs.getBranch('extensions.sowatchmk3.modify_referer.'),
-};
+var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk3.');
 var PrefValue = {
  'youku': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('youku');
+      return PrefBranch.getCharPref('defined_rule.youku');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('youku', 'player');
+      PrefBranch.setCharPref('defined_rule.youku', 'player');
     },
   },
   'tudou': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('tudou');
+      return PrefBranch.getCharPref('defined_rule.tudou');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('tudou', 'player');
+      PrefBranch.setCharPref('defined_rule.tudou', 'player');
     },
   },
   'iqiyi': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('iqiyi');
+      return PrefBranch.getCharPref('defined_rule.iqiyi');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('iqiyi', 'player');
+      PrefBranch.setCharPref('defined_rule.iqiyi', 'player');
     },
   },
   'pps': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('pps');
+      return PrefBranch.getCharPref('defined_rule.pps');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('pps', 'player');
+      PrefBranch.setCharPref('defined_rule.pps', 'player');
     },
   },
   'letv': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('letv');
+      return PrefBranch.getCharPref('defined_rule.letv');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('letv', 'filter');
+      PrefBranch.setCharPref('defined_rule.letv', 'filter');
     },
   },
   'sohu': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('sohu');
+      return PrefBranch.getCharPref('defined_rule.sohu');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('sohu', 'filter');
+      PrefBranch.setCharPref('defined_rule.sohu', 'filter');
     },
   },
   'pptv': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('pptv');
+      return PrefBranch.getCharPref('defined_rule.pptv');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('pptv', 'filter');
+      PrefBranch.setCharPref('defined_rule.pptv', 'filter');
     },
   },
   '17173': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('17173');
+      return PrefBranch.getCharPref('defined_rule.17173');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('17173', 'player');
+      PrefBranch.setCharPref('defined_rule.17173', 'player');
     },
   },
   'ku6': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('ku6');
+      return PrefBranch.getCharPref('defined_rule.ku6');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('ku6', 'filter');
+      PrefBranch.setCharPref('defined_rule.ku6', 'filter');
     },
   },
   '56': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('56');
+      return PrefBranch.getCharPref('defined_rule.56');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('56', 'filter');
+      PrefBranch.setCharPref('defined_rule.56', 'filter');
     },
   },
   'qq': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('qq');
+      return PrefBranch.getCharPref('defined_rule.qq');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('qq', 'filter');
+      PrefBranch.setCharPref('defined_rule.qq', 'filter');
     },
   },
   '163': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('163');
+      return PrefBranch.getCharPref('defined_rule.163');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('163', 'filter');
+      PrefBranch.setCharPref('defined_rule.163', 'filter');
     },
   },
   'sina': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('sina');
+      return PrefBranch.getCharPref('defined_rule.sina');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('sina', 'filter');
+      PrefBranch.setCharPref('defined_rule.sina', 'filter');
     },
   },
   'duowan': {
     get: function () {
-      return PrefBranch['defined_rule'].getCharPref('duowan');
+      return PrefBranch.getCharPref('defined_rule.duowan');
     },
     set: function () {
-      PrefBranch['defined_rule'].setCharPref('duowan', 'filter');
+      PrefBranch.setCharPref('defined_rule.duowan', 'filter');
     },
   },
   'youku_referer': {
     get: function () {
-      return PrefBranch['modify_referer'].getBoolPref('youku');
+      return PrefBranch.getBoolPref('spoof_referer.youku');
     },
     set: function () {
-      PrefBranch['modify_referer'].setBoolPref('youku', true);
+      PrefBranch.setBoolPref('spoof_referer.youku', true);
     },
   },
   'iqiyi_referer': {
     get: function () {
-      return PrefBranch['modify_referer'].getBoolPref('iqiyi');
+      return PrefBranch.getBoolPref('spoof_referer.iqiyi');
     },
     set: function () {
-      PrefBranch['modify_referer'].setBoolPref('iqiyi', true);
+      PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
     },
   },
 };
 var Preferences = {
+// 移除参数设置
+  remove: function () {
+    Services.prefs.deleteBranch('extensions.sowatchmk3.');
+  },
 // 恢复默认设置(暂时未添加)
   setDefault: function () {
     for (var i in PrefValue) {
@@ -151,7 +152,6 @@ var Preferences = {
       rule.set();
     }
   },
-// 监听所有设置
   pending: function () {
     for (var i in PrefValue) {
       var rule = PrefValue[i];
@@ -163,23 +163,18 @@ var Preferences = {
     }
     this.manifest();
   },
-  observe: function (aSubject, aTopic, aData) {
-    if (aTopic != 'nsPref:changed') return;
-    this.pending();
-  },
-// 优酷与土豆，爱奇艺与PPS因为Filter规则通用，那么当其中一个为Filter，另一个为none时强制都改为Filter
   manifest: function () {
     var Youku = PrefValue['youku'].get();
     var Tudou = PrefValue['tudou'].get();
     if ((Youku == 'filter' && Tudou == 'none') || (Youku == 'none' && Tudou == 'filter')) {
-      PrefBranch['defined_rule'].setCharPref('youku', 'filter');
-      PrefBranch['defined_rule'].setCharPref('tudou', 'filter');
+      PrefBranch.setCharPref('defined_rule.youku', 'filter');
+      PrefBranch.setCharPref('defined_rule.tudou', 'filter');
     }
     var Qiyi = PrefValue['iqiyi'].get();
     var PPS = PrefValue['pps'].get();
     if ((Qiyi == 'filter' && PPS == 'none') || (Qiyi == 'none' && PPS == 'filter')) {
-      PrefBranch['defined_rule'].setCharPref('iqiyi', 'filter');
-      PrefBranch['defined_rule'].setCharPref('pps', 'filter');
+      PrefBranch.setCharPref('defined_rule.iqiyi', 'filter');
+      PrefBranch.setCharPref('defined_rule.pps', 'filter');
     }
     for (var i in PrefValue) {
       if (i == 'youku_referer' || i == 'iqiyi_referer') continue;
@@ -539,10 +534,8 @@ var RuleResolver = {
   },
 };
 
-var PlayerRules = {};
-var FilterRules = {};
-var RefererRules = {};
-var HttpChannel = {
+var PlayerRules = {}, FilterRules = {}, RefererRules = {};
+var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
@@ -559,35 +552,22 @@ var HttpChannel = {
       }
     });
   },
-  getWindowForRequest: function (request) {
-    if (request instanceof Ci.nsIRequest) {
-      try {
-        if (request.notificationCallbacks) {
-          return request.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
-        }
-      } catch (e) {}
-      try {
-        if (request.loadGroup && request.loadGroup.notificationCallbacks) {
-          return request.loadGroup.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
-        }
-      } catch (e) {}
-    }
-    return null;
+  QueryInterface: function (aIID) {
+    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
+    return Cr.NS_ERROR_NO_INTERFACE;
   },
-  observe: function (aSubject, aTopic, aData) {
+  referer: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    if (aTopic == 'http-on-modify-request') {
-      for (var i in RefererRules) {
-        var rule = RefererRules[i];
-        if (!rule) continue;
-        try {
-          if (rule['target'].test(httpChannel.originalURI.spec)) {
-            httpChannel.setRequestHeader('Referer', rule['host'], false);
-          }
-        } catch (e) {}
+    for (var i in RefererRules) {
+      var rule = RefererRules[i];
+      if (!rule) continue;
+      if (rule['target'].test(httpChannel.originalURI.spec)) {
+        httpChannel.setRequestHeader('Referer', rule['host'], false);
       }
     }
-    if (aTopic != 'http-on-examine-response') return;
+  },
+  filter: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
     for (var i in FilterRules) {
       var rule = FilterRules[i];
       if (!rule) continue;
@@ -605,22 +585,25 @@ var HttpChannel = {
         break;
       }
     }
+  },
+  player: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
     if (!aVisitor.isFlash()) return;
+
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
       if (!rule) continue;
       if (rule['target'].test(httpChannel.URI.spec)) {
         var fn = this, args = Array.prototype.slice.call(arguments);
-        if (typeof rule['preHandle'] === 'function')
-          rule['preHandle'].apply(fn, args);
+        if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
           this.getObject(rule, function () {
             httpChannel.resume();
-            if (typeof rule['callback'] === 'function')
-              rule['callback'].apply(fn, args);
+            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
           });
         }
         var newListener = new TrackingListener();
@@ -631,12 +614,23 @@ var HttpChannel = {
       }
     }
   },
-  QueryInterface: function (aIID) {
-    if (aIID.equals(Ci.nsISupports) || aIID.equals(Ci.nsIObserver)) return this;
-    return Cr.NS_ERROR_NO_INTERFACE;
-  },
 // 爱奇艺的专属功能，现在基本派不上用场了。
-  iQiyi: function () {
+  getWindowForRequest: function (request) {
+    if (request instanceof Ci.nsIRequest) {
+      try {
+        if (request.notificationCallbacks) {
+          return request.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
+        }
+      } catch (e) {}
+      try {
+        if (request.loadGroup && request.loadGroup.notificationCallbacks) {
+          return request.loadGroup.notificationCallbacks.getInterface(Ci.nsILoadContext).associatedWindow;
+        }
+      } catch (e) {}
+    }
+    return null;
+  },
+  iqiyi: function () {
     var rule = PlayerRules['iqiyi'];
     if (!rule) return;
     rule['preHandle'] = function (aSubject) {
@@ -707,42 +701,45 @@ HttpHeaderVisitor.prototype = {
 }
 
 var Observers = {
-  prefsOn: function () {
-    for (var i in PrefBranch) {
-       var rule = PrefBranch[i];
-       rule.addObserver('', Preferences, false);
+  observe: function (aSubject, aTopic, aData) {
+    if (aTopic == 'nsPref:changed') {
+      Preferences.pending();
+    }
+    if (aTopic == 'http-on-modify-request') {
+      RuleExecution.referer(aSubject);
+    }
+    if (aTopic == 'http-on-examine-response') {
+      RuleExecution.filter(aSubject);
+      RuleExecution.player(aSubject);
     }
   },
-  prefsOff: function () {
-    for (var i in PrefBranch) {
-       var rule = PrefBranch[i];
-       rule.removeObserver('', Preferences);
-    }
+  startUp: function () {
+    PrefBranch.addObserver('', this, false);
+    Services.obs.addObserver(this, 'http-on-examine-response', false);
+    Services.obs.addObserver(this, 'http-on-modify-request', false);
   },
-  httpOn: function () {
-    Services.obs.addObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.addObserver(HttpChannel, 'http-on-modify-request', false);
-  },
-  httpOff: function () {
-    Services.obs.removeObserver(HttpChannel, 'http-on-examine-response', false);
-    Services.obs.removeObserver(HttpChannel, 'http-on-modify-request', false);
+  shutDown: function () {
+    PrefBranch.removeObserver('', this);
+    Services.obs.removeObserver(this, 'http-on-examine-response', false);
+    Services.obs.removeObserver(this, 'http-on-modify-request', false);
   },
 };
 
-function startup(data, reason) {
-  HttpChannel.iQiyi();
+function startup(aData, aReason) {
+  RuleExecution.iqiyi();
   Preferences.pending();
-  Observers.prefsOn();
-  Observers.httpOn();
+  Observers.startUp();
 }
 
-function shutdown(data, reason) {
-  Observers.prefsOff();
-  Observers.httpOff();
+function shutdown(aData, aReason) {
+  Observers.shutDown();
 }
 
-function install(data, reason) {
+function install(aData, aReason) {
 }
 
-function uninstall(data, reason) {
+function uninstall(aData, aReason) {
+  if (aReason == ADDON_UNINSTALL) {
+    Preferences.remove();
+  }
 }
