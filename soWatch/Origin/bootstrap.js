@@ -1,9 +1,7 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
-Cu.import('resource://gre/modules/osfile.jsm');
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aPath = OS.Path.join(OS.Constants.Path.profileDir, 'sowatch');
-var aURI = OS.Path.toFileURI(aPath) + '/';
+var aURI = 'chrome://sowatch/content/';
 
 var Services = {
   obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
