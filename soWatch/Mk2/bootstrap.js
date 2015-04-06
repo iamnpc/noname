@@ -94,7 +94,7 @@ var PrefValue = {
       return PrefBranch.getCharPref('autoupdate.file_hosting');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.file_hosting', 'http://your.domain/soWatch/'); //用户设定catcat520所修改的播放器服务器
+      PrefBranch.setCharPref('autoupdate.file_hosting', 'chrome://sowatchmk2/content'); //用户设定catcat520所修改的播放器服务器
     },
   },
 };
@@ -466,46 +466,6 @@ var RuleResolver = {
     },
     filterOff: function () {
       FilterRules['pptv'] = null;
-    },
-  },
-  '17173': {
-    playerOn: function () {
-      var aMod = this;
-      PlayerRules['17173'] = {
-        'object': FileIO.path() + '17173.in.Vod.swf',
-        'remote': FileIO.link(aMod) + '17173.in.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
-      };
-      PlayerRules['17173_out'] = {
-        'object': FileIO.path() + '17173.out.Vod.swf',
-        'remote': FileIO.link(aMod) + '17173.out.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
-      };
-      PlayerRules['17173_live'] = {
-        'object': FileIO.path() + '17173.in.Live.swf',
-        'remote': FileIO.link(aMod) + '17173.in.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
-      };
-      PlayerRules['17173_live_out'] = {
-        'object': FileIO.path() + '17173.out.Live.swf',
-        'remote': FileIO.link(aMod) + '17173.out.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['17173'] = null;
-      PlayerRules['17173_out'] = null;
-      PlayerRules['17173_live'] = null;
-      PlayerRules['17173_live_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['17173'] = {
-        'object': 'http://17173im.allyes.com/crossdomain.xml',
-        'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['17173'] = null;
     },
   },
   'ku6': {
