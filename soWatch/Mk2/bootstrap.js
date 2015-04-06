@@ -94,7 +94,7 @@ var PrefValue = {
       return PrefBranch.getCharPref('autoupdate.file_hosting');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.file_hosting', 'chrome://sowatchmk2/content'); //用户设定catcat520所修改的播放器服务器
+      PrefBranch.setCharPref('autoupdate.file_hosting', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
     },
   },
 };
