@@ -66,20 +66,21 @@ var PrefValue = {
       PrefBranch.setBoolPref('override_player.pptv', true);
     },
   },
-  '17173': {
-    get: function () {
-      return PrefBranch.getBoolPref('override_player.17173');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('override_player.17173', true);
-    },
-  },
   'ku6': {
     get: function () {
       return PrefBranch.getBoolPref('override_player.ku6');
     },
     set: function () {
       PrefBranch.setBoolPref('override_player.ku6', true);
+    },
+  },
+// Not functional
+  '17173': {
+    get: function () {
+      return PrefBranch.getBoolPref('override_player.17173');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('override_player.17173', true);
     },
   },
   'youku_referer': {
@@ -157,20 +158,20 @@ var RuleResolver = {
         'object': aURI + 'player.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['youku_loader'] = null;
       PlayerRules['youku_player'] = null;
-	},
+    },
     refererOn: function () {
       RefererRules['youku'] = {
         'object': 'http://www.youku.com/',
         'target': /http:\/\/.*\.youku\.com/i
-	  };
-	},
+      };
+    },
     refererOff: function () {
       RefererRules['youku'] = null;
-	},
+    },
   },
   'tudou': {
     playerOn: function () {
@@ -208,20 +209,20 @@ var RuleResolver = {
         'object': aURI + 'iqiyi_out.swf',
         'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['iqiyi5'] = null;
       PlayerRules['iqiyi_out'] = null;
-	},
+    },
     refererOn: function () {
       RefererRules['iqiyi'] = {
         'object': 'http://www.iqiyi.com/',
         'target': /http:\/\/.*\.qiyi\.com/i
-	  };
-	},
+      };
+    },
     refererOff: function () {
       RefererRules['iqiyi'] = null;
-	},
+    },
   },
   'pps': {
     playerOn: function () {
@@ -233,11 +234,11 @@ var RuleResolver = {
         'object': aURI + 'pps.swf',
         'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['pps'] = null;
       PlayerRules['pps_out'] = null;
-	},
+    },
   },
   'letv': {
     playerOn: function () {
@@ -249,11 +250,11 @@ var RuleResolver = {
         'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
         'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['letv'] = null;
       PlayerRules['letv_skin'] = null;
-	},
+    },
   },
   'sohu': {
     playerOn: function () {
@@ -261,10 +262,10 @@ var RuleResolver = {
         'object': aURI + 'sohu_live.swf',
         'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['sohu'] = null;
-	},
+    },
   },
   'pptv': {
     playerOn: function () {
@@ -276,12 +277,29 @@ var RuleResolver = {
         'object': aURI + 'pptv.in.Live.swf',
         'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['pptv'] == null;
       PlayerRules['pptv_live'] == null;
-	},
+    },
   },
+  'ku6': {
+    playerOn: function () {
+      PlayerRules['ku6'] = {
+        'object': aURI + 'ku6_in_player.swf',
+        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
+      };
+      PlayerRules['ku6_out'] = {
+        'object': aURI + 'ku6_out_player.swf',
+        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
+      };
+    },
+    playerOff: function () {
+      PlayerRules['ku6'] = null;
+      PlayerRules['ku6_out'] = null;
+    },
+  },
+// Not functional
   '17173': {
     playerOn: function () {
       PlayerRules['17173'] = {
@@ -300,29 +318,13 @@ var RuleResolver = {
         'object': aURI + '17173.out.Live.swf',
         'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
       };
-	},
+    },
     playerOff: function () {
       PlayerRules['17173'] = null;
       PlayerRules['17173_out'] = null;
       PlayerRules['17173_live'] = null;
       PlayerRules['17173_live_out'] = null;
-	},
-  },
-  'ku6': {
-    playerOn: function () {
-      PlayerRules['ku6'] = {
-        'object': aURI + 'ku6_in_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
-      };
-      PlayerRules['ku6_out'] = {
-        'object': aURI + 'ku6_out_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-      };
-	},
-    playerOff: function () {
-      PlayerRules['ku6'] = null;
-      PlayerRules['ku6_out'] = null;
-	},
+    },
   },
 };
 
