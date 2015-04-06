@@ -18,6 +18,33 @@ var Services = {
 // 加载本地化Debug记录
 var Logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
 
+var FileIO = {
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
+  extDir: function () {
+    return PrefValue['directory'].get();
+  },
+  addFolder: function () {
+    OS.File.makeDir(this.extDir());
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.extDir());
+  },
+// Now bytebucket.org for 15536900's work and other for catcat520.
+// 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
+  link: function (aMod) {
+    for (var i in RuleResolver) {
+      if (aMod === RuleResolver[i]) {
+        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
+        return 'https://bytebucket.org/kafan15536900/haoutil/raw/d210c02ab8cec4bb9ff3e4baa9a9009cbfabc9f4/player/testmod/'; //这里可能也会被改成用户设置
+      }
+    }
+  },
+  path: function () {
+    return OS.Path.toFileURI(this.extDir()) + '/';
+  },
+};
+
 // User preferences to toggle functions. may be modifed later
 // 设置用户参数以实现各种功能的开关,这里可能会改写
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
@@ -119,33 +146,6 @@ var Preferences = {
   },
 };
 
-var FileIO = {
-// You can customize the dir name to store .swf files
-// 你可以自行修改保存 .swf 文件的文件夹名字。
-  extDir: function () {
-    return PrefValue['directory'].get();
-  },
-  addFolder: function () {
-    OS.File.makeDir(this.extDir());
-  },
-  delFolder: function () {
-    OS.File.removeDir(this.extDir());
-  },
-// Now bytebucket.org for 15536900's work and other for catcat520.
-// 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
-  link: function (aMod) {
-    for (var i in RuleResolver) {
-      if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
-        return 'https://bytebucket.org/kafan15536900/haoutil/raw/d210c02ab8cec4bb9ff3e4baa9a9009cbfabc9f4/player/testmod/'; //这里可能也会被改成用户设置
-      }
-    }
-  },
-  path: function () {
-    return OS.Path.toFileURI(this.extDir()) + '/';
-  },
-};
-
 var Toolbar = {
 // Embedded style sheet
 // 内置样式表
@@ -244,7 +244,7 @@ var Download = {
       if (!rule['remote']) continue;
       var aLink = rule['remote'];
       var aFile = OS.Path.fromFileURI(rule['object']);
-      var aName = OS.Path.split(aFile).components[10];
+      var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
       Download.check(aLink, aFile, aName);
     }
   },
