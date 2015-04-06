@@ -67,14 +67,6 @@ var PrefValue = {
       PrefBranch.setCharPref('defined_rule.pptv', 'filter');
     },
   },
-  '17173': {
-    get: function () {
-      return PrefBranch.getCharPref('defined_rule.17173');
-    },
-    set: function () {
-      PrefBranch.setCharPref('defined_rule.17173', 'player');
-    },
-  },
   'ku6': {
     get: function () {
       return PrefBranch.getCharPref('defined_rule.ku6');
@@ -401,41 +393,6 @@ var RuleResolver = {
       FilterRules['pptv'] = {
         'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
         'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['pptv'] = null;
-    },
-  },
-  '17173': {
-    playerOn: function () {
-      PlayerRules['17173'] = {
-        'object': aURI + '17173.in.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
-      };
-      PlayerRules['17173_out'] = {
-        'object': aURI + '17173.out.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
-      };
-      PlayerRules['17173_live'] = {
-        'object': aURI + '17173.in.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
-      };
-      PlayerRules['17173_live_out'] = {
-        'object': aURI + '17173.out.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['17173'] = null;
-      PlayerRules['17173_out'] = null;
-      PlayerRules['17173_live'] = null;
-      PlayerRules['17173_live_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['pptv'] = {
-        'object': 'http://17173im.allyes.com/crossdomain.xml',
-        'target': /http:\/\/cdn\d+\.v\.17173\.com\/(?!crossdomain\.xml).*/i
       };
     },
     filterOff: function () {
