@@ -30,13 +30,19 @@ var FileIO = {
   delFolder: function () {
     OS.File.removeDir(this.extDir());
   },
+// Since bitbucket generate links use CID,then just read URI from remote file
+// 从URI中读取bitbucket所使用的链接，这样会好很多。
+  server: function () {
+    var aString = Services.strings.createBundle('https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Misc/URI.json?' + Math.random());
+    return aString.GetStringFromName('remoteServer');
+  },
 // Now bytebucket.org for 15536900's work and other for catcat520.
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
   link: function (aMod) {
     for (var i in RuleResolver) {
       if (aMod === RuleResolver[i]) {
         if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
-        return 'https://bytebucket.org/kafan15536900/haoutil/raw/d210c02ab8cec4bb9ff3e4baa9a9009cbfabc9f4/player/testmod/'; //这里可能也会被改成用户设置
+        return FileIO.server(); //这里可能也会被改成用户设置
       }
     }
   },
