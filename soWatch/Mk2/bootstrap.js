@@ -217,7 +217,7 @@ var Download = {
   },
 // Download remote file with _sw as temp file, then check and overwrite.
 // 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
-  fetch: function (aLink, aFile, aSize) {
+  fetch: function (aLink, aFile, aName, aSize) {
     var aTemp = aFile + '_sw';
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
