@@ -803,8 +803,8 @@ function shutdown(data, reason) {
 // 安装扩展后立即下载播放器
 function install(data, reason) {
   if (reason == ADDON_INSTALL) {
+    Preferences.pending();
     Download.start();
-    console.log(Logs.GetStringFromName('extName') + ' ' + Logs.GetStringFromName('extInstall'));
   }
 //Remove useless files after update.
 //升级后删除无用的文件。
@@ -816,6 +816,10 @@ function install(data, reason) {
     OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
+    OS.File.remove(OS.Path.join(aPath, '17173.in.Vod.swf'));
+    OS.File.remove(OS.Path.join(aPath, '17173.out.Vod.swf'));
+    OS.File.remove(OS.Path.join(aPath, '17173.in.Live.swf'));
+    OS.File.remove(OS.Path.join(aPath, '17173.out.Live.swf'));
   }
 */
 }
@@ -826,6 +830,5 @@ function uninstall(data, reason) {
   if (reason == ADDON_UNINSTALL) {
     FileIO.delFolder();
     Preferences.remove();
-    console.log(Logs.GetStringFromName('extName') + ' ' + Logs.GetStringFromName('extUninstall'));
   }
 }
