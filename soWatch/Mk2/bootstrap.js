@@ -193,8 +193,9 @@ var Download = {
     }
     aClient.send();
     aClient.onload = function () {
-      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      if (aSize < 10000) return console.log(aName + ' ' + Logs.GetStringFromName('remoteAccessFailed'));
+      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       OS.File.stat(aFile).then(function onSuccess(info) {
         if (aSize == null || aSize < 10000) {
           console.log(aName + ' ' + Logs.GetStringFromName('remoteAccessFailed'));
