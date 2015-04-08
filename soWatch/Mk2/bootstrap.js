@@ -18,39 +18,6 @@ var Services = {
 // 加载本地化Debug记录
 var Logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
 
-var FileIO = {
-// You can customize the dir name to store .swf files
-// 你可以自行修改保存 .swf 文件的文件夹名字。
-  extDir: function () {
-    return PrefValue['directory'].get();
-  },
-  addFolder: function () {
-    OS.File.makeDir(this.extDir());
-  },
-  delFolder: function () {
-    OS.File.removeDir(this.extDir());
-  },
-// Since bitbucket generate links use CID,then just read URI from remote file
-// 从URI中读取bitbucket所使用的链接，这样会好很多。
-  server: function () {
-    var aString = Services.strings.createBundle('https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Misc/URI.json?' + Math.random());
-    return aString.GetStringFromName('remoteServer');
-  },
-// Now bytebucket.org for 15536900's work and other for catcat520.
-// 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
-  link: function (aMod) {
-    for (var i in RuleResolver) {
-      if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
-        return FileIO.server(); //这里可能也会被改成用户设置
-      }
-    }
-  },
-  path: function () {
-    return OS.Path.toFileURI(this.extDir()) + '/';
-  },
-};
-
 // User preferences to toggle functions. may be modifed later
 // 设置用户参数以实现各种功能的开关,这里可能会改写
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
@@ -149,6 +116,33 @@ var Preferences = {
     if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
     PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
     Download.start();
+  },
+};
+
+var FileIO = {
+// You can customize the dir name to store .swf files
+// 你可以自行修改保存 .swf 文件的文件夹名字。
+  extDir: function () {
+    return PrefValue['directory'].get();
+  },
+  addFolder: function () {
+    OS.File.makeDir(this.extDir());
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.extDir());
+  },
+// Now bytebucket.org for 15536900's work and other for catcat520.
+// 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
+  link: function (aMod) {
+    for (var i in RuleResolver) {
+      if (aMod === RuleResolver[i]) {
+        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
+        return 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/'; //这里可能也会被改成用户设置
+      }
+    }
+  },
+  path: function () {
+    return OS.Path.toFileURI(this.extDir()) + '/';
   },
 };
 
@@ -788,25 +782,24 @@ var Observers = {
 
 // Enable Add-on. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，并检查自动更新参数。
-function startup(data, reason) {
+function startup(aData, aReason) {
   RuleExecution.iqiyi();
   Toolbar.addIcon();
   Preferences.pending();
   Observers.startUp();
+  if (reason == ADDON_INSTALL) {
+    Download.start();
+  }
 }
 
-function shutdown(data, reason) {
+function shutdown(aData, aReason) {
   Toolbar.removeIcon();
   Observers.shutDown();
 }
 
 // Run download session after installed
 // 安装扩展后立即下载播放器
-function install(data, reason) {
-  if (reason == ADDON_INSTALL) {
-    Preferences.pending();
-    Download.start();
-  }
+function install(aData, aReason) {
 //Remove useless files after update.
 //升级后删除无用的文件。
 /*
@@ -827,7 +820,7 @@ function install(data, reason) {
 
 // Only delete soWatch folder when uninstalled.
 // 仅在卸载时才删除soWatch文件夹。
-function uninstall(data, reason) {
+function uninstall(aData, aReason) {
   if (reason == ADDON_UNINSTALL) {
     FileIO.delFolder();
     Preferences.remove();
