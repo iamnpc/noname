@@ -836,10 +836,6 @@ function startup(aData, aReason) {
   Toolbar.addIcon();
   Preferences.pending();
   Observers.startUp();
-  if (reason == ADDON_INSTALL) {
-    Download.start();
-    console.log(aLog.extName + ' ' + aLog.extInstall)
-  }
 }
 
 function shutdown(aData, aReason) {
@@ -850,10 +846,14 @@ function shutdown(aData, aReason) {
 // Run download session after installed
 // 安装扩展后立即下载播放器
 function install(aData, aReason) {
+  if (aReason == ADDON_INSTALL) {
+    Download.start();
+    console.log(aLog.extName + ' ' + aLog.extInstall)
+  }
 //Remove useless files after update.
 //升级后删除无用的文件。
 /*
-  if (reason == ADDON_UPGRADE) {
+  if (aReason == ADDON_UPGRADE) {
     OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
     OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
     OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
