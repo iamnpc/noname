@@ -14,9 +14,60 @@ var Services = {
   strings: Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService),
 };
 
-// Import localizeable debug logs
-// 加载本地化Debug记录
-var Logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
+// Localizable debugging logs to improve user experience
+// 本地化Debug记录用于改善用户体验
+var aLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
+var Logs = {
+  'en-US': {
+    extName: 'soWatch! mk2',
+    extTooltip: 'Run update check now...',
+    extInstall: 'has been installed...',
+    extUninstall: 'has been uninstalled...',
+    localOutofDate: 'is out of date',
+    localCurrupted: 'may be corrupted',
+    localReady: 'is ready to serve',
+    localFileNotExsit: 'is not exist',
+    remoteDownloaded: 'download session complete',
+    remoteTimeOut: 'no response from remote server',
+    remoteAccessFailed: 'failed to access remote file',
+    remoteFetchFailed: 'failed to download remote file',
+    remoteConnectInterrupted: 'download session has been interrupted due to unknown error',
+  },
+  'ja': {
+    extName: 'soWatch! Mk2',
+    extTooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
+    extInstall: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    extUninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
+    localOutofDate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    localCurrupted: '\u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
+    localReady: '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+    localFileNotExsit: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
+    remoteDownloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86\u3057\u307E\u3057\u305F',
+    remoteTimeOut: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
+    remoteAccessFailed: '\u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
+    remoteFetchFailed: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
+    remoteConnectInterrupted: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
+  },
+  'zh-CN': {
+    extName: 'soWatch! Mk2',
+    extTooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
+    extInstall: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
+    extUninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
+    localOutofDate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    localCurrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
+    localReady: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    localFileNotExsit: '\u6587\u4EF6\u4E0D\u5B58\u5728',
+    remoteDownloaded: '\u4E0B\u8F7D\u5DF2\u5B8C\u6210',
+    remoteTimeOut: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
+    remoteAccessFailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
+    remoteFetchFailed: '\u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
+    remoteConnectInterrupted: '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
+  },
+};
+if (!Logs[aLocale]) {
+  console.log('Your locale is not supported');
+}
+var aLog = Logs[aLocale] || Logs['en-US'];
 
 // User preferences to toggle functions. may be modifed later
 // 设置用户参数以实现各种功能的开关,这里可能会改写
@@ -156,8 +207,8 @@ var Toolbar = {
     CustomizableUI.createWidget({
       id: 'sowatchmk2-button',
       defaultArea: CustomizableUI.AREA_NAVBAR,
-      label: Logs.GetStringFromName('extName'),
-      tooltiptext: Logs.GetStringFromName('extName') + ':\n' + Logs.GetStringFromName('extTooltip'),
+      label: aLog.extName,
+      tooltiptext: aLog.extName + ':\n' + aLog.extTooltip,
       onCommand: function () {
         var aRemote = PrefValue['remote'].get();
         if (aRemote == true) return;
@@ -183,28 +234,26 @@ var Download = {
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
     aClient.ontimeout = function () {
-      console.log(aName + ' ' + Logs.GetStringFromName('remoteTimeOut'));
+      console.log(aName + ' ' + aLog.remoteTimeOut);
     }
     aClient.send();
     aClient.onload = function () {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-      if (aSize < 10000) return console.log(aName + ' ' + Logs.GetStringFromName('remoteAccessFailed'));
+      if (aSize < 10000) return console.log(aName + ' ' + aLog.remoteAccessFailed);
       var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aSize == null || aSize < 10000) {
-          console.log(aName + ' ' + Logs.GetStringFromName('remoteAccessFailed'));
-        } else if (aDate > info.lastModificationDate) {
-          console.log(aName + ' ' + Logs.GetStringFromName('localOutofDate'));
+        if (aDate > info.lastModificationDate) {
+          console.log(aName + ' ' + aLog.localOutofDate);
           Download.fetch(aLink, aFile, aName, aSize);
         } else if (aSize != info.size) {
-          console.log(aName + ' ' + Logs.GetStringFromName('localCurrupted'));
+          console.log(aName + ' ' + aLog.localCurrupted);
           Download.fetch(aLink, aFile, aName, aSize);
         } else {
-          console.log(aName + ' ' + Logs.GetStringFromName('localReady'));
+          console.log(aName + ' ' + aLog.localReady);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aName + ' ' + Logs.GetStringFromName('localFileNotExsit'));
+          console.log(aName + ' ' + aLog.localFileNotExsit);
           Download.fetch(aLink, aFile, aName, aSize);
         }
       });
@@ -219,16 +268,16 @@ var Download = {
     }).then(function onSuccess() {
       OS.File.stat(aTemp).then(function onSuccess(info) {
         if (aSize == info.size) {
-          console.log(aName + ' ' + Logs.GetStringFromName('remoteDownloaded'));
+          console.log(aName + ' ' + aLog.remoteDownloaded);
           OS.File.move(aTemp, aFile);
         } else {
-          console.log(aName + ' ' + Logs.GetStringFromName('remoteConnectInterrupted'));
+          console.log(aName + ' ' + aLog.remoteConnectInterrupted);
           OS.File.remove(aTemp);
           Download.fetch(aLink, aFile, aName, aSize);
         }
       });
     }, function onFailure() {
-      console.log(aName + ' ' + Logs.GetStringFromName('remoteFetchFailed'));
+      console.log(aName + ' ' + aLog.remoteFetchFailed);
       OS.File.remove(aTemp);
     });
   },
@@ -789,6 +838,7 @@ function startup(aData, aReason) {
   Observers.startUp();
   if (reason == ADDON_INSTALL) {
     Download.start();
+    console.log(aLog.extName + ' ' + aLog.extInstall)
   }
 }
 
@@ -821,8 +871,9 @@ function install(aData, aReason) {
 // Only delete soWatch folder when uninstalled.
 // 仅在卸载时才删除soWatch文件夹。
 function uninstall(aData, aReason) {
-  if (reason == ADDON_UNINSTALL) {
+  if (aReason == ADDON_UNINSTALL) {
     FileIO.delFolder();
     Preferences.remove();
+    console.log(aLog.extName + ' ' + aLog.extUninstall)
   }
 }
