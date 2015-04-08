@@ -241,10 +241,6 @@ var RuleResolver = {
         'object': aURI + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
-      FilterRules['tudou_css'] = {
-        'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/tudoucss/play_70.css',
-        'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.*\.css/i
-      };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
