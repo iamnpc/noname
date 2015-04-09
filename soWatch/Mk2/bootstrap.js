@@ -23,45 +23,38 @@ var Logs = {
     extTooltip: 'Run update check now...',
     extInstall: 'has been installed...',
     extUninstall: 'has been uninstalled...',
-    localOutofDate: 'is out of date',
-    localCurrupted: 'may be corrupted',
-    localReady: 'is ready to serve',
+    localNeedUpdate: 'is out of date',
+    localFileReady: 'is ready to serve',
     localFileNotExsit: 'is not exist',
     remoteDownloaded: 'download session complete',
     remoteTimeOut: 'no response from remote server',
     remoteAccessFailed: 'failed to access remote file',
-    remoteFetchFailed: 'failed to download remote file',
-    remoteConnectInterrupted: 'download session has been interrupted due to unknown error',
+    remoteFetchFailed: 'download session has been interrupted due to unknown error',
   },
   'ja': {
     extName: 'soWatch! Mk2',
     extTooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
     extInstall: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
     extUninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    localOutofDate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    localCurrupted: '\u304C\u58CA\u308C\u3066\u3044\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059',
-    localReady: '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
+    localNeedUpdate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
+    localFileReady: '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
     localFileNotExsit: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
     remoteDownloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86\u3057\u307E\u3057\u305F',
     remoteTimeOut: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-    remoteAccessFailed: '\u3078\u306E\u30A2\u30AF\u30BB\u30B9\u304C\u3067\u304D\u307E\u305B\u3093',
-    remoteFetchFailed: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-    remoteConnectInterrupted: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u4E2D\u306B\u4E0D\u660E\u306A\u30A8\u30E9\u30FC\u304C\u767A\u751F\u3057\u307E\u3057\u305F',
+    remoteAccessFailed: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
   },
   'zh-CN': {
     extName: 'soWatch! Mk2',
     extTooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
     extInstall: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
     extUninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-    localOutofDate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    localCurrupted: '\u6587\u4EF6\u53EF\u80FD\u5DF2\u7ECF\u635F\u574F',
-    localReady: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
+    localNeedUpdate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
+    localFileReady: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
     localFileNotExsit: '\u6587\u4EF6\u4E0D\u5B58\u5728',
     remoteDownloaded: '\u4E0B\u8F7D\u5DF2\u5B8C\u6210',
     remoteTimeOut: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
     remoteAccessFailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    remoteFetchFailed: '\u65E0\u6CD5\u4E0B\u8F7D\u8FDC\u7A0B\u6587\u4EF6',
-    remoteConnectInterrupted: '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
+    remoteFetchFailed: '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
   },
 };
 if (!Logs[aLocale]) {
@@ -113,28 +106,28 @@ var PrefValue = {
       PrefBranch.setCharPref('autoupdate.directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
     },
   },
-  'hosting': {
+  'server': {
     get: function () {
-      return PrefBranch.getCharPref('autoupdate.hosting.user_defined');
+      return PrefBranch.getCharPref('file.server.user_defined');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.hosting', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
+      PrefBranch.setCharPref('file.server.user_defined', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
     },
   },
  'override': {
     get: function () {
-      return PrefBranch.getBoolPref('autoupdate.hosting.override');
+      return PrefBranch.getBoolPref('file.server.override');
     },
     set: function () {
-      PrefBranch.setBoolPref('autoupdate.hosting.override', false);
+      PrefBranch.setBoolPref('file.server.override', false);
     },
   },
   'bitbucket': {
     get: function () {
-      return PrefBranch.getCharPref('autoupdate.hosting.bitbucket');
+      return PrefBranch.getCharPref('file.server.bitbucket');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.hosting.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
+      PrefBranch.setCharPref('file.server.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
     },
   },
 };
@@ -246,9 +239,9 @@ var Toolbar = {
 };
 
 var Download = {
-// Check for remote files then synchronize local files.
-// 检查远程文件，再检查文件是否需要更新。
-  check: function (aLink, aFile, aName) {
+// Check remote file size and modified date.
+// 检查远程文件的大小跟修改时间
+  access: function (aLink, aFile, aName) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
@@ -260,41 +253,44 @@ var Download = {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
       if (aSize < 10000) return console.log(aName + ' ' + aLog.remoteAccessFailed);
       var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
+      var aHash = Date.parse(aDate) / 1000 + '|' + aSize;
+      Download.hashing(aLink, aFile, aName, aDate, aSize, aHash);
+    }
+  },
+// LastModifiedDate|FileSize as Hash for update。 If there‘s no hash then check file info to ensure if update is needed
+// 以 最后修改日期|文件大小 为哈希以检查文件是否需要更新，如果没有参数则检查文件信息以确认是否需要更新
+  hashing: function (aLink, aFile, aName, aDate, aSize, aHash) {
+    try {
+      var prefHash = PrefBranch.getCharPref('file.hash.' + aName);
+      if (prefHash == aHash) return console.log(aName + ' ' + aLog.localFileReady);
+      console.log(aName + ' ' + aLog.localNeedUpdate);
+      Download.fetch(aLink, aFile, aName, aHash);
+    } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aDate > info.lastModificationDate) {
-          console.log(aName + ' ' + aLog.localOutofDate);
-          Download.fetch(aLink, aFile, aName, aSize);
-        } else if (aSize != info.size) {
-          console.log(aName + ' ' + aLog.localCurrupted);
-          Download.fetch(aLink, aFile, aName, aSize);
+        if (aDate > info.lastModificationDate || (aDate <= info.lastModificationDate && aSize != info.size)) {
+          console.log(aName + ' ' + aLog.localNeedUpdate);
+          Download.fetch(aLink, aFile, aName, aHash);
         } else {
           console.log(aName + ' ' + aLog.localReady);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aName + ' ' + aLog.localFileNotExsit);
-          Download.fetch(aLink, aFile, aName, aSize);
+          Download.fetch(aLink, aFile, aName, aHash);
         }
       });
     }
   },
-// Download remote file with _sw as temp file, then check and overwrite.
-// 下载远程文件至 _sw 临时文件,然后检查下载的文件是否完整,再覆盖文件
-  fetch: function (aLink, aFile, aName, aSize) {
-    var aTemp = aFile + '_sw';
+// Download remote file , then write hash to prefs.
+// 下载远程文件并将哈希写入参数
+  fetch: function (aLink, aFile, aName, aHash) {
+    var aTemp = aFile + '_sw'; // 因为Downloads.jsm无法直接覆盖下载,因此采用下载然后覆盖文件的形式)
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
     }).then(function onSuccess() {
-      OS.File.stat(aTemp).then(function onSuccess(info) {
-        if (aSize == info.size) {
-          console.log(aName + ' ' + aLog.remoteDownloaded);
-          OS.File.move(aTemp, aFile);
-        } else {
-          console.log(aName + ' ' + aLog.remoteConnectInterrupted);
-          OS.File.remove(aTemp);
-          Download.fetch(aLink, aFile, aName, aSize);
-        }
-      });
+      console.log(aName + ' ' + aLog.remoteDownloaded);
+      OS.File.move(aTemp, aFile);
+      PrefBranch.setCharPref('file.hash.' + aName, aHash);
     }, function onFailure() {
       console.log(aName + ' ' + aLog.remoteFetchFailed);
       OS.File.remove(aTemp);
