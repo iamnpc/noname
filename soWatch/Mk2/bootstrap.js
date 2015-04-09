@@ -107,18 +107,34 @@ var PrefValue = {
   },
   'directory': {
     get: function () {
-      return PrefBranch.getCharPref('autoupdate.file_directory');
+      return PrefBranch.getCharPref('autoupdate.directory');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.file_directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
+      PrefBranch.setCharPref('autoupdate.directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
     },
   },
   'hosting': {
     get: function () {
-      return PrefBranch.getCharPref('autoupdate.file_hosting');
+      return PrefBranch.getCharPref('autoupdate.hosting.user_defined');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.file_hosting', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
+      PrefBranch.setCharPref('autoupdate.hosting', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
+    },
+  },
+ 'override': {
+    get: function () {
+      return PrefBranch.getBoolPref('autoupdate.hosting.override');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('autoupdate.hosting.override', false);
+    },
+  },
+  'bitbucket': {
+    get: function () {
+      return PrefBranch.getCharPref('autoupdate.hosting.bitbucket');
+    },
+    set: function () {
+      PrefBranch.setCharPref('autoupdate.hosting.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
     },
   },
 };
@@ -149,9 +165,10 @@ var Preferences = {
     }
     this.manifest();
   },
-// If use_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
-// 当use_remote为true时将autoupdate设为false的，如果autoupdate为false的话则不自动更新。
+// If access_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
+// 当access_remote为true时将autoupdate设为false的，而autoupdate为false的话则不自动更新。
   manifest: function () {
+    PrefValue['bitbucket'].set();  // 用户无权修改bitbucket的链接,否则将导致功能出错
     for (var i in RuleResolver) {
       var rule = RuleResolver[i];
       if (rule.playerOn) rule.playerOn();
@@ -185,10 +202,12 @@ var FileIO = {
 // Now bytebucket.org for 15536900's work and other for catcat520.
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
   link: function (aMod) {
+    var aOver = PrefValue['override'].get();
+    if (aOver == true) return PrefValue['hosting'].get(); //当强制使用用户设置后将只返回用户设置的链接
     for (var i in RuleResolver) {
       if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get();
-        return 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/'; //这里可能也会被改成用户设置
+        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
+        return PrefValue['bitbucket'].get(); 
       }
     }
   },
