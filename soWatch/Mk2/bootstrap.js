@@ -196,10 +196,10 @@ var FileIO = {
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
   link: function (aMod) {
     var aOver = PrefValue['override'].get();
-    if (aOver == true) return PrefValue['hosting'].get(); //当强制使用用户设置后将只返回用户设置的链接
+    if (aOver == true) return PrefValue['server'].get(); //当强制使用用户设置后将只返回用户设置的链接
     for (var i in RuleResolver) {
       if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['hosting'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
+        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['server'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
         return PrefValue['bitbucket'].get(); 
       }
     }
