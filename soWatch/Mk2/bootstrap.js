@@ -100,10 +100,10 @@ var PrefValue = {
   },
   'directory': {
     get: function () {
-      return PrefBranch.getCharPref('autoupdate.directory');
+      return PrefBranch.getCharPref('file.directory');
     },
     set: function () {
-      PrefBranch.setCharPref('autoupdate.directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
+      PrefBranch.setCharPref('file.directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
     },
   },
   'server': {
@@ -199,7 +199,7 @@ var FileIO = {
     if (aOver == true) return PrefValue['server'].get(); //当强制使用用户设置后将只返回用户设置的链接
     for (var i in RuleResolver) {
       if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == '17173' || i == 'ku6') return PrefValue['server'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
+        if (i == 'pptv' || i == 'ku6') return PrefValue['server'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
         return PrefValue['bitbucket'].get(); 
       }
     }
