@@ -303,7 +303,7 @@ var Download = {
       var aLink = rule['remote'];
       var aFile = OS.Path.fromFileURI(rule['object']);
       var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
-      Download.check(aLink, aFile, aName);
+      Download.access(aLink, aFile, aName);
     }
   },
 };
