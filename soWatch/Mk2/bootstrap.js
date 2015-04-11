@@ -200,9 +200,8 @@ var FileIO = {
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
   link: function (aMode) {
     var aOver = PrefValue['override'].get();
-    if (aOver == true) return PrefValue['server'].get(); // 当强制使用用户设置后将只返回用户设置的链接
+    if (aOver == true || aMode == 1) return PrefValue['server'].get(); // 当强制使用用户设置后将只返回用户设置的链接
     if (aMode == 0) return PrefValue['bitbucket'].get(); // 默认状况下pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
-    if (aMode == 1) return PrefValue['server'].get();
   },
   path: function () {
     return OS.Path.toFileURI(this.extDir()) + '/';
@@ -242,7 +241,6 @@ var QueryFiles = {
 // Check remote file size and modified date.
 // 检查远程文件的大小跟修改时间
   hash: function (aMode, aLink, aFile, aName) {
-    console.log(aLink)
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 10000;
