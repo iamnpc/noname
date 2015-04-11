@@ -389,8 +389,8 @@ var RuleResolver = {
       };
     },
     playerOff: function () {
-      PlayerRules['pptv'] == null;
-      PlayerRules['pptv_live'] == null;
+      PlayerRules['pptv'] = null;
+      PlayerRules['pptv_live'] = null;
     },
     filterOn: function () {
       FilterRules['pptv'] = {
