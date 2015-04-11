@@ -241,7 +241,7 @@ var Toolbar = {
 var Download = {
 // Check remote file size and modified date.
 // 检查远程文件的大小跟修改时间
-  access: function (aLink, aFile, aName) {
+  query: function (aLink, aFile, aName) {
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 30000;
@@ -254,12 +254,12 @@ var Download = {
       if (aSize < 10000) return console.log(aName + ' ' + aLog.remoteAccessFailed);
       var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       var aHash = Date.parse(aDate) / 1000 + '|' + aSize;
-      Download.hashing(aLink, aFile, aName, aDate, aSize, aHash);
+      Download.check(aLink, aFile, aName, aDate, aSize, aHash);
     }
   },
 // LastModifiedDate|FileSize as Hash for update。 If there‘s no hash then check file info to ensure if update is needed
 // 以 最后修改日期|文件大小 为哈希以检查文件是否需要更新，如果没有参数则检查文件信息以确认是否需要更新
-  hashing: function (aLink, aFile, aName, aDate, aSize, aHash) {
+  check: function (aLink, aFile, aName, aDate, aSize, aHash) {
     try {
       var prefHash = PrefBranch.getCharPref('file.hash.' + aName);
       if (prefHash == aHash) return console.log(aName + ' ' + aLog.localFileReady);
@@ -281,7 +281,7 @@ var Download = {
 // Download remote file , then write hash to prefs.
 // 下载远程文件并将哈希写入参数
   fetch: function (aLink, aFile, aName, aHash) {
-    var aTemp = aFile + '_sw'; // 因为Downloads.jsm无法直接覆盖下载,因此采用下载然后覆盖文件的形式)
+    var aTemp = aFile + '_sw'; // 因为Downloads.jsm无法直接覆盖下载,因此采用下载然后覆盖文件的形式
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
     }).then(function onSuccess() {
@@ -303,7 +303,7 @@ var Download = {
       var aLink = rule['remote'];
       var aFile = OS.Path.fromFileURI(rule['object']);
       var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
-      Download.access(aLink, aFile, aName);
+      Download.query(aLink, aFile, aName);
     }
   },
 };
