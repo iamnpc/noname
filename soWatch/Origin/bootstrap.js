@@ -279,8 +279,8 @@ var RuleResolver = {
       };
     },
     playerOff: function () {
-      PlayerRules['pptv'] == null;
-      PlayerRules['pptv_live'] == null;
+      PlayerRules['pptv'] = null;
+      PlayerRules['pptv_live'] = null;
     },
   },
   'ku6': {
