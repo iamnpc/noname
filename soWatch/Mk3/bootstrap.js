@@ -169,32 +169,35 @@ var Preferences = {
       PrefBranch.setCharPref('defined_rule.pps', 'filter');
     }
     for (var i in PrefValue) {
-      if (i == 'youku_referer' || i == 'iqiyi_referer') continue;
-      var rule = PrefValue[i];
-      var resolver = RuleResolver[i];
-      if (rule.get() == 'player') {
-        resolver.playerOn();
-      } else if (rule.get() == 'filter') {
-        resolver.playerOff();
-        resolver.filterOn();
-      } else if (rule.get() == 'none'){
-        resolver.playerOff();
-        resolver.filterOff();
+      if (i == 'youku_referer') {
+        var YoukuReferer = PrefValue['youku_referer'].get();
+        if (YoukuReferer == true) {
+          RuleResolver['youku'].refererOn();
+        } else {
+          RuleResolver['youku'].refererOff();
+        }
+      } else if (i == 'iqiyi_referer') {
+        var QiyiReferer = PrefValue['iqiyi_referer'].get();
+        if (QiyiReferer == true) {
+          RuleResolver['iqiyi'].refererOn();
+        } else {
+          RuleResolver['iqiyi'].refererOff();
+        }
       } else {
-        rule.set();
+        var rule = PrefValue[i];
+        var resolver = RuleResolver[i];
+        if (rule.get() == 'player') {
+          resolver.playerOn();
+        } else if (rule.get() == 'filter') {
+          resolver.playerOff();
+          resolver.filterOn();
+        } else if (rule.get() == 'none'){
+          resolver.playerOff();
+          resolver.filterOff();
+        } else {
+          rule.set();
+        }
       }
-    }
-    var QiyiReferer = PrefValue['youku_referer'].get();
-    if (QiyiReferer == true) {
-      RuleResolver['youku'].refererOn();
-    } else {
-      RuleResolver['youku'].refererOff();
-    }
-    var QiyiReferer = PrefValue['iqiyi_referer'].get();
-    if (QiyiReferer == true) {
-      RuleResolver['iqiyi'].refererOn();
-    } else {
-      RuleResolver['iqiyi'].refererOff();
     }
   },
 };
