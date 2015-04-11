@@ -1,8 +1,12 @@
+"use strict";
+
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Gecko 29 and later
 Cu.import('resource://gre/modules/osfile.jsm'); //Require Gecko 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Gecko 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
+
+var Logs= {}, PlayerRules = {}, FilterRules = {}, RefererRules = {};
 
 // Services.jsm like thing. better performance and compatibility
 // 仿Services.jsm,不过更好用
@@ -176,7 +180,7 @@ var Preferences = {
     var aPeriod = PrefValue['period'].get();
     if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
     PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
-    Download.start();
+    QueryFiles.start(0);
   },
 };
 
@@ -194,15 +198,11 @@ var FileIO = {
   },
 // Now bytebucket.org for 15536900's work and other for catcat520.
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
-  link: function (aMod) {
+  link: function (aMode) {
     var aOver = PrefValue['override'].get();
-    if (aOver == true) return PrefValue['server'].get(); //当强制使用用户设置后将只返回用户设置的链接
-    for (var i in RuleResolver) {
-      if (aMod === RuleResolver[i]) {
-        if (i == 'pptv' || i == 'ku6') return PrefValue['server'].get(); // 默认状况下17173,pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
-        return PrefValue['bitbucket'].get(); 
-      }
-    }
+    if (aOver == true) return PrefValue['server'].get(); // 当强制使用用户设置后将只返回用户设置的链接
+    if (aMode == 0) return PrefValue['bitbucket'].get(); // 默认状况下pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
+    if (aMode == 1) return PrefValue['server'].get();
   },
   path: function () {
     return OS.Path.toFileURI(this.extDir()) + '/';
@@ -225,7 +225,7 @@ var Toolbar = {
         var aRemote = PrefValue['remote'].get();
         if (aRemote == true) return;
         PrefValue['lastdate'].set();
-        Download.start();
+        QueryFiles.start(0);
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
@@ -238,13 +238,14 @@ var Toolbar = {
   },
 };
 
-var Download = {
+var QueryFiles = {
 // Check remote file size and modified date.
 // 检查远程文件的大小跟修改时间
-  query: function (aLink, aFile, aName) {
+  hash: function (aMode, aLink, aFile, aName) {
+    console.log(aLink)
     var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
     aClient.open('HEAD', aLink, true);
-    aClient.timeout = 30000;
+    aClient.timeout = 10000;
     aClient.ontimeout = function () {
       console.log(aName + ' ' + aLog.remoteTimeOut);
     }
@@ -254,7 +255,12 @@ var Download = {
       if (aSize < 10000) return console.log(aName + ' ' + aLog.remoteAccessFailed);
       var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       var aHash = Date.parse(aDate) / 1000 + '|' + aSize;
-      Download.check(aLink, aFile, aName, aDate, aSize, aHash);
+      if (aMode == 0) {
+        QueryFiles.check(aLink, aFile, aName, aDate, aSize, aHash);
+      }
+      if (aMode == 1) {
+        QueryFiles.fetch(aLink, aFile, aName, aHash);
+      }
     }
   },
 // LastModifiedDate|FileSize as Hash for update。 If there‘s no hash then check file info to ensure if update is needed
@@ -264,16 +270,16 @@ var Download = {
       var prefHash = PrefBranch.getCharPref('file.hash.' + aName);
       if (prefHash == aHash) return console.log(aName + ' ' + aLog.localFileReady);
       console.log(aName + ' ' + aLog.localNeedUpdate);
-      Download.fetch(aLink, aFile, aName, aHash);
+      QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aDate <= info.lastModificationDate && aSize == info.size) return console.log(aName + ' ' + aLog.localReady);
+        if (aDate <= info.lastModificationDate && aSize == info.size) return console.log(aName + ' ' + aLog.localFileReady);
         console.log(aName + ' ' + aLog.localNeedUpdate);
-        Download.fetch(aLink, aFile, aName, aHash);
+        QueryFiles.fetch(aLink, aFile, aName, aHash);
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aName + ' ' + aLog.localFileNotExsit);
-          Download.fetch(aLink, aFile, aName, aHash);
+          QueryFiles.fetch(aLink, aFile, aName, aHash);
         }
       });
     }
@@ -303,7 +309,7 @@ var Download = {
       var aLink = rule['remote'];
       var aFile = OS.Path.fromFileURI(rule['object']);
       var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
-      Download.query(aLink, aFile, aName);
+      QueryFiles.hash(aMode, aLink, aFile, aName);
     }
   },
 };
@@ -311,15 +317,14 @@ var Download = {
 var RuleResolver = {
   'youku': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['youku_loader'] = {
         'object': FileIO.path() + 'loader.swf',
-        'remote': FileIO.link(aMod) + 'loader.swf',
+        'remote': FileIO.link(0) + 'loader.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
       };
       PlayerRules['youku_player'] = {
         'object': FileIO.path() + 'player.swf',
-        'remote': FileIO.link(aMod) + 'player.swf',
+        'remote': FileIO.link(0) + 'player.swf',
         'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
       };
     },
@@ -348,10 +353,9 @@ var RuleResolver = {
   },
   'tudou': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['tudou_portal'] = {
         'object': FileIO.path() + 'tudou.swf',
-        'remote': FileIO.link(aMod) + 'tudou.swf',
+        'remote': FileIO.link(0) + 'tudou.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
       FilterRules['tudou_css'] = {
@@ -364,7 +368,7 @@ var RuleResolver = {
       };
       PlayerRules['tudou_social'] = {
         'object': FileIO.path() + 'sp.swf',
-        'remote': FileIO.link(aMod) + 'sp.swf',
+        'remote': FileIO.link(0) + 'sp.swf',
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
       };
     },
@@ -386,15 +390,14 @@ var RuleResolver = {
   },
   'iqiyi': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['iqiyi5'] = {
         'object': FileIO.path() + 'iqiyi5.swf',
-        'remote': FileIO.link(aMod) + 'iqiyi5.swf',
+        'remote': FileIO.link(0) + 'iqiyi5.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
       };
       PlayerRules['iqiyi_out'] = {
         'object': FileIO.path() + 'iqiyi_out.swf',
-        'remote': FileIO.link(aMod) + 'iqiyi_out.swf',
+        'remote': FileIO.link(0) + 'iqiyi_out.swf',
         'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
       };
     },
@@ -423,15 +426,14 @@ var RuleResolver = {
   },
   'pps': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['pps'] = {
         'object': FileIO.path() + 'iqiyi.swf',
-        'remote': FileIO.link(aMod) + 'iqiyi.swf',
+        'remote': FileIO.link(0) + 'iqiyi.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
       };
       PlayerRules['pps_out'] = {
         'object': FileIO.path() + 'pps.swf',
-        'remote': FileIO.link(aMod) + 'pps.swf',
+        'remote': FileIO.link(0) + 'pps.swf',
         'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
       };
     },
@@ -451,10 +453,9 @@ var RuleResolver = {
   },
   'letv': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['letv'] = {
         'object': FileIO.path() + 'letv.swf',
-        'remote': FileIO.link(aMod) + 'letv.swf',
+        'remote': FileIO.link(0) + 'letv.swf',
         'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
       };
       PlayerRules['letv_skin'] = {
@@ -478,10 +479,9 @@ var RuleResolver = {
   },
   'sohu': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['sohu'] = {
         'object': FileIO.path() + 'sohu_live.swf',
-        'remote': FileIO.link(aMod) + 'sohu_live.swf',
+        'remote': FileIO.link(0) + 'sohu_live.swf',
         'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
       };
     },
@@ -500,15 +500,14 @@ var RuleResolver = {
   },
   'pptv': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['pptv'] = {
         'object': FileIO.path() + 'pptv.in.Ikan.swf',
-        'remote': FileIO.link(aMod) + 'pptv.in.Ikan.swf',
+        'remote': FileIO.link(1) + 'pptv.in.Ikan.swf',
         'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
       };
       PlayerRules['pptv_live'] = {
         'object': FileIO.path() + 'pptv.in.Live.swf',
-        'remote': FileIO.link(aMod) + 'pptv.in.Live.swf',
+        'remote': FileIO.link(1) + 'pptv.in.Live.swf',
         'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
       };
     },
@@ -528,15 +527,14 @@ var RuleResolver = {
   },
   'ku6': {
     playerOn: function () {
-      var aMod = this;
       PlayerRules['ku6'] = {
         'object': FileIO.path() + 'ku6_in_player.swf',
-        'remote': FileIO.link(aMod) + 'ku6_in_player.swf',
+        'remote': FileIO.link(1) + 'ku6_in_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
       };
       PlayerRules['ku6_out'] = {
         'object': FileIO.path() + 'ku6_out_player.swf',
-        'remote': FileIO.link(aMod) + 'ku6_out_player.swf',
+        'remote': FileIO.link(1) + 'ku6_out_player.swf',
         'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
       };
     },
@@ -621,7 +619,6 @@ var RuleResolver = {
   },
 };
 
-var PlayerRules = {}, FilterRules = {}, RefererRules = {};
 var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
@@ -859,7 +856,7 @@ function shutdown(aData, aReason) {
 // 安装扩展后立即下载播放器
 function install(aData, aReason) {
   if (aReason == ADDON_INSTALL) {
-    Download.start();
+    QueryFiles.start(0);
     console.log(aLog.extName + ' ' + aLog.extInstall)
   }
 //Remove useless files after update.
