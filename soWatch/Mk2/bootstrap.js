@@ -618,24 +618,14 @@ var RuleResolver = {
 };
 
 var RuleExecution = {
-  getObject: function (rule, callback) {
-    NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
-      var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
-      var storageStream = Cc['@mozilla.org/storagestream;1'].createInstance(Ci['nsIStorageStream']);
-      var count = inputStream.available();
-      var data = NetUtil.readInputStreamToString(inputStream, count);
-        storageStream.init(512, count, null);
-        binaryOutputStream.setOutputStream(storageStream.getOutputStream(0));
-        binaryOutputStream.writeBytes(data, count);
-        rule['storageStream'] = storageStream;
-        rule['count'] = count;
-      if (typeof callback === 'function') {
-        callback();
-      }
-    });
-  },
-  getRemoteObject: function (rule, callback) {
-    NetUtil.asyncFetch(rule['remote'], function (inputStream, status) {
+  getObject: function (aMode, rule, callback) {
+    if (aMode == 0) {
+      var aObject = rule['object'];
+    }
+    if (aMode == 1) {
+      var aObject = rule['remote'];
+    }
+    NetUtil.asyncFetch(aObject, function (inputStream, status) {
       var binaryOutputStream = Cc['@mozilla.org/binaryoutputstream;1'].createInstance(Ci['nsIBinaryOutputStream']);
       var storageStream = Cc['@mozilla.org/storagestream;1'].createInstance(Ci['nsIStorageStream']);
       var count = inputStream.available();
@@ -692,7 +682,6 @@ var RuleExecution = {
 // 替换播放器,将修改来支持use_remote
   player: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
-    var aRemote = PrefValue['remote'].get();
 
     var aVisitor = new HttpHeaderVisitor();
     httpChannel.visitResponseHeaders(aVisitor);
@@ -706,16 +695,17 @@ var RuleExecution = {
         if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
-          if (aRemote == true) {
-          this.getRemoteObject(rule, function () {
-            httpChannel.resume();
-            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
-          });
+          var aRemote = PrefValue['remote'].get();
+          if (aRemote == false) {
+            this.getObject(0, rule, function () {
+              httpChannel.resume();
+              if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
+            });
           } else {
-          this.getObject(rule, function () {
-            httpChannel.resume();
-            if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
-          });
+            this.getObject(1, rule, function () {
+              httpChannel.resume();
+              if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
+            });
           }
         }
         var newListener = new TrackingListener();
