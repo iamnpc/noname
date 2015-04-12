@@ -666,7 +666,7 @@ var RuleExecution = {
       if (rule['target'].test(httpChannel.URI.spec)) {
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
-          this.getObject(rule, function () {
+          this.getObject(0, rule, function () {
             httpChannel.resume();
           });
         }
