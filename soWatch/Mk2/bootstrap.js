@@ -271,9 +271,13 @@ var QueryFiles = {
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aDate <= info.lastModificationDate && aSize == info.size) return console.log(aName + ' ' + aLog.localFileReady);
-        console.log(aName + ' ' + aLog.localNeedUpdate);
-        QueryFiles.fetch(aLink, aFile, aName, aHash);
+        if (aDate <= info.lastModificationDate && aSize == info.size) {
+          console.log(aName + ' ' + aLog.localFileReady);
+          PrefBranch.setCharPref('file.hash.' + aName, aHash);
+        } else {
+          console.log(aName + ' ' + aLog.localNeedUpdate);
+          QueryFiles.fetch(aLink, aFile, aName, aHash);
+        }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
           console.log(aName + ' ' + aLog.localFileNotExsit);
