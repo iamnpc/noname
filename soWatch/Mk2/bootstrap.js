@@ -24,18 +24,18 @@ var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
 var PrefValue = {
  'debug': {
     get: function () {
-      return PrefBranch.getBoolPref('debug.log.enable');
+      return PrefBranch.getBoolPref('debug.enable');
     },
     set: function () {
-      PrefBranch.setBoolPref('debug.log.enable', false);
+      PrefBranch.setBoolPref('debug.enable', false);
     },
   },
  'remote': {
     get: function () {
-      return PrefBranch.getBoolPref('access_remote.enable');
+      return PrefBranch.getBoolPref('remote.direct_access.enable');
     },
     set: function () {
-      PrefBranch.setBoolPref('access_remote.enable', false);
+      PrefBranch.setBoolPref('remote.direct_access.enable', false);
     },
   },
  'autoupdate': {
@@ -72,26 +72,26 @@ var PrefValue = {
   },
   'server': {
     get: function () {
-      return PrefBranch.getCharPref('file.server.user_defined');
+      return PrefBranch.getCharPref('remote.server.user_defined');
     },
     set: function () {
-      PrefBranch.setCharPref('file.server.user_defined', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
+      PrefBranch.setCharPref('remote.server.user_defined', 'chrome://sowatchmk2/content/'); //用户设定catcat520所修改的播放器服务器
     },
   },
  'override': {
     get: function () {
-      return PrefBranch.getBoolPref('file.server.override');
+      return PrefBranch.getBoolPref('remote.server.override');
     },
     set: function () {
-      PrefBranch.setBoolPref('file.server.override', false);
+      PrefBranch.setBoolPref('remote.server.override', false);
     },
   },
   'bitbucket': {
     get: function () {
-      return PrefBranch.getCharPref('file.server.bitbucket');
+      return PrefBranch.getCharPref('remote.server.bitbucket');
     },
     set: function () {
-      PrefBranch.setCharPref('file.server.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
+      PrefBranch.setCharPref('remote.server.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
     },
   },
 };
@@ -253,8 +253,8 @@ var FileIO = {
 // Now bytebucket.org for 15536900's work and other for catcat520.
 // 现在使用bytebucket.org链接访问15536900修改的播放器,其他的则读取用户设置
   link: function (aMode) {
-    var aOver = PrefValue['override'].get();
-    if (aOver == true || aMode == 1) return PrefValue['server'].get(); // 当强制使用用户设置后将只返回用户设置的链接
+    var aServer = PrefValue['override'].get();
+    if (aServer == true || aMode == 1) return PrefValue['server'].get(); // 当强制使用用户设置后将只返回用户设置的链接
     if (aMode == 0) return PrefValue['bitbucket'].get(); // 默认状况下pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
   },
   path: function () {
