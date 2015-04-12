@@ -6,7 +6,7 @@ Cu.import('resource://gre/modules/osfile.jsm'); //Require Gecko 27 and later
 Cu.import('resource://gre/modules/Downloads.jsm'); //Require Gecko 26 and later
 Cu.import('resource://gre/modules/NetUtil.jsm'); //Promise chain that require Gecko 25 and later
 
-var Logs= {}, PlayerRules = {}, FilterRules = {}, RefererRules = {};
+var Utilities = {}, Logs= {}, PlayerRules = {}, FilterRules = {}, RefererRules = {};
 
 // Services.jsm like thing. better performance and compatibility
 // 仿Services.jsm,不过更好用
@@ -18,58 +18,18 @@ var Services = {
   strings: Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService),
 };
 
-// Localizable debugging logs to improve user experience
-// 本地化Debug记录用于改善用户体验
-var aLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
-var Logs = {
-  'en-US': {
-    extName: 'soWatch! mk2',
-    extTooltip: 'Run update check now...',
-    extInstall: 'has been installed...',
-    extUninstall: 'has been uninstalled...',
-    localNeedUpdate: 'is out of date',
-    localFileReady: 'is ready to serve',
-    localFileNotExsit: 'is not exist',
-    remoteDownloaded: 'download session complete',
-    remoteTimeOut: 'no response from remote server',
-    remoteAccessFailed: 'failed to access remote file',
-    remoteFetchFailed: 'download session has been interrupted due to unknown error',
-  },
-  'ja': {
-    extName: 'soWatch! Mk2',
-    extTooltip: '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B',
-    extInstall: '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    extUninstall: '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F',
-    localNeedUpdate: '\u306E\u6700\u65B0\u7248\u304C\u767A\u898B\u3057\u307E\u3057\u305F',
-    localFileReady: '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F',
-    localFileNotExsit: '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093',
-    remoteDownloaded: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86\u3057\u307E\u3057\u305F',
-    remoteTimeOut: '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u304A\u308A\u307E\u305B\u3093',
-    remoteAccessFailed: '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F',
-  },
-  'zh-CN': {
-    extName: 'soWatch! Mk2',
-    extTooltip: '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0',
-    extInstall: '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5',
-    extUninstall: '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664',
-    localNeedUpdate: '\u5DF2\u627E\u5230\u66F4\u65B0\u7248\u672C',
-    localFileReady: '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D',
-    localFileNotExsit: '\u6587\u4EF6\u4E0D\u5B58\u5728',
-    remoteDownloaded: '\u4E0B\u8F7D\u5DF2\u5B8C\u6210',
-    remoteTimeOut: '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94',
-    remoteAccessFailed: '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6',
-    remoteFetchFailed: '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD',
-  },
-};
-if (!Logs[aLocale]) {
-  console.log('Your locale is not supported');
-}
-var aLog = Logs[aLocale] || Logs['en-US'];
-
 // User preferences to toggle functions. may be modifed later
 // 设置用户参数以实现各种功能的开关,这里可能会改写
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
 var PrefValue = {
+ 'debug': {
+    get: function () {
+      return PrefBranch.getBoolPref('debug.log.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('debug.log.enable', false);
+    },
+  },
  'remote': {
     get: function () {
       return PrefBranch.getBoolPref('access_remote.enable');
@@ -166,6 +126,12 @@ var Preferences = {
 // 当access_remote为true时将autoupdate设为false的，而autoupdate为false的话则不自动更新。
   manifest: function () {
     PrefValue['bitbucket'].set();  // 用户无权修改bitbucket的链接,否则将导致功能出错
+    var aDebug = PrefValue['debug'].get();
+    if (aDebug == true) {
+      Utilities.debug = true;
+    } else {
+      Utilities.debug = false;
+    }
     for (var i in RuleResolver) {
       var rule = RuleResolver[i];
       if (rule.playerOn) rule.playerOn();
@@ -173,14 +139,102 @@ var Preferences = {
       if (rule.refererOn) rule.refererOn();
     }
     var aRemote = PrefValue['remote'].get();
-    if (aRemote == true) return PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
-    var aUpdate = PrefValue['autoupdate'].get();
-    if (aUpdate == false) return;
-    var aDate = PrefValue['lastdate'].get();
-    var aPeriod = PrefValue['period'].get();
-    if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-    PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
-    QueryFiles.start(0);
+    if (aRemote == true) {
+      Utilities.remote = true;
+      return PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
+    } else {
+      Utilities.remote = false;
+      var aUpdate = PrefValue['autoupdate'].get();
+      if (aUpdate == false) return;
+      var aDate = PrefValue['lastdate'].get();
+      var aPeriod = PrefValue['period'].get();
+      if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
+      PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
+      QueryFiles.start(0);
+    }
+  },
+};
+
+// Localizable debugging logs to improve user experience
+// 本地化Debug记录用于改善用户体验
+var DebugLogs = {
+  analyze: function () {
+    var aLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
+    if (aLocale == 'ja') {
+      Logs.extName = 'soWatch! Mk2';
+      Logs.extTooltip = '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B';
+      Logs.extInstall = '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F';
+      Logs.extUninstall = '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F';
+      Logs.localNeedUpdate = '\u306E\u6700\u65B0\u7248\u304C\u5229\u7528\u3067\u304D\u307E\u3059';
+      Logs.localFileReady = '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F';
+      Logs.localFileNotExsit = '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093';
+      Logs.remoteDownloaded = '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86\u3057\u307E\u3057\u305F';
+      Logs.remoteTimeOut = '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u3044\u307E\u305B\u3093';
+      Logs.remoteAccessFailed = '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F';
+    } else if (aLocale == 'zh-CN') {
+      Logs.extName = 'soWatch! Mk2';
+      Logs.extTooltip = '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0';
+      Logs.extInstall = '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5';
+      Logs.extUninstall = '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664';
+      Logs.localNeedUpdate = '\u68C0\u67E5\u5230\u65B0\u7248\u672C';
+      Logs.localFileReady = '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D';
+      Logs.localFileNotExsit = '\u6587\u4EF6\u4E0D\u5B58\u5728';
+      Logs.remoteDownloaded = '\u4E0B\u8F7D\u5DF2\u5B8C\u6210';
+      Logs.remoteTimeOut = '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94';
+      Logs.remoteAccessFailed = '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6';
+      Logs.remoteFetchFailed = '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD';
+    } else {
+      Logs.extName = 'soWatch! mk2';
+      Logs.extTooltip = 'Run update check now...';
+      Logs.extInstall = 'has been installed...';
+      Logs.extUninstall = 'has been uninstalled...';
+      Logs.localNeedUpdate = 'new version has found';
+      Logs.localFileReady = 'is ready to serve';
+      Logs.localFileNotExsit = 'is not exist';
+      Logs.remoteDownloaded = 'download session complete';
+      Logs.remoteTimeOut = 'no response from remote server';
+      Logs.remoteAccessFailed = 'failed to access remote file';
+      Logs.remoteFetchFailed = 'download session has been interrupted due to unknown error';
+      if (aLocale != 'en-US') {
+        console.log('Your locale is not supported');
+      }
+    }
+  },
+  remoteTimeOut: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.remoteTimeOut);
+  },
+  remoteAccessFailed: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.remoteAccessFailed);
+  },
+  remoteFetchFailed: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.remoteFetchFailed);
+  },
+  remoteDownloaded: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.remoteDownloaded);
+  },
+  localNeedUpdate: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.localNeedUpdate);
+  },
+  localFileReady: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.localFileReady);
+  },
+  localFileNotExsit: function (aName) {
+    if (Utilities.debug == false) return;
+    console.log(aName + ' ' + Logs.localFileNotExsit);
+  },
+  extInstall: function () {
+    if (Utilities.debug == false) return;
+    console.log(Logs.extName + ' ' + Logs.extInstall);
+  },
+  extUninstall: function () {
+    if (Utilities.debug == false) return;
+    console.log(Logs.extName + ' ' + Logs.extUninstall);
   },
 };
 
@@ -204,6 +258,7 @@ var FileIO = {
     if (aMode == 0) return PrefValue['bitbucket'].get(); // 默认状况下pptv,ku6等在bitbucket上并未有储存的播放器将由用户自己寻找host
   },
   path: function () {
+    if (Utilities.remote == true) return this.link();
     return OS.Path.toFileURI(this.extDir()) + '/';
   },
 };
@@ -221,8 +276,7 @@ var Toolbar = {
       label: aLog.extName,
       tooltiptext: aLog.extName + ':\n' + aLog.extTooltip,
       onCommand: function () {
-        var aRemote = PrefValue['remote'].get();
-        if (aRemote == true) return;
+        if (Utilities.remote == true) return;
         PrefValue['lastdate'].set();
         QueryFiles.start(0);
       },
@@ -245,14 +299,14 @@ var QueryFiles = {
     aClient.open('HEAD', aLink, true);
     aClient.timeout = 10000;
     aClient.ontimeout = function () {
-      console.log(aName + ' ' + aLog.remoteTimeOut);
+      DebugLogs.remoteTimeOut(aName);
     }
     aClient.send();
     aClient.onload = function () {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
-      if (aSize < 10000) return console.log(aName + ' ' + aLog.remoteAccessFailed);
+      if (aSize < 10000) return DebugLogs.remoteAccessFailed(aName);
       var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
-      var aHash = Date.parse(aDate) / 1000 + '|' + aSize;
+      var aHash = aSize.toString(16);
       if (aMode == 0) {
         QueryFiles.check(aLink, aFile, aName, aDate, aSize, aHash);
       }
@@ -266,21 +320,21 @@ var QueryFiles = {
   check: function (aLink, aFile, aName, aDate, aSize, aHash) {
     try {
       var prefHash = PrefBranch.getCharPref('file.hash.' + aName);
-      if (prefHash == aHash) return console.log(aName + ' ' + aLog.localFileReady);
-      console.log(aName + ' ' + aLog.localNeedUpdate);
+      if (prefHash == aHash) return DebugLogs.localFileReady(aName);
+      DebugLogs.localNeedUpdate(aName);
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(info) {
         if (aDate <= info.lastModificationDate && aSize == info.size) {
-          console.log(aName + ' ' + aLog.localFileReady);
+          DebugLogs.localFileReady(aName);
           PrefBranch.setCharPref('file.hash.' + aName, aHash);
         } else {
-          console.log(aName + ' ' + aLog.localNeedUpdate);
+          DebugLogs.localNeedUpdate(aName);
           QueryFiles.fetch(aLink, aFile, aName, aHash);
         }
       }, function onFailure(reason) {
         if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
-          console.log(aName + ' ' + aLog.localFileNotExsit);
+          DebugLogs.localFileNotExsit(aName);
           QueryFiles.fetch(aLink, aFile, aName, aHash);
         }
       });
@@ -293,11 +347,11 @@ var QueryFiles = {
     Downloads.fetch(aLink, aTemp, {
       isPrivate: true
     }).then(function onSuccess() {
-      console.log(aName + ' ' + aLog.remoteDownloaded);
+      DebugLogs.remoteDownloaded(aName);
       OS.File.move(aTemp, aFile);
       PrefBranch.setCharPref('file.hash.' + aName, aHash);
     }, function onFailure() {
-      console.log(aName + ' ' + aLog.remoteFetchFailed);
+      DebugLogs.remoteFetchFailed(aName);
       OS.File.remove(aTemp);
     });
   },
@@ -503,8 +557,8 @@ var RuleResolver = {
   'pptv': {
     playerOn: function () {
       PlayerRules['pptv'] = {
-        'object': FileIO.path() + 'pptv.in.Ikan.swf',
-        'remote': FileIO.link(1) + 'pptv.in.Ikan.swf',
+        'object': FileIO.path() + 'player4player2.swf',
+        'remote': FileIO.link(0) + 'player4player2.swf',
         'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
       };
       PlayerRules['pptv_live'] = {
@@ -699,8 +753,7 @@ var RuleExecution = {
         if (typeof rule['preHandle'] === 'function') rule['preHandle'].apply(fn, args);
         if (!rule['storageStream'] || !rule['count']) {
           httpChannel.suspend();
-          var aRemote = PrefValue['remote'].get();
-          if (aRemote == false) {
+          if (Utilities.remote == false) {
             this.getObject(0, rule, function () {
               httpChannel.resume();
               if (typeof rule['callback'] === 'function') rule['callback'].apply(fn, args);
@@ -834,6 +887,7 @@ var Observers = {
 // 启用扩展，添加工具栏图标，并检查自动更新参数。
 function startup(aData, aReason) {
   RuleExecution.iqiyi();
+  DebugLogs.analyze();
   Toolbar.addIcon();
   Preferences.pending();
   Observers.startUp();
@@ -849,22 +903,23 @@ function shutdown(aData, aReason) {
 function install(aData, aReason) {
   if (aReason == ADDON_INSTALL) {
     QueryFiles.start(0);
-    console.log(aLog.extName + ' ' + aLog.extInstall)
+    DebugLogs.extInstall();
   }
 //Remove useless files after update.
 //升级后删除无用的文件。
 /*
   if (aReason == ADDON_UPGRADE) {
-    OS.File.remove(OS.Path.join(aPath, '56.in.NM.swf'));
-    OS.File.remove(OS.Path.join(aPath, '56.in.TM.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy.Lite.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.injs.Lite.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inbj.Live.swf'));
-    OS.File.remove(OS.Path.join(aPath, 'sohu.inyy+injs.Lite.s1.swf'));
-    OS.File.remove(OS.Path.join(aPath, '17173.in.Vod.swf'));
-    OS.File.remove(OS.Path.join(aPath, '17173.out.Vod.swf'));
-    OS.File.remove(OS.Path.join(aPath, '17173.in.Live.swf'));
-    OS.File.remove(OS.Path.join(aPath, '17173.out.Live.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '56.in.NM.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '56.in.TM.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), 'sohu.inyy.Lite.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), 'sohu.injs.Lite.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), 'sohu.inbj.Live.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), 'sohu.inyy+injs.Lite.s1.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '17173.in.Vod.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '17173.out.Vod.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '17173.in.Live.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), '17173.out.Live.swf'));
+    OS.File.remove(OS.Path.join(FileIO.extDir(), 'pptv.in.Ikan'));
   }
 */
 }
@@ -875,6 +930,6 @@ function uninstall(aData, aReason) {
   if (aReason == ADDON_UNINSTALL) {
     FileIO.delFolder();
     Preferences.remove();
-    console.log(aLog.extName + ' ' + aLog.extUninstall)
+    DebugLogs.extUninstall();
   }
 }
