@@ -245,7 +245,7 @@ var RuleResolver = {
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
       };
       FilterRules['tudou_css'] = {
-         'object': 'https://raw.githubusercontent.com/jc3213/Anti-ads-Solution/master/Misc/tudou_play_74.css',
+         'object': 'https://raw.githubusercontent.com/jc3213/noname/master/Misc/tudou_play_74.css',
          'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play_74\.css/i
       };
       PlayerRules['tudou_olc'] = {
