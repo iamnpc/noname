@@ -125,13 +125,14 @@ var Preferences = {
 // If access_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当access_remote为true时将autoupdate设为false的，而autoupdate为false的话则不自动更新。
   manifest: function () {
-    PrefValue['bitbucket'].set();  // 用户无权修改bitbucket的链接,否则将导致功能出错
+    DebugLogs.analyze();
     var aDebug = PrefValue['debug'].get();
     if (aDebug == true) {
       Utilities.debug = true;
     } else {
       Utilities.debug = false;
     }
+    PrefValue['bitbucket'].set();  // 用户无权修改bitbucket的链接,否则将导致功能出错
     for (var i in RuleResolver) {
       var rule = RuleResolver[i];
       if (rule.playerOn) rule.playerOn();
@@ -159,82 +160,43 @@ var Preferences = {
 // 本地化Debug记录用于改善用户体验
 var DebugLogs = {
   analyze: function () {
-    var aLocale = Services.prefs.getComplexValue('general.useragent.locale', Ci.nsISupportsString).data;
-    if (aLocale == 'ja') {
-      Logs.extName = 'soWatch! Mk2';
-      Logs.extTooltip = '\u66F4\u65B0\u30C1\u30A7\u30C3\u30AF\u3092\u5B9F\u884C\u3059\u308B';
-      Logs.extInstall = '\u304C\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F';
-      Logs.extUninstall = '\u304C\u30A2\u30F3\u30A4\u30F3\u30B9\u30C8\u30FC\u30EB\u3055\u308C\u307E\u3057\u305F';
-      Logs.localNeedUpdate = '\u306E\u6700\u65B0\u7248\u304C\u5229\u7528\u3067\u304D\u307E\u3059';
-      Logs.localFileReady = '\u306F\u6E96\u5099\u3067\u304D\u307E\u3057\u305F';
-      Logs.localFileNotExsit = '\u304C\u5B58\u5728\u3057\u307E\u305B\u3093';
-      Logs.remoteDownloaded = '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u5B8C\u4E86\u3057\u307E\u3057\u305F';
-      Logs.remoteTimeOut = '\u30EA\u30E2\u30FC\u30C8\u30B5\u30FC\u30D0\u30FC\u304C\u5FDC\u7B54\u3057\u3066\u3044\u307E\u305B\u3093';
-      Logs.remoteAccessFailed = '\u30C0\u30A6\u30F3\u30ED\u30FC\u30C9\u304C\u5931\u6557\u3057\u307E\u3057\u305F';
-    } else if (aLocale == 'zh-CN') {
-      Logs.extName = 'soWatch! Mk2';
-      Logs.extTooltip = '\u7ACB\u5373\u68C0\u67E5\u66F4\u65B0';
-      Logs.extInstall = '\u5DF2\u7ECF\u6210\u529F\u5B89\u88C5';
-      Logs.extUninstall = '\u5DF2\u7ECF\u6210\u529F\u79FB\u9664';
-      Logs.localNeedUpdate = '\u68C0\u67E5\u5230\u65B0\u7248\u672C';
-      Logs.localFileReady = '\u6587\u4EF6\u5DF2\u7ECF\u5C31\u4F4D';
-      Logs.localFileNotExsit = '\u6587\u4EF6\u4E0D\u5B58\u5728';
-      Logs.remoteDownloaded = '\u4E0B\u8F7D\u5DF2\u5B8C\u6210';
-      Logs.remoteTimeOut = '\u8FDC\u7A0B\u670D\u52A1\u5668\u6CA1\u6709\u54CD\u5E94';
-      Logs.remoteAccessFailed = '\u65E0\u6CD5\u8BBF\u95EE\u8FDC\u7A0B\u6587\u4EF6';
-      Logs.remoteFetchFailed = '\u56E0\u672A\u77E5\u539F\u56E0\u5BFC\u81F4\u4E0B\u8F7D\u4E2D\u65AD';
-    } else {
-      Logs.extName = 'soWatch! mk2';
-      Logs.extTooltip = 'Run update check now...';
-      Logs.extInstall = 'has been installed...';
-      Logs.extUninstall = 'has been uninstalled...';
-      Logs.localNeedUpdate = 'new version has found';
-      Logs.localFileReady = 'is ready to serve';
-      Logs.localFileNotExsit = 'is not exist';
-      Logs.remoteDownloaded = 'download session complete';
-      Logs.remoteTimeOut = 'no response from remote server';
-      Logs.remoteAccessFailed = 'failed to access remote file';
-      Logs.remoteFetchFailed = 'download session has been interrupted due to unknown error';
-      if (aLocale != 'en-US') {
-        console.log('Your locale is not supported');
-      }
-    }
+    Utilities.logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
   },
   remoteTimeOut: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.remoteTimeOut);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteTimeOut'));
   },
   remoteAccessFailed: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.remoteAccessFailed);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteAccessFailed'));
   },
   remoteFetchFailed: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.remoteFetchFailed);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteFetchFailed'));
   },
   remoteDownloaded: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.remoteDownloaded);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteDownloaded'));
   },
   localNeedUpdate: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.localNeedUpdate);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localNeedUpdate'));
   },
   localFileReady: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.localFileReady);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localFileReady'));
   },
   localFileNotExsit: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Logs.localFileNotExsit);
+    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localFileNotExsit'));
   },
   extInstall: function () {
     if (Utilities.debug == false) return;
-    console.log(Logs.extName + ' ' + Logs.extInstall);
+    console.log(Utilities.logs.GetStringFromName('extInstall'));
   },
   extUninstall: function () {
     if (Utilities.debug == false) return;
-    console.log(Logs.extName + ' ' + Logs.extUninstall);
+    console.log(Utilities.logs.GetStringFromName('extUninstall'));
   },
 };
 
@@ -273,8 +235,8 @@ var Toolbar = {
     CustomizableUI.createWidget({
       id: 'sowatchmk2-button',
       defaultArea: CustomizableUI.AREA_NAVBAR,
-      label: aLog.extName,
-      tooltiptext: aLog.extName + ':\n' + aLog.extTooltip,
+      label: 'soWatch! mk2',
+      tooltiptext: 'soWatch! mk2:\n' + Utilities.logs.GetStringFromName('extTooltip'),
       onCommand: function () {
         if (Utilities.remote == true) return;
         PrefValue['lastdate'].set();
@@ -305,10 +267,9 @@ var QueryFiles = {
     aClient.onload = function () {
       var aSize = new Number(aClient.getResponseHeader('Content-Length'));
       if (aSize < 10000) return DebugLogs.remoteAccessFailed(aName);
-      var aDate = new Date(aClient.getResponseHeader('Last-Modified'));
       var aHash = aSize.toString(16);
       if (aMode == 0) {
-        QueryFiles.check(aLink, aFile, aName, aDate, aSize, aHash);
+        QueryFiles.check(aLink, aFile, aName, aHash);
       }
       if (aMode == 1) {
         QueryFiles.fetch(aLink, aFile, aName, aHash);
@@ -319,21 +280,23 @@ var QueryFiles = {
 // 以 最后修改日期|文件大小 为哈希以检查文件是否需要更新，如果没有参数则检查文件信息以确认是否需要更新
   check: function (aLink, aFile, aName, aDate, aSize, aHash) {
     try {
-      var prefHash = PrefBranch.getCharPref('file.hash.' + aName);
-      if (prefHash == aHash) return DebugLogs.localFileReady(aName);
+      var tHash = PrefBranch.getCharPref('file.hash.' + aName);
+      if (tHash == aHash) return DebugLogs.localFileReady(aName);
       DebugLogs.localNeedUpdate(aName);
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
-      OS.File.stat(aFile).then(function onSuccess(info) {
-        if (aDate <= info.lastModificationDate && aSize == info.size) {
+      OS.File.stat(aFile).then(function onSuccess(aData) {
+        var tSize = aData.lastModificationDate;
+        var tHash = tSize.toString(16);
+        if (tHash == aHash) {
           DebugLogs.localFileReady(aName);
           PrefBranch.setCharPref('file.hash.' + aName, aHash);
         } else {
           DebugLogs.localNeedUpdate(aName);
           QueryFiles.fetch(aLink, aFile, aName, aHash);
         }
-      }, function onFailure(reason) {
-        if (reason instanceof OS.File.Error && reason.becauseNoSuchFile) {
+      }, function onFailure(aReason) {
+        if (aReason instanceof OS.File.Error && aReason.becauseNoSuchFile) {
           DebugLogs.localFileNotExsit(aName);
           QueryFiles.fetch(aLink, aFile, aName, aHash);
         }
@@ -887,9 +850,8 @@ var Observers = {
 // 启用扩展，添加工具栏图标，并检查自动更新参数。
 function startup(aData, aReason) {
   RuleExecution.iqiyi();
-  DebugLogs.analyze();
-  Toolbar.addIcon();
   Preferences.pending();
+  Toolbar.addIcon();
   Observers.startUp();
 }
 
