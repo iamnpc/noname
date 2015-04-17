@@ -14,5 +14,4 @@
 @@||val*.atm.youku.com^
 
 ! Misc
-@@||17173im.allyes.com^
 @@||fz.letv.com^
