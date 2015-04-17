@@ -1,3 +1,5 @@
+"use strict";
+
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
@@ -64,7 +66,7 @@ var PrefValue = {
       return PrefBranch.getCharPref('defined_rule.pptv');
     },
     set: function () {
-      PrefBranch.setCharPref('defined_rule.pptv', 'filter');
+      PrefBranch.setCharPref('defined_rule.pptv', 'player');
     },
   },
   'ku6': {
