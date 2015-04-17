@@ -142,7 +142,7 @@ var Preferences = {
     var aRemote = PrefValue['remote'].get();
     if (aRemote == true) {
       Utilities.remote = true;
-      return PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
+      PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
     } else {
       Utilities.remote = false;
       var aUpdate = PrefValue['autoupdate'].get();
@@ -150,7 +150,6 @@ var Preferences = {
       var aDate = PrefValue['lastdate'].get();
       var aPeriod = PrefValue['period'].get();
       if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-      PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
       QueryFiles.start(0);
     }
   },
@@ -238,8 +237,6 @@ var Toolbar = {
       label: 'soWatch! mk2',
       tooltiptext: 'soWatch! mk2:\n' + Utilities.logs.GetStringFromName('extTooltip'),
       onCommand: function () {
-        if (Utilities.remote == true) return;
-        PrefValue['lastdate'].set();
         QueryFiles.start(0);
       },
     });
@@ -321,6 +318,7 @@ var QueryFiles = {
 // Start download
 // 开始下载
   start: function () {
+    if (aMode == 0 && Utilities.remote == true) return;
     FileIO.addFolder();  // 即使文件夹不存在也能自动创建避免出错
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
@@ -330,6 +328,7 @@ var QueryFiles = {
       var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
       QueryFiles.hash(aMode, aLink, aFile, aName);
     }
+    PrefValue['lastdate'].set(); // 更新完毕后将现在的时间写入上次更新时间。
   },
 };
 
@@ -864,7 +863,7 @@ function shutdown(aData, aReason) {
 // 安装扩展后立即下载播放器
 function install(aData, aReason) {
   if (aReason == ADDON_INSTALL) {
-    QueryFiles.start(0);
+    QueryFiles.start(1);
     DebugLogs.extInstall();
   }
 //Remove useless files after update.
