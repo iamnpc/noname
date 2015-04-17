@@ -1,16 +1,15 @@
 [Adblock Plus 2.0]
-! Homepage: http://jc3213.cwsurf.de/index.html
 ! Title: Anti-ads Player Accessibility
-! Version: 201501060001
+! Version: 201504180002
 ! Expires: 14 days
 
 ! Ad-filtering Rules
 
-! soWatch! Mk2 Compatibility Rules
-@@||ark.letv.com^
+! soWatch! mk2&mk3 compatibility rules
 @@||livew.l.qq.com
 
-! soWatch! Mk3 Compatibility Rules
+! soWatch! mk3 only compatibility rules
+@@||ark.letv.com^
 @@||val*.atm.youku.com^
 
 ! Misc
