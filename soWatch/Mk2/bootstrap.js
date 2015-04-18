@@ -283,7 +283,7 @@ var QueryFiles = {
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(aData) {
-        var tSize = aData.lastModificationDate;
+        var tSize = aData.size;
         var tHash = tSize.toString(16);
         if (tHash == aHash) {
           DebugLogs.localFileReady(aName);
