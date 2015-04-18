@@ -275,7 +275,7 @@ var QueryFiles = {
   },
 // LastModifiedDate|FileSize as Hash for update。 If there‘s no hash then check file info to ensure if update is needed
 // 以 最后修改日期|文件大小 为哈希以检查文件是否需要更新，如果没有参数则检查文件信息以确认是否需要更新
-  check: function (aLink, aFile, aName, aDate, aSize, aHash) {
+  check: function (aLink, aFile, aName, aHash) {
     try {
       var tHash = PrefBranch.getCharPref('file.hash.' + aName);
       if (tHash == aHash) return DebugLogs.localFileReady(aName);
