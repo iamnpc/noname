@@ -317,7 +317,7 @@ var QueryFiles = {
   },
 // Start download
 // 开始下载
-  start: function () {
+  start: function (aMode) {
     if (aMode == 0 && Utilities.remote == true) return;
     FileIO.addFolder();  // 即使文件夹不存在也能自动创建避免出错
     for (var i in PlayerRules) {
