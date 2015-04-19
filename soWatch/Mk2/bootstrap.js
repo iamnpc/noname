@@ -237,15 +237,15 @@ var Toolbar = {
       defaultArea: CustomizableUI.AREA_NAVBAR,
       onBuild: function (aDocument) {
         var aLists = {
-          'sowatchmk2-default': {
+          'default': {
             label: Utilities.logs.GetStringFromName('setDefaultLabel'),
             tooltiptext: Utilities.logs.GetStringFromName('setDefaultDescription'),
           },
-          'sowatchmk2-check': {
+          'check': {
             label: Utilities.logs.GetStringFromName('checkUpdateLabel'),
             tooltiptext: Utilities.logs.GetStringFromName('checkUpdateDescription'),
           },
-          'sowatchmk2-download': {
+          'download': {
             label: Utilities.logs.GetStringFromName('forceDownloadLabel'),
             tooltiptext: Utilities.logs.GetStringFromName('forceDownloadDescription'),
           },
@@ -257,7 +257,6 @@ var Toolbar = {
         aMenu.setAttribute('type', 'menu');
         aMenu.setAttribute('label', 'soWatch! mk2');
         aMenu.setAttribute('tooltiptext', Utilities.logs.GetStringFromName('extTooltip'));
-        aMenu.setAttribute('context', 'sowatchmk2-popup');
   
         var aPopup = aDocument.createElement('menupopup');
         aPopup.setAttribute('id', 'sowatchmk2-popup');
@@ -266,7 +265,7 @@ var Toolbar = {
       
         for (var i in aLists) {
           var aItem = aDocument.createElement('menuitem');
-          aItem.setAttribute('id', i);
+          aItem.setAttribute('id', 'sowatchmk2-' + i);
           aItem.setAttribute('label', aLists[i].label);
           aItem.setAttribute('tooltiptext', aLists[i].tooltiptext);
           aItem.setAttribute('class', 'menuitem-iconic');
