@@ -233,11 +233,60 @@ var Toolbar = {
   addIcon: function () {
     CustomizableUI.createWidget({
       id: 'sowatchmk2-button',
+      type: 'custom',
       defaultArea: CustomizableUI.AREA_NAVBAR,
-      label: 'soWatch! mk2',
-      tooltiptext: 'soWatch! mk2:\n' + Utilities.logs.GetStringFromName('extTooltip'),
-      onCommand: function () {
-        QueryFiles.start(0);
+      onBuild: function (aDocument) {
+        var aLists = {
+          'sowatchmk2-default': {
+            label: Utilities.logs.GetStringFromName('setDefaultLabel'),
+            tooltiptext: Utilities.logs.GetStringFromName('setDefaultDescription'),
+          },
+          'sowatchmk2-check': {
+            label: Utilities.logs.GetStringFromName('checkUpdateLabel'),
+            tooltiptext: Utilities.logs.GetStringFromName('checkUpdateDescription'),
+          },
+          'sowatchmk2-download': {
+            label: Utilities.logs.GetStringFromName('forceDownloadLabel'),
+            tooltiptext: Utilities.logs.GetStringFromName('forceDownloadDescription'),
+          },
+        };
+  
+        var aMenu = aDocument.createElement('toolbarbutton');
+        aMenu.setAttribute('id', 'sowatchmk2-button');
+        aMenu.setAttribute('class', 'toolbarbutton-1');
+        aMenu.setAttribute('type', 'menu');
+        aMenu.setAttribute('label', 'soWatch! mk2');
+        aMenu.setAttribute('tooltiptext', Utilities.logs.GetStringFromName('extTooltip'));
+        aMenu.setAttribute('context', 'sowatchmk2-popup');
+  
+        var aPopup = aDocument.createElement('menupopup');
+        aPopup.setAttribute('id', 'sowatchmk2-popup');
+        aPopup.addEventListener('click', this.onClick, false);
+        aMenu.appendChild(aPopup);
+      
+        for (var i in aLists) {
+          var aItem = aDocument.createElement('menuitem');
+          aItem.setAttribute('id', i);
+          aItem.setAttribute('label', aLists[i].label);
+          aItem.setAttribute('tooltiptext', aLists[i].tooltiptext);
+          aItem.setAttribute('class', 'menuitem-iconic');
+          aPopup.appendChild(aItem);
+        }
+
+        return aMenu;
+      },
+      onClick: function (aEvent) {
+        switch (aEvent.target.id) {
+          case 'sowatchmk2-default':
+            Preferences.setDefault();
+            break;
+          case 'sowatchmk2-check':
+            QueryFiles.start(0);
+            break;
+          case 'sowatchmk2-download':
+            QueryFiles.start(1);
+            break;
+        }
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
