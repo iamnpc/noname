@@ -258,12 +258,12 @@ var Toolbar = {
             label: Utilities.strings.GetStringFromName('setDefaultLabel'),
             tooltiptext: Utilities.strings.GetStringFromName('setDefaultDescription'),
           },
-          S1: null,  // Menu seperator
+          S1: null,  // Menu separator
           'remote': {
             label: Utilities.strings.GetStringFromName('remoteAccessLabel'),
             tooltiptext: Utilities.strings.GetStringFromName('remoteAccessDescription'),
           },
-          S2: null, // Menu seperator
+          S2: null, // Menu separator
           'youku_referer': {
             label: 'Youku Referer',
             tooltiptext: 'Youku Referer',
@@ -272,7 +272,7 @@ var Toolbar = {
             label: 'iQiyi Referer',
             tooltiptext: 'iQiyi Referer',
           },
-          S3: null, // Menu seperator
+          S3: null, // Menu separator
         };
 
         var xLists = {
