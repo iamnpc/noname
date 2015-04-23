@@ -1,7 +1,7 @@
 "use strict";
 
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
-Cu.import('resource:///modules/CustomizableUI.jsm');
+Cu.import('resource:///modules/CustomizableUI.jsm'); // Require Gecko 29 and higher
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
 var Utilities = {}, PlayerRules = {}, FilterRules = {}, RefererRules = {};
@@ -258,12 +258,12 @@ var Toolbar = {
             label: Utilities.strings.GetStringFromName('setDefaultLabel'),
             tooltiptext: Utilities.strings.GetStringFromName('setDefaultDescription'),
           },
-          S1: null,
+          S1: null,  // Menu seperator
           'remote': {
             label: Utilities.strings.GetStringFromName('remoteAccessLabel'),
             tooltiptext: Utilities.strings.GetStringFromName('remoteAccessDescription'),
           },
-          S2: null,
+          S2: null, // Menu seperator
           'youku_referer': {
             label: 'Youku Referer',
             tooltiptext: 'Youku Referer',
@@ -272,7 +272,7 @@ var Toolbar = {
             label: 'iQiyi Referer',
             tooltiptext: 'iQiyi Referer',
           },
-          S3: null,
+          S3: null, // Menu seperator
         };
 
         var xLists = {
