@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource:///modules/CustomizableUI.jsm'); // Require Gecko 29 and higher
@@ -15,7 +15,8 @@ var Services = {
 };
 
 var aURI = 'chrome://sowatchmk3/content/soWatch/';  //文件存放在content/soWatch文件夹中
-var aURL = 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/'; // bitbucket链接
+var aURL = aURI; //用户可以自己指定远程服务器的链接
+var aORG = 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/'; // bitbucket链接
 
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk3.');
 var PrefValue = {
@@ -234,8 +235,8 @@ var Preferences = {
 
 var FileIO = {
   link: function (aMode) {
-    if (aMode == 1) return aURI;
-    if (aMode == 0) return aURL;
+    if (aMode == 1) return aURL;
+    if (aMode == 0) return aORG;
   },
   path: function () {
     if (Utilities.remote == true) return this.link();
@@ -278,55 +279,55 @@ var Toolbar = {
         var xLists = {
           'youku': {
             label: 'Youku.com',
-            tooltiptext: 'Youku.com',
+            tooltiptext: 'http://www.youku.com/',
           },
           'tudou': {
             label: 'Tudou.com',
-            tooltiptext: 'Tudou.com',
+            tooltiptext: 'http://www.tudou.com/',
           },
           'iqiyi': {
             label: 'iQiyi.com',
-            tooltiptext: 'iQiyi.com',
+            tooltiptext: 'http://www.iqiyi.com/',
           },
           'pps': {
             label: 'PPS.tv',
-            tooltiptext: 'PPS.tv',
+            tooltiptext: 'http://www.pps.tv/',
           },
           'letv': {
             label: 'Letv.com',
-            tooltiptext: 'Letv.com',
+            tooltiptext: 'http://www.letv.com/',
           },
           'sohu': {
             label: 'Sohu.com',
-            tooltiptext: 'Sohu.com',
+            tooltiptext: 'http://tv.sohu.com/',
           },
           'pptv': {
             label: 'PPTV.com',
-            tooltiptext: 'PPTV.com',
+            tooltiptext: 'http://www.pptv.com/',
           },
           'ku6': {
             label: 'Ku6.com',
-            tooltiptext: 'Ku6.com',
+            tooltiptext: 'http://www.ku6.com/',
           },
           '56': {
             label: '56.com',
-            tooltiptext: '56.com',
+            tooltiptext: 'http://www.56.com/',
           },
           'qq': {
             label: 'QQ.com',
-            tooltiptext: 'QQ.com',
+            tooltiptext: 'http://v.qq.com/',
           },
           '163': {
             label: '163.com',
-            tooltiptext: '163.com',
+            tooltiptext: 'http://v.163.com/',
           },
           'sina': {
             label: 'Sina.com.cn',
-            tooltiptext: 'Sina.com.cn',
+            tooltiptext: 'http://video.sina.com.cn/',
           },
           'duowan': {
             label: 'Duowan.com',
-            tooltiptext: 'Duowan.com',
+            tooltiptext: 'http://v.duowan.com/',
           },
         };
 
@@ -378,7 +379,7 @@ var Toolbar = {
           xItem.setAttribute('id', 'sowatchmk3-' + x);
           xItem.setAttribute('label', xLists[x].label);
           xItem.setAttribute('tooltiptext', xLists[x].tooltiptext);
-          xItem.setAttribute('type', 'menu');
+          xItem.setAttribute('class', 'menu-iconic');
           aPopup.appendChild(xItem);
 
           var xPopup = aDocument.createElement('menupopup');
@@ -463,7 +464,6 @@ var Toolbar = {
               aEvent.target.childNodes[5].setAttribute('checked', 'false');
             }
             break;
-
         }
         for (var i in Utilities) {
           switch (aEvent.target.id) {
