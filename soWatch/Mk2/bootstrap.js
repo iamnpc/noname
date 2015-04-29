@@ -24,10 +24,10 @@ var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk2.');
 var PrefValue = {
  'debug': {
     get: function () {
-      return PrefBranch.getBoolPref('debug.enable');
+      return PrefBranch.getBoolPref('advanced.debug.enable');
     },
     set: function () {
-      PrefBranch.setBoolPref('debug.enable', false);
+      PrefBranch.setBoolPref('advanced.debug.enable', false);
     },
   },
  'remote': {
@@ -94,6 +94,14 @@ var PrefValue = {
       PrefBranch.setCharPref('remote.server.bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
     },
   },
+  'toolbar': {
+    get: function () {
+      return PrefBranch.getBoolPref('advanced.mui.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('advanced.mui.enable', true);
+    },
+  },
 };
 var Preferences = {
 // Remove all prefs from app.
@@ -125,32 +133,45 @@ var Preferences = {
 // If access_remote is true set autoupdate to false.If autoupdate is false,then do nothing.
 // 当access_remote为true时将autoupdate设为false的，而autoupdate为false的话则不自动更新。
   manifest: function () {
-    DebugLogs.analyze();
-    var aDebug = PrefValue['debug'].get();
-    if (aDebug == true) {
-      Utilities.debug = true;
-    } else {
-      Utilities.debug = false;
-    }
-    PrefValue['bitbucket'].set();  // 用户无权修改bitbucket的链接,否则将导致功能出错
     for (var i in RuleResolver) {
       var rule = RuleResolver[i];
       if (rule.playerOn) rule.playerOn();
       if (rule.filterOn) rule.playerOn();
       if (rule.refererOn) rule.refererOn();
     }
-    var aRemote = PrefValue['remote'].get();
-    if (aRemote == true) {
-      Utilities.remote = true;
-      PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
-    } else {
-      Utilities.remote = false;
-      var aUpdate = PrefValue['autoupdate'].get();
-      if (aUpdate == false) return;
-      var aDate = PrefValue['lastdate'].get();
-      var aPeriod = PrefValue['period'].get();
-      if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
-      QueryFiles.start(0);
+
+    for (var i in PrefValue) {
+      if (i == 'bitbucket') {
+        PrefValue[i].set(); // 用户无权修改bitbucket的链接,否则将导致功能出错
+      } else if (i == 'debug') {
+        var aDebug = PrefValue[i].get();
+        if (aDebug == true) {
+          Utilities.debug = true;
+        } else {
+          Utilities.debug = false;
+        }
+      } else if (i == 'remote') {
+        var aRemote = PrefValue[i].get();
+        if (aRemote == true) {
+          Utilities.remote = true;
+          PrefValue['autoupdate'].set(); // 使用远程服务器的时候强制停止自动更新
+        } else {
+          Utilities.remote = false;
+          var aUpdate = PrefValue['autoupdate'].get();
+          if (aUpdate == false) return;
+          var aDate = PrefValue['lastdate'].get();
+          var aPeriod = PrefValue['period'].get();
+          if (aDate + aPeriod * 86400 > Date.now() / 1000) return; // 如果当前时间>上一次检查时间与更新周期的和则不更新。
+          QueryFiles.start(0);
+        }
+      } else if (i == 'toolbar') {
+        var aToolbar = PrefValue[i].get()
+        if (aToolbar == true) {
+          Toolbar.addIcon();
+        } else {
+          Toolbar.removeIcon();
+        }
+      }
     }
   },
 };
@@ -158,44 +179,41 @@ var Preferences = {
 // Localizable debugging logs to improve user experience
 // 本地化Debug记录用于改善用户体验
 var DebugLogs = {
-  analyze: function () {
-    Utilities.logs = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
-  },
   remoteTimeOut: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteTimeOut'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('remoteTimeOut'));
   },
   remoteAccessFailed: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteAccessFailed'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('remoteAccessFailed'));
   },
   remoteFetchFailed: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteFetchFailed'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('remoteFetchFailed'));
   },
   remoteDownloaded: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('remoteDownloaded'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('remoteDownloaded'));
   },
   localNeedUpdate: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localNeedUpdate'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('localNeedUpdate'));
   },
   localFileReady: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localFileReady'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('localFileReady'));
   },
   localFileNotExsit: function (aName) {
     if (Utilities.debug == false) return;
-    console.log(aName + ' ' + Utilities.logs.GetStringFromName('localFileNotExsit'));
+    console.log(aName + ' ' + Utilities.strings.GetStringFromName('localFileNotExsit'));
   },
   extInstall: function () {
     if (Utilities.debug == false) return;
-    console.log(Utilities.logs.GetStringFromName('extInstall'));
+    console.log(Utilities.strings.GetStringFromName('extInstall'));
   },
   extUninstall: function () {
     if (Utilities.debug == false) return;
-    console.log(Utilities.logs.GetStringFromName('extUninstall'));
+    console.log(Utilities.strings.GetStringFromName('extUninstall'));
   },
 };
 
@@ -238,16 +256,26 @@ var Toolbar = {
       onBuild: function (aDocument) {
         var aLists = {
           'default': {
-            label: Utilities.logs.GetStringFromName('setDefaultLabel'),
-            tooltiptext: Utilities.logs.GetStringFromName('setDefaultDescription'),
+            label: Utilities.strings.GetStringFromName('setDefaultLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('setDefaultDescription'),
           },
-          'check': {
-            label: Utilities.logs.GetStringFromName('checkUpdateLabel'),
-            tooltiptext: Utilities.logs.GetStringFromName('checkUpdateDescription'),
+          S1: null,
+          'remote': {
+            label: Utilities.strings.GetStringFromName('remoteAccessLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('remoteAccessDescription'),
           },
-          'download': {
-            label: Utilities.logs.GetStringFromName('forceDownloadLabel'),
-            tooltiptext: Utilities.logs.GetStringFromName('forceDownloadDescription'),
+          'update': {
+            label: Utilities.strings.GetStringFromName('checkUpdateLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('checkUpdateDescription'),
+          },
+          'enforce': {
+            label: Utilities.strings.GetStringFromName('forceDownloadLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('forceDownloadDescription'),
+          },
+          S2: null,
+          'debug': {
+            label: Utilities.strings.GetStringFromName('enableDebugLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('enableDebugDescription'),
           },
         };
   
@@ -256,45 +284,83 @@ var Toolbar = {
         aMenu.setAttribute('class', 'toolbarbutton-1');
         aMenu.setAttribute('type', 'menu');
         aMenu.setAttribute('label', 'soWatch! mk2');
-        aMenu.setAttribute('tooltiptext', Utilities.logs.GetStringFromName('extTooltip'));
-  
+        aMenu.setAttribute('tooltiptext', Utilities.strings.GetStringFromName('extTooltip'));
+
         var aPopup = aDocument.createElement('menupopup');
         aPopup.setAttribute('id', 'sowatchmk2-popup');
         aPopup.addEventListener('click', this.onClick, false);
+        aPopup.addEventListener('popupshowing', this.onPopup, false);
         aMenu.appendChild(aPopup);
-      
+
         for (var i in aLists) {
-          var aItem = aDocument.createElement('menuitem');
-          aItem.setAttribute('id', 'sowatchmk2-' + i);
-          aItem.setAttribute('label', aLists[i].label);
-          aItem.setAttribute('tooltiptext', aLists[i].tooltiptext);
-          aItem.setAttribute('class', 'menuitem-iconic');
-          aPopup.appendChild(aItem);
+          if (i.length < 3) {
+            var aSeparator = aDocument.createElement('menuseparator');
+            aPopup.appendChild(aSeparator);
+          } else {
+            var aItem = aDocument.createElement('menuitem');
+            aItem.setAttribute('id', 'sowatchmk2-' + i);
+            aItem.setAttribute('label', aLists[i].label);
+            aItem.setAttribute('tooltiptext', aLists[i].tooltiptext);
+            aItem.setAttribute('class', 'menuitem-iconic');
+            if (i == 'remote' || i == 'debug') aItem.setAttribute('type', 'checkbox');
+            aPopup.appendChild(aItem);
+          }
         }
 
         return aMenu;
       },
       onClick: function (aEvent) {
-        switch (aEvent.target.id) {
-          case 'sowatchmk2-default':
-            Preferences.setDefault();
-            break;
-          case 'sowatchmk2-check':
-            QueryFiles.start(0);
-            break;
-          case 'sowatchmk2-download':
-            QueryFiles.start(1);
-            break;
+        if (aEvent.target.id == 'sowatchmk2-default') {
+          Preferences.setDefault();
+        }
+        if (aEvent.target.id == 'sowatchmk2-update') {
+          QueryFiles.start(0);
+        }
+        if (aEvent.target.id == 'sowatchmk2-enforce') {
+          QueryFiles.start(1);
+        }
+        if (aEvent.target.id == 'sowatchmk2-remote') {
+          if (Utilities.remote == true) {
+            PrefValue['remote'].set(false);
+          } else {
+            PrefValue['remote'].set(true);
+          }
+        }
+        if (aEvent.target.id == 'sowatchmk2-debug') {
+          if (Utilities.debug == true) {
+            PrefValue['debug'].set(false);
+          } else {
+            PrefValue['debug'].set(true);
+          }
+        }
+      },
+      onPopup: function (aEvent) {
+        if (Utilities['remote'] == true) {
+          aEvent.target.querySelector('#sowatchmk2-remote').setAttribute('checked', 'true');
+          aEvent.target.querySelector('#sowatchmk2-update').setAttribute('disabled', 'true');
+          aEvent.target.querySelector('#sowatchmk2-enforce').setAttribute('disabled', 'true');
+        } else {
+          aEvent.target.querySelector('#sowatchmk2-remote').setAttribute('checked', 'false');
+          aEvent.target.querySelector('#sowatchmk2-update').setAttribute('disabled', 'false');
+          aEvent.target.querySelector('#sowatchmk2-enforce').setAttribute('disabled', 'false');
+        }
+        if (Utilities['debug'] == true) {
+          aEvent.target.querySelector('#sowatchmk2-debug').setAttribute('checked', 'true');
+        } else {
+          aEvent.target.querySelector('#sowatchmk2-debug').setAttribute('checked', 'false');
         }
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+    Utilities.toolbar = true;
   },
 // Remove Toolbar button
 // 移除工具栏按钮
   removeIcon: function () {
-    CustomizableUI.destroyWidget('sowatchmk2-button');
+    if (Utilities.toolbar != true) return;
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+    CustomizableUI.destroyWidget('sowatchmk2-button');
+    Utilities.toolbar = false;
   },
 };
 
@@ -331,9 +397,9 @@ var QueryFiles = {
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
       OS.File.stat(aFile).then(function onSuccess(aData) {
-        var tSize = aData.size;
-        var tHash = tSize.toString(16);
-        if (tHash == aHash) {
+        var xSize = aData.size;
+        var xHash = xSize.toString(16);
+        if (xHash == aHash) {
           DebugLogs.localFileReady(aName);
           PrefBranch.setCharPref('file.hash.' + aName, aHash);
         } else {
@@ -366,7 +432,6 @@ var QueryFiles = {
 // Start download
 // 开始下载
   start: function (aMode) {
-    if (aMode == 0 && Utilities.remote == true) return;
     FileIO.addFolder();  // 即使文件夹不存在也能自动创建避免出错
     for (var i in PlayerRules) {
       var rule = PlayerRules[i];
@@ -896,9 +961,9 @@ var Observers = {
 // Enable Add-on. Add Toolbar icon，Check for autoupdate preferences.
 // 启用扩展，添加工具栏图标，并检查自动更新参数。
 function startup(aData, aReason) {
+  Utilities.strings = Services.strings.createBundle('chrome://sowatchmk2/locale/global.properties?' + Math.random());
   RuleExecution.iqiyi();
   Preferences.pending();
-  Toolbar.addIcon();
   Observers.startUp();
 }
 
