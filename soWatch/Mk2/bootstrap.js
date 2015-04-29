@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import("resource:///modules/CustomizableUI.jsm"); //Require Gecko 29 and later
@@ -321,16 +321,16 @@ var Toolbar = {
         }
         if (aEvent.target.id == 'sowatchmk2-remote') {
           if (Utilities.remote == true) {
-            PrefValue['remote'].set(false);
+            PrefBranch.setBoolPref('remote.direct_access.enable', false);
           } else {
-            PrefValue['remote'].set(true);
+            PrefBranch.setBoolPref('remote.direct_access.enable', true);
           }
         }
         if (aEvent.target.id == 'sowatchmk2-debug') {
           if (Utilities.debug == true) {
-            PrefValue['debug'].set(false);
+            PrefBranch.setBoolPref('advanced.debug.enable', false);
           } else {
-            PrefValue['debug'].set(true);
+            PrefBranch.setBoolPref('advanced.debug.enable', true);
           }
         }
       },
@@ -391,8 +391,8 @@ var QueryFiles = {
 // 以 最后修改日期|文件大小 为哈希以检查文件是否需要更新，如果没有参数则检查文件信息以确认是否需要更新
   check: function (aLink, aFile, aName, aHash) {
     try {
-      var tHash = PrefBranch.getCharPref('file.hash.' + aName);
-      if (tHash == aHash) return DebugLogs.localFileReady(aName);
+      var xHash = PrefBranch.getCharPref('file.hash.' + aName);
+      if (xHash == aHash) return DebugLogs.localFileReady(aName);
       DebugLogs.localNeedUpdate(aName);
       QueryFiles.fetch(aLink, aFile, aName, aHash);
     } catch (e) {
