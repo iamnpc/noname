@@ -52,14 +52,6 @@ var PrefValue = {
       PrefBranch.setCharPref('defined_rule.iqiyi', 'player');
     },
   },
-  'pps': {
-    get: function () {
-      return PrefBranch.getCharPref('defined_rule.pps');
-    },
-    set: function () {
-      PrefBranch.setCharPref('defined_rule.pps', 'player');
-    },
-  },
   'letv': {
     get: function () {
       return PrefBranch.getCharPref('defined_rule.letv');
