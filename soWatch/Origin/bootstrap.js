@@ -3,12 +3,14 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
-var aURI = 'chrome://sowatch/content/';
+var PlayerRules = {}, FilterRules = {}, RefererRules = {};
 
 var Services = {
   obs: Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService),
   prefs: Cc['@mozilla.org/preferences-service;1'].getService(Ci.nsIPrefService).QueryInterface(Ci.nsIPrefBranch),
 };
+
+var aURI = 'chrome://sowatch/content/';
 
 var PrefBranch = Services.prefs.getBranch('extensions.sowatch.');
 var PrefValue = {
@@ -36,14 +38,6 @@ var PrefValue = {
       PrefBranch.setBoolPref('override_player.iqiyi', true);
     },
   },
-  'pps': {
-    get: function () {
-      return PrefBranch.getBoolPref('override_player.pps');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('override_player.pps', true);
-    },
-  },
   'letv': {
     get: function () {
       return PrefBranch.getBoolPref('override_player.letv');
@@ -66,23 +60,6 @@ var PrefValue = {
     },
     set: function () {
       PrefBranch.setBoolPref('override_player.pptv', true);
-    },
-  },
-  'ku6': {
-    get: function () {
-      return PrefBranch.getBoolPref('override_player.ku6');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('override_player.ku6', true);
-    },
-  },
-// Not functional
-  '17173': {
-    get: function () {
-      return PrefBranch.getBoolPref('override_player.17173');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('override_player.17173', true);
     },
   },
   'youku_referer': {
@@ -226,22 +203,6 @@ var RuleResolver = {
       RefererRules['iqiyi'] = null;
     },
   },
-  'pps': {
-    playerOn: function () {
-      PlayerRules['pps'] = {
-        'object': aURI + 'iqiyi.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
-      };
-      PlayerRules['pps_out'] = {
-        'object': aURI + 'pps.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['pps'] = null;
-      PlayerRules['pps_out'] = null;
-    },
-  },
   'letv': {
     playerOn: function () {
       PlayerRules['letv'] = {
@@ -285,52 +246,8 @@ var RuleResolver = {
       PlayerRules['pptv_live'] = null;
     },
   },
-  'ku6': {
-    playerOn: function () {
-      PlayerRules['ku6'] = {
-        'object': aURI + 'ku6_in_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
-      };
-      PlayerRules['ku6_out'] = {
-        'object': aURI + 'ku6_out_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['ku6'] = null;
-      PlayerRules['ku6_out'] = null;
-    },
-  },
-// Not functional
-  '17173': {
-    playerOn: function () {
-      PlayerRules['17173'] = {
-        'object': aURI + '17173.in.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_file\.swf/i
-      };
-      PlayerRules['17173_out'] = {
-        'object': aURI + '17173.out.Vod.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/(\d+\/)?flash\/Player_file_(custom)?out\.swf/i
-      };
-      PlayerRules['17173_live'] = {
-        'object': aURI + '17173.in.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream(_firstpage)?\.swf/i
-      };
-      PlayerRules['17173_live_out'] = {
-        'object': aURI + '17173.out.Live.swf',
-        'target': /http:\/\/f\.v\.17173cdn\.com\/\d+\/flash\/Player_stream_(custom)?Out\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['17173'] = null;
-      PlayerRules['17173_out'] = null;
-      PlayerRules['17173_live'] = null;
-      PlayerRules['17173_live_out'] = null;
-    },
-  },
 };
 
-var PlayerRules = {}, FilterRules = {}, RefererRules = {};
 var RuleExecution = {
   getObject: function (rule, callback) {
     NetUtil.asyncFetch(rule['object'], function (inputStream, status) {
