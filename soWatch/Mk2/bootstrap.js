@@ -537,13 +537,13 @@ var RuleResolver = {
       PlayerRules['iqiyi_out'] = null;
     },
     filterOn: function () {
-      FilterRules['iqiyi_pps'] = {
+      FilterRules['iqiyi'] = {
         'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
       };
     },
     filterOff: function () {
-      FilterRules['iqiyi_pps'] = null;
+      FilterRules['iqiyi'] = null;
     },
     refererOn: function () {
       RefererRules['iqiyi'] = {
@@ -553,33 +553,6 @@ var RuleResolver = {
     },
     refererOff: function () {
       RefererRules['iqiyi'] = null;
-    },
-  },
-  'pps': {
-    playerOn: function () {
-      PlayerRules['pps'] = {
-        'object': FileIO.path() + 'iqiyi.swf',
-        'remote': FileIO.link(0) + 'iqiyi.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
-      };
-      PlayerRules['pps_out'] = {
-        'object': FileIO.path() + 'pps.swf',
-        'remote': FileIO.link(0) + 'pps.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['pps'] = null;
-      PlayerRules['pps_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['iqiyi_pps'] = {
-        'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['iqiyi_pps'] = null;
     },
   },
   'letv': {
@@ -656,46 +629,6 @@ var RuleResolver = {
       FilterRules['pptv'] = null;
     },
   },
-  'ku6': {
-    playerOn: function () {
-      PlayerRules['ku6'] = {
-        'object': FileIO.path() + 'ku6_in_player.swf',
-        'remote': FileIO.link(1) + 'ku6_in_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
-      };
-      PlayerRules['ku6_out'] = {
-        'object': FileIO.path() + 'ku6_out_player.swf',
-        'remote': FileIO.link(1) + 'ku6_out_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['ku6'] = null;
-      PlayerRules['ku6_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['ku6'] = {
-        'object': 'http://p1.sdo.com',
-        'target': /http:\/\/g1\.sdo\.com/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['ku6'] = null;
-    },
-  },
-  '56': {
-    playerOn: function () {},
-    playerOff: function () {},
-    filterOn: function () {
-      FilterRules['56'] = {
-        'object': 'http://www.56.com',
-        'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['56'] = null;
-    },
-  },
   'qq': {
     playerOn: function () {},
     playerOff: function () {},
@@ -733,19 +666,6 @@ var RuleResolver = {
     },
     filterOff: function () {
       FilterRules['sina'] = null;
-    },
-  },
-  'duowan': {
-    playerOn: function () {},
-    playerOff: function () {},
-    filterOn: function () {
-      FilterRules['duowan'] = {
-        'object': 'http://yuntv.letv.com/bcloud.swf',
-        'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['duowan'] = null;
     },
   },
 };
