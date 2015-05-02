@@ -84,22 +84,6 @@ var PrefValue = {
       PrefBranch.setCharPref('defined_rule.pptv', 'player');
     },
   },
-  'ku6': {
-    get: function () {
-      return PrefBranch.getCharPref('defined_rule.ku6');
-    },
-    set: function () {
-      PrefBranch.setCharPref('defined_rule.ku6', 'filter');
-    },
-  },
-  '56': {
-    get: function () {
-      return PrefBranch.getCharPref('defined_rule.56');
-    },
-    set: function () {
-      PrefBranch.setCharPref('defined_rule.56', 'filter');
-    },
-  },
   'qq': {
     get: function () {
       return PrefBranch.getCharPref('defined_rule.qq');
@@ -122,14 +106,6 @@ var PrefValue = {
     },
     set: function () {
       PrefBranch.setCharPref('defined_rule.sina', 'filter');
-    },
-  },
-  'duowan': {
-    get: function () {
-      return PrefBranch.getCharPref('defined_rule.duowan');
-    },
-    set: function () {
-      PrefBranch.setCharPref('defined_rule.duowan', 'filter');
     },
   },
   'youku_referer': {
@@ -178,12 +154,6 @@ var Preferences = {
     if ((Youku == 'filter' && Tudou == 'none') || (Youku == 'none' && Tudou == 'filter')) {
       PrefBranch.setCharPref('defined_rule.youku', 'filter');
       PrefBranch.setCharPref('defined_rule.tudou', 'filter');
-    }
-    var Qiyi = PrefValue['iqiyi'].get();
-    var PPS = PrefValue['pps'].get();
-    if ((Qiyi == 'filter' && PPS == 'none') || (Qiyi == 'none' && PPS == 'filter')) {
-      PrefBranch.setCharPref('defined_rule.iqiyi', 'filter');
-      PrefBranch.setCharPref('defined_rule.pps', 'filter');
     }
     for (var i in PrefValue) {
       if (i == 'remote') {
@@ -289,10 +259,6 @@ var Toolbar = {
             label: 'iQiyi.com',
             tooltiptext: 'http://www.iqiyi.com/',
           },
-          'pps': {
-            label: 'PPS.tv',
-            tooltiptext: 'http://www.pps.tv/',
-          },
           'letv': {
             label: 'Letv.com',
             tooltiptext: 'http://www.letv.com/',
@@ -304,14 +270,6 @@ var Toolbar = {
           'pptv': {
             label: 'PPTV.com',
             tooltiptext: 'http://www.pptv.com/',
-          },
-          'ku6': {
-            label: 'Ku6.com',
-            tooltiptext: 'http://www.ku6.com/',
-          },
-          '56': {
-            label: '56.com',
-            tooltiptext: 'http://www.56.com/',
           },
           'qq': {
             label: 'QQ.com',
@@ -393,7 +351,7 @@ var Toolbar = {
             nItem.setAttribute('tooltiptext', nLists[n].tooltiptext);
             nItem.setAttribute('type', 'radio');
             nItem.setAttribute('name', x);
-            if ((x == '56' || x == 'qq' || x == '163' || x == 'sina' || x == 'duowan') && n == 'player') nItem.setAttribute('disabled', 'true');
+            if ((x == 'qq' || x == '163' || x == 'sina') && n == 'player') nItem.setAttribute('disabled', 'true');
             xPopup.appendChild(nItem);
           }
         }
@@ -585,13 +543,13 @@ var RuleResolver = {
       PlayerRules['iqiyi_out'] = null;
     },
     filterOn: function () {
-      FilterRules['iqiyi_pps'] = {
+      FilterRules['iqiyi'] = {
         'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
         'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
       };
     },
     filterOff: function () {
-      FilterRules['iqiyi_pps'] = null;
+      FilterRules['iqiyi'] = null;
     },
     refererOn: function () {
       RefererRules['iqiyi'] = {
@@ -601,33 +559,6 @@ var RuleResolver = {
     },
     refererOff: function () {
       RefererRules['iqiyi'] = null;
-    },
-  },
-  'pps': {
-    playerOn: function () {
-      PlayerRules['pps'] = {
-        'object': FileIO.path() + 'iqiyi.swf',
-        'remote': FileIO.link(0) + 'iqiyi.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPSMainPlayer.*\.swf/i
-      };
-      PlayerRules['pps_out'] = {
-        'object': FileIO.path() + 'pps.swf',
-        'remote': FileIO.link(0) + 'pps.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_flvplay_s\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['pps'] = null;
-      PlayerRules['pps_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['iqiyi_pps'] = {
-        'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['iqiyi_pps'] = null;
     },
   },
   'letv': {
@@ -704,46 +635,6 @@ var RuleResolver = {
       FilterRules['pptv'] = null;
     },
   },
-  'ku6': {
-    playerOn: function () {
-      PlayerRules['ku6'] = {
-        'object': FileIO.path() + 'ku6_in_player.swf',
-        'remote': FileIO.link(1) + 'ku6_in_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/(\w+\/){2}\d+\/player\.swf/i
-      };
-      PlayerRules['ku6_out'] = {
-        'object': FileIO.path() + 'ku6_out_player.swf',
-        'remote': FileIO.link(1) + 'ku6_out_player.swf',
-        'target': /http:\/\/player\.ku6cdn\.com\/default\/out\/\d+\/player\.swf/i
-      };
-    },
-    playerOff: function () {
-      PlayerRules['ku6'] = null;
-      PlayerRules['ku6_out'] = null;
-    },
-    filterOn: function () {
-      FilterRules['ku6'] = {
-        'object': 'http://p1.sdo.com',
-        'target': /http:\/\/g1\.sdo\.com/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['ku6'] = null;
-    },
-  },
-  '56': {
-    playerOn: function () {},
-    playerOff: function () {},
-    filterOn: function () {
-      FilterRules['56'] = {
-        'object': 'http://www.56.com',
-        'target': /http:\/\/acs\.stat\.v-56\.com\/vml\/\d+\/ac\/ac.*\.xml/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['56'] = null;
-    },
-  },
   'qq': {
     playerOn: function () {},
     playerOff: function () {},
@@ -781,19 +672,6 @@ var RuleResolver = {
     },
     filterOff: function () {
       FilterRules['sina'] = null;
-    },
-  },
-  'duowan': {
-    playerOn: function () {},
-    playerOff: function () {},
-    filterOn: function () {
-      FilterRules['duowan'] = {
-        'object': 'http://yuntv.letv.com/bcloud.swf',
-        'target': /http:\/\/assets\.dwstatic\.com\/video\/vppp\.swf/i
-      };
-    },
-    filterOff: function () {
-      FilterRules['duowan'] = null;
     },
   },
 };
