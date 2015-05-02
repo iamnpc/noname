@@ -1,3 +1,5 @@
+'use strict';
+
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
@@ -527,8 +529,7 @@ function shutdown(aData, aReason) {
   Observers.shutDown();
 }
 
-function install(aData, aReason) {
-}
+function install(aData, aReason) {}
 
 function uninstall(aData, aReason) {
   if (aReason == ADDON_UNINSTALL) {
