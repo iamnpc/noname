@@ -458,11 +458,11 @@ var Toolbar = {
                 }
                 break;
               case 'sowatchmk3-popup-' + x:
-                if (Utilities[i] == 'player') {
+                if (Utilities[x] == 'player') {
                   aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
-                } else if (Utilities[i] == 'filter') {
+                } else if (Utilities[x] == 'filter') {
                   aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
-                } else if (Utilities[i] == 'none') {
+                } else if (Utilities[x] == 'none') {
                   aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
                 }
                 break;
