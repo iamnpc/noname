@@ -28,6 +28,22 @@ var PrefValue = {
       PrefBranch.setBoolPref('remote_access.enable', false);
     },
   },
+  'youku_referer': {
+    get: function () {
+      return PrefBranch.getBoolPref('spoof_referer.youku');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('spoof_referer.youku', true);
+    },
+  },
+  'iqiyi_referer': {
+    get: function () {
+      return PrefBranch.getBoolPref('spoof_referer.iqiyi');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
+    },
+  },
  'youku': {
     get: function () {
       return PrefBranch.getCharPref('defined_rule.youku');
@@ -100,22 +116,13 @@ var PrefValue = {
       PrefBranch.setCharPref('defined_rule.sina', 'filter');
     },
   },
-  'youku_referer': {
+  'toolbar': {
     get: function () {
-      return PrefBranch.getBoolPref('spoof_referer.youku');
+      return PrefBranch.getBoolPref('toolbar_button.enable');
     },
     set: function () {
-      PrefBranch.setBoolPref('spoof_referer.youku', true);
+      PrefBranch.setBoolPref('toolbar_button.enable', true);
     },
-  },
-  'iqiyi_referer': {
-    get: function () {
-      return PrefBranch.getBoolPref('spoof_referer.iqiyi');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
-    },
-  },
 };
 var Preferences = {
 // 移除参数设置
@@ -172,6 +179,12 @@ var Preferences = {
         } else {
           Utilities[i] = false;
           RuleResolver['iqiyi'].refererOff();
+        }
+      } else if (i == 'toolbar') {
+        if (PrefValue[i].get() == true) {
+          Toolbar.addIcon();
+        } else {
+          Toolbar.removeIcon();
         }
       } else {
         var rule = PrefValue[i];
@@ -427,30 +440,30 @@ var Toolbar = {
             switch (aEvent.target.id) {
               case 'sowatchmk3-popup':
                 if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
-                  aEvent.target.querySelector('#sowatchmk2-' + x).setAttribute('hidden', 'true');
+                  aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'true');
                   if (x == 'youku') {
-                    aEvent.target.querySelector('#sowatchmk2-youku_referer').setAttribute('hidden', 'true');
+                    aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'true');
                   }
                   if (x == 'iqiyi') {
-                    aEvent.target.querySelector('#sowatchmk2-iqiyi_referer').setAttribute('hidden', 'true');
+                    aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'true');
                   }
                 } else {
-                  aEvent.target.querySelector('#sowatchmk2-' + x).setAttribute('hidden', 'false');
+                  aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'false');
                   if (x == 'youku') {
-                    aEvent.target.querySelector('#sowatchmk2-youku_referer').setAttribute('hidden', 'false');
+                    aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'false');
                   }
                   if (x == 'iqiyi') {
-                    aEvent.target.querySelector('#sowatchmk2-iqiyi_referer').setAttribute('hidden', 'false');
+                    aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'false');
                   }
                 }
                 break;
               case 'sowatchmk3-popup-' + x:
                 if (Utilities[i] == 'player') {
-                  aEvent.target.querySelector('#sowatchmk2-' + x + '-player').setAttribute('checked', 'true');
+                  aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
                 } else if (Utilities[i] == 'filter') {
-                  aEvent.target.querySelector('#sowatchmk2-' + x + '-filter').setAttribute('checked', 'true');
+                  aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
                 } else if (Utilities[i] == 'none') {
-                  aEvent.target.querySelector('#sowatchmk2-' + x + '-none').setAttribute('checked', 'true');
+                  aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
                 }
                 break;
             }
@@ -459,11 +472,14 @@ var Toolbar = {
       },
     });
     Services.sss.loadAndRegisterSheet(this.css, Services.sss.AUTHOR_SHEET);
+    Utilities.toolbar = true;
   },
   removeIcon: function () {
+    if (Utilities.toolbar != true) return;
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
     CustomizableUI.destroyWidget('sowatchmk3-button');
-  },
+    Utilities.toolbar = false;
+  }
   UserInterface: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
 
