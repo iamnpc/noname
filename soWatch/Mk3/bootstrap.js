@@ -237,42 +237,60 @@ var Toolbar = {
           },
         };
 
-        var xLists = {
+        Utilities.sites = {
           'youku': {
             label: 'Youku.com',
             tooltiptext: 'http://www.youku.com/',
+            target: /http:\/\/static\.youku\.com\/.+loaders?\.swf/i,
+            url: /https?:\/\/[^\/]+youku\.com\//i,
           },
           'tudou': {
             label: 'Tudou.com',
             tooltiptext: 'http://www.tudou.com/',
+            target: /http:\/\/js\.tudouui\.com\/.+player\.swf/i,
+            url: /https?:\/\/[^\/]+tudou\.com\//i,
           },
           'iqiyi': {
             label: 'iQiyi.com',
             tooltiptext: 'http://www.iqiyi.com/',
+            target: /http:\/\/www\.iqiyi\.com\/.+player\.swf/i,
+            url: /https?:\/\/[^\/]+(iqiyi\.com|pps\.tv)\//i,
           },
           'letv': {
             label: 'Letv.com',
             tooltiptext: 'http://www.letv.com/',
+            target: /http:\/\/player\.letvcdn\.com\/.+player\.swf/i,
+            url: /https?:\/\/[^\/]+letv\.com\//i,
           },
           'sohu': {
             label: 'Sohu.com',
             tooltiptext: 'http://tv.sohu.com/',
+            target: /http:\/\/tv\.sohu\.com\/.+main\.swf/i,
+            url: /https?:\/\/[^\/]+(sohu|56)\.com\//i,
           },
           'pptv': {
             label: 'PPTV.com',
             tooltiptext: 'http://www.pptv.com/',
+            target: /http:\/\/player\.pplive\.cn\/.+(player|live).+\.swf/i,
+            url: /https?:\/\/[^\/]+pptv\.com\//i,
           },
           'qq': {
             label: 'QQ.com',
             tooltiptext: 'http://v.qq.com/',
+            target: /http:\/\/imgcache\.qq\.com\/.+mediaplugin\.swf/i,
+            url: /https?:\/\/[^\/]+qq\.com\//i,
           },
           '163': {
             label: '163.com',
             tooltiptext: 'http://v.163.com/',
+            target: /http:\/\/v\.163\.com\/.+player.+\.swf/i,
+            url: /https?:\/\/[^\/]+163\.com\//i,
           },
           'sina': {
             label: 'Sina.com.cn',
             tooltiptext: 'http://video.sina.com.cn/',
+            target: /http:\/\/[^/]+\.sina\.com\.cn\/.+player.+\.swf/i,
+            url: /https?:\/\/[^\/]+sina\.com\.cn\//i,
           },
         };
 
@@ -319,7 +337,7 @@ var Toolbar = {
           }
         }
 
-        for (var x in xLists) {
+        for (var x in Utilities.sites) {
           var xItem = aDocument.createElement('menu');
           xItem.setAttribute('id', 'sowatchmk3-' + x);
           xItem.setAttribute('label', xLists[x].label);
@@ -347,8 +365,7 @@ var Toolbar = {
       },
       onClick: function (aEvent) {
         for (var i in Utilities) {
-          if (i == 'strings') continue;
-          else if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
+          if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
             switch (aEvent.target.id) {
               case 'sowatchmk3-default':
                 Preferences.setDefault();
@@ -374,17 +391,19 @@ var Toolbar = {
                   PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
                   }
                 break;
-            }  
-          } else {
+            }
+          }
+        }
+        for (var x in Utilities.sites) {
             switch (aEvent.target.id) {
-              case 'sowatchmk3-' + i + '-player':
-                PrefBranch.setCharPref('defined_rule.' + i, 'player');
+              case 'sowatchmk3-' + x + '-player':
+                PrefBranch.setCharPref('defined_rule.' + x, 'player');
                 break;
-              case 'sowatchmk3-' + i + '-filter':
-                PrefBranch.setCharPref('defined_rule.' + i, 'filter');
+              case 'sowatchmk3-' + x + '-filter':
+                PrefBranch.setCharPref('defined_rule.' + x, 'filter');
                 break;
-              case 'sowatchmk3-' + i + '-none':
-                PrefBranch.setCharPref('defined_rule.' + i, 'none');
+              case 'sowatchmk3-' + x + '-none':
+                PrefBranch.setCharPref('defined_rule.' + x, 'none');
                 break;
             }
           }
@@ -392,38 +411,48 @@ var Toolbar = {
       },
       onPopup: function (aEvent) {
         for (var i in Utilities) {
-          if (i == 'strings') continue;
-          else if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
+          if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
             switch (aEvent.target.id) {
               case 'sowatchmk3-popup':
-                if (Utilities.remote == true) {
-                  aEvent.target.childNodes[2].setAttribute('checked', 'true');
+                if (Utilities[i] == true) {
+                  aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'true');
                 } else {
-                  aEvent.target.childNodes[2].setAttribute('checked', 'false');
-                }
-                if (Utilities.youku_referer == true) {
-                  aEvent.target.childNodes[4].setAttribute('checked', 'true');
-                } else {
-                  aEvent.target.childNodes[4].setAttribute('checked', 'false');
-                }
-                if (Utilities.iqiyi_referer == true) {
-                  aEvent.target.childNodes[5].setAttribute('checked', 'true');
-                } else {
-                  aEvent.target.childNodes[5].setAttribute('checked', 'false');
+                  aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'false');
                 }
                 break;
             }
-          } else {
+          }
+        }
+        for (var x in Utilities.sites) {
             switch (aEvent.target.id) {
-              case 'sowatchmk3-popup-' + i:
-                if (Utilities[i] == 'player') {
-                  aEvent.target.childNodes[0].setAttribute('checked', 'true');
-                } else if (Utilities[i] == 'filter') {
-                  aEvent.target.childNodes[1].setAttribute('checked', 'true');
-                } else if (Utilities[i] == 'none') {
-                  aEvent.target.childNodes[2].setAttribute('checked', 'true');
+              case 'sowatchmk3-popup':
+                if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
+                  aEvent.target.querySelector('#sowatchmk2-' + x).setAttribute('hidden', 'true');
+                  if (x == 'youku') {
+                    aEvent.target.querySelector('#sowatchmk2-youku_referer').setAttribute('hidden', 'true');
+                  }
+                  if (x == 'iqiyi') {
+                    aEvent.target.querySelector('#sowatchmk2-iqiyi_referer').setAttribute('hidden', 'true');
+                  }
+                } else {
+                  aEvent.target.querySelector('#sowatchmk2-' + x).setAttribute('hidden', 'false');
+                  if (x == 'youku') {
+                    aEvent.target.querySelector('#sowatchmk2-youku_referer').setAttribute('hidden', 'false');
+                  }
+                  if (x == 'iqiyi') {
+                    aEvent.target.querySelector('#sowatchmk2-iqiyi_referer').setAttribute('hidden', 'false');
+                  }
                 }
-              break;
+                break;
+              case 'sowatchmk3-popup-' + x:
+                if (Utilities[i] == 'player') {
+                  aEvent.target.querySelector('#sowatchmk2-' + x + '-player').setAttribute('checked', 'true');
+                } else if (Utilities[i] == 'filter') {
+                  aEvent.target.querySelector('#sowatchmk2-' + x + '-filter').setAttribute('checked', 'true');
+                } else if (Utilities[i] == 'none') {
+                  aEvent.target.querySelector('#sowatchmk2-' + x + '-none').setAttribute('checked', 'true');
+                }
+                break;
             }
           }
         }
@@ -435,6 +464,21 @@ var Toolbar = {
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
     CustomizableUI.destroyWidget('sowatchmk3-button');
   },
+  UserInterface: function (aSubject) {
+    var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
+
+    var aVisitor = new HttpHeaderVisitor();
+    httpChannel.visitResponseHeaders(aVisitor);
+    if (!aVisitor.isFlash()) return;
+
+    for (var i in Utilities.sites) {
+      if (Utilities.sites[i].target.test(httpChannel.URI.spec)) {
+        Utilities.sites[i].popup = true;
+      } else {
+        Utilities.sites[i].popup = false;
+      }
+    }
+  },
 };
 
 // 以下用来细化规则，土豆css代码因为跟破解播放器有关，如果原版播放器则会出现上下黑边，所以和播放器规则合并在一起。
@@ -444,12 +488,12 @@ var RuleResolver = {
       PlayerRules['youku_loader'] = {
         'object': FileIO.path() + 'loader.swf',
         'remote': FileIO.link(0) + 'loader.swf',
-        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/loaders?\.swf/i,
       };
       PlayerRules['youku_player'] = {
         'object': FileIO.path() + 'player.swf',
         'remote': FileIO.link(0) + 'player.swf',
-        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i
+        'target': /http:\/\/static\.youku\.com\/.*\/v\/swf\/q?player.*\.swf/i,
       };
     },
     playerOff: function () {
@@ -459,7 +503,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['youku_tudou'] = {
         'object': 'http://valf.atm.youku.com/vf?vip=0',
-        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i,
       };
     },
     filterOff: function () {
@@ -468,7 +512,7 @@ var RuleResolver = {
     refererOn: function () {
       RefererRules['youku'] = {
         'object': 'http://www.youku.com/',
-        'target': /http:\/\/.*\.youku\.com/i
+        'target': /http:\/\/.*\.youku\.com/i,
       };
     },
     refererOff: function () {
@@ -480,20 +524,20 @@ var RuleResolver = {
       PlayerRules['tudou_portal'] = {
         'object': FileIO.path() + 'tudou.swf',
         'remote': FileIO.link(0) + 'tudou.swf',
-        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i,
       };
       FilterRules['tudou_css'] = {
          'object': 'https://raw.githubusercontent.com/jc3213/noname/master/Misc/tudou_play_74.css',
-         'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play_74\.css/i
+         'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play_74\.css/i,
       };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
-        'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i
+        'target': /http:\/\/js\.tudouui\.com\/bin\/player2\/olc.+\.swf/i,
       };
       PlayerRules['tudou_social'] = {
         'object': FileIO.path() + 'sp.swf',
         'remote': FileIO.link(0) + 'sp.swf',
-        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i
+        'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/SocialPlayer.*\.swf/i,
       };
     },
     playerOff: function () {
@@ -505,7 +549,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['youku_tudou'] = {
         'object': 'http://valf.atm.youku.com/vf?vip=0',
-        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i
+        'target': /http:\/\/val[fcopb]\.atm\.youku\.com\/v.+/i,
       };
     },
     filterOff: function () {
@@ -517,12 +561,12 @@ var RuleResolver = {
       PlayerRules['iqiyi5'] = {
         'object': FileIO.path() + 'iqiyi5.swf',
         'remote': FileIO.link(0) + 'iqiyi5.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer.*\.swf/i,
       };
       PlayerRules['iqiyi_out'] = {
         'object': FileIO.path() + 'iqiyi_out.swf',
         'remote': FileIO.link(0) + 'iqiyi_out.swf',
-        'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i
+        'target': /https?:\/\/www\.iqiyi\.com\/(common\/flash)?player\/\d+\/(Share)?Player.*\.swf/i,
       };
     },
     playerOff: function () {
@@ -532,7 +576,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['iqiyi'] = {
         'object': 'http://www.iqiyi.com/player/cupid/common/clear.swf',
-        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i
+        'target': /http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/((dsp)?roll|hawkeye|pause).*\.swf/i,
       };
     },
     filterOff: function () {
@@ -541,7 +585,7 @@ var RuleResolver = {
     refererOn: function () {
       RefererRules['iqiyi'] = {
         'object': 'http://www.iqiyi.com/',
-        'target': /http:\/\/.*\.qiyi\.com/i
+        'target': /http:\/\/.*\.qiyi\.com/i,
       };
     },
     refererOff: function () {
@@ -553,11 +597,11 @@ var RuleResolver = {
       PlayerRules['letv'] = {
         'object': FileIO.path() + 'letv.swf',
         'remote': FileIO.link(0) + 'letv.swf',
-        'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i
+        'target': /http:\/\/.*\.letv(cdn)?\.com\/.*(new)?player\/((SDK)?Letv|swf)Player\.swf/i,
       };
       PlayerRules['letv_skin'] = {
         'object': 'http://player.letvcdn.com/p/201407/24/15/newplayer/1/SSLetvPlayer.swf',
-        'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i
+        'target': /http:\/\/player\.letvcdn\.com\/p\/((?!15)\d+\/){3}newplayer\/1\/S?SLetvPlayer\.swf/i,
       };
     },
     playerOff: function () {
@@ -567,7 +611,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['letv'] = {
         'object': 'http://ark.letv.com/s',
-        'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i
+        'target': /http:\/\/(ark|fz)\.letv\.com\/s\?ark/i,
       };
     },
     filterOff: function () {
@@ -579,7 +623,7 @@ var RuleResolver = {
       PlayerRules['sohu'] = {
         'object': FileIO.path() + 'sohu_live.swf',
         'remote': FileIO.link(0) + 'sohu_live.swf',
-        'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i
+        'target': /http:\/\/(tv\.sohu\.com\/upload\/swf\/(p2p\/)?\d+|(\d+\.){3}\d+\/webplayer)\/Main\.swf/i,
       };
     },
     playerOff: function () {
@@ -588,7 +632,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['sohu'] = {
         'object': 'http://v.aty.sohu.com/v',
-        'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i
+        'target': /http:\/\/v\.aty\.sohu\.com\/v\?/i,
       };
     },
     filterOff: function () {
@@ -600,12 +644,12 @@ var RuleResolver = {
       PlayerRules['pptv'] = {
         'object': FileIO.path() + 'player4player2.swf',
         'remote': FileIO.link(0) + 'player4player2.swf',
-        'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i
+        'target': /http:\/\/player.pplive.cn\/ikan\/.*\/player4player2\.swf/i,
       };
       PlayerRules['pptv_live'] = {
         'object': FileIO.path() + 'pptv.in.Live.swf',
         'remote': FileIO.link(1) + 'pptv.in.Live.swf',
-        'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i
+        'target': /http:\/\/player.pplive.cn\/live\/.*\/player4live2\.swf/i,
       };
     },
     playerOff: function () {
@@ -615,7 +659,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['pptv'] = {
         'object': 'http://de.as.pptv.com/ikandelivery/vast/draft',
-        'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i
+        'target': /http:\/\/de\.as\.pptv\.com\/ikandelivery\/vast\/.+draft/i,
       };
     },
     filterOff: function () {
@@ -628,7 +672,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['qq'] = {
         'object': 'http://livep.l.qq.com/livemsg',
-        'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i
+        'target': /http:\/\/livew\.l\.qq\.com\/livemsg\?/i,
       };
     },
     filterOff: function () {
@@ -641,7 +685,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['163'] = {
         'object': 'http://v.163.com',
-        'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i
+        'target': /http:\/\/v\.163\.com\/special\/.*\.xml/i,
       };
     },
     filterOff: function () {
@@ -654,7 +698,7 @@ var RuleResolver = {
     filterOn: function () {
       FilterRules['sina'] = {
         'object': 'http://sax.sina.com.cn/video/newimpress',
-        'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i
+        'target': /http:\/\/sax\.sina\.com\.cn\/video\/newimpress/i,
       };
     },
     filterOff: function () {
@@ -851,6 +895,7 @@ var Observers = {
       RuleExecution.referer(aSubject);
     }
     if (aTopic == 'http-on-examine-response') {
+      Toolbar.UserInterface(aSubject);
       RuleExecution.filter(aSubject);
       RuleExecution.player(aSubject);
     }
@@ -880,8 +925,7 @@ function shutdown(aData, aReason) {
   Observers.shutDown();
 }
 
-function install(aData, aReason) {
-}
+function install(aData, aReason) {}
 
 function uninstall(aData, aReason) {
   if (aReason == ADDON_UNINSTALL) {
