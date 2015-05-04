@@ -543,7 +543,7 @@ var RuleResolver = {
       };
       FilterRules['tudou_css'] = {
          'object': 'https://raw.githubusercontent.com/jc3213/noname/master/Misc/tudou_play_74.css',
-         'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play_74\.css/i,
+         'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.+\.css/i,
       };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
