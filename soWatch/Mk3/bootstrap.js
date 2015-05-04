@@ -20,7 +20,7 @@ var aORG = 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmo
 
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk3.');
 var PrefValue = {
- 'remote': {
+  'remote': {
     get: function () {
       return PrefBranch.getBoolPref('remote_access.enable');
     },
@@ -44,7 +44,7 @@ var PrefValue = {
       PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
     },
   },
- 'youku': {
+  'youku': {
     get: function () {
       return PrefBranch.getCharPref('defined_rule.youku');
     },
@@ -542,8 +542,8 @@ var RuleResolver = {
         'target': /http:\/\/js\.tudouui\.com\/bin\/lingtong\/PortalPlayer.*\.swf/i,
       };
       FilterRules['tudou_css'] = {
-         'object': 'https://raw.githubusercontent.com/jc3213/noname/master/Misc/tudou_play_74.css',
-         'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.+\.css/i,
+        'object': 'https://raw.githubusercontent.com/jc3213/noname/master/Misc/tudou_play_74.css',
+        'target': /http:\/\/css\.tudouui\.com\/v3\/dist\/css\/play\/play.+\.css/i,
       };
       PlayerRules['tudou_olc'] = {
         'object': 'http://js.tudouui.com/bin/player2/olc.swf',
