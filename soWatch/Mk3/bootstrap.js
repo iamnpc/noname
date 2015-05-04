@@ -123,6 +123,7 @@ var PrefValue = {
     set: function () {
       PrefBranch.setBoolPref('toolbar_button.enable', true);
     },
+  },
 };
 var Preferences = {
 // 移除参数设置
@@ -408,17 +409,16 @@ var Toolbar = {
           }
         }
         for (var x in Utilities.sites) {
-            switch (aEvent.target.id) {
-              case 'sowatchmk3-' + x + '-player':
-                PrefBranch.setCharPref('defined_rule.' + x, 'player');
-                break;
-              case 'sowatchmk3-' + x + '-filter':
-                PrefBranch.setCharPref('defined_rule.' + x, 'filter');
-                break;
-              case 'sowatchmk3-' + x + '-none':
-                PrefBranch.setCharPref('defined_rule.' + x, 'none');
-                break;
-            }
+          switch (aEvent.target.id) {
+            case 'sowatchmk3-' + x + '-player':
+              PrefBranch.setCharPref('defined_rule.' + x, 'player');
+              break;
+            case 'sowatchmk3-' + x + '-filter':
+              PrefBranch.setCharPref('defined_rule.' + x, 'filter');
+              break;
+            case 'sowatchmk3-' + x + '-none':
+              PrefBranch.setCharPref('defined_rule.' + x, 'none');
+              break;
           }
         }
       },
@@ -437,36 +437,35 @@ var Toolbar = {
           }
         }
         for (var x in Utilities.sites) {
-            switch (aEvent.target.id) {
-              case 'sowatchmk3-popup':
-                if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
-                  aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'true');
-                  if (x == 'youku') {
-                    aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'true');
-                  }
-                  if (x == 'iqiyi') {
-                    aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'true');
-                  }
-                } else {
-                  aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'false');
-                  if (x == 'youku') {
-                    aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'false');
-                  }
-                  if (x == 'iqiyi') {
-                    aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'false');
-                  }
+          switch (aEvent.target.id) {
+            case 'sowatchmk3-popup':
+              if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
+                aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'true');
+                if (x == 'youku') {
+                  aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'true');
                 }
-                break;
-              case 'sowatchmk3-popup-' + x:
-                if (Utilities[x] == 'player') {
-                  aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
-                } else if (Utilities[x] == 'filter') {
-                  aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
-                } else if (Utilities[x] == 'none') {
-                  aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
+                if (x == 'iqiyi') {
+                  aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'true');
                 }
-                break;
-            }
+              } else {
+                aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'false');
+                if (x == 'youku') {
+                  aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'false');
+                }
+                if (x == 'iqiyi') {
+                  aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'false');
+                }
+              }
+              break;
+            case 'sowatchmk3-popup-' + x:
+              if (Utilities[x] == 'player') {
+                aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
+              } else if (Utilities[x] == 'filter') {
+                aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
+              } else if (Utilities[x] == 'none') {
+                aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
+              }
+              break;
           }
         }
       },
@@ -479,7 +478,7 @@ var Toolbar = {
     Services.sss.unregisterSheet(this.css, Services.sss.AUTHOR_SHEET);
     CustomizableUI.destroyWidget('sowatchmk3-button');
     Utilities.toolbar = false;
-  }
+  },
   UserInterface: function (aSubject) {
     var httpChannel = aSubject.QueryInterface(Ci.nsIHttpChannel);
 
@@ -932,7 +931,6 @@ function startup(aData, aReason) {
   Utilities.strings = Services.strings.createBundle('chrome://sowatchmk3/locale/global.properties?' + Math.random());
   RuleExecution.iqiyi();
   Preferences.pending();
-  Toolbar.addIcon();
   Observers.startUp();
 }
 
