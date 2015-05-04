@@ -340,8 +340,8 @@ var Toolbar = {
         for (var x in Utilities.sites) {
           var xItem = aDocument.createElement('menu');
           xItem.setAttribute('id', 'sowatchmk3-' + x);
-          xItem.setAttribute('label', xLists[x].label);
-          xItem.setAttribute('tooltiptext', xLists[x].tooltiptext);
+          xItem.setAttribute('label', Utilities.sites[x].label);
+          xItem.setAttribute('tooltiptext', Utilities.sites[x].tooltiptext);
           xItem.setAttribute('class', 'menu-iconic');
           aPopup.appendChild(xItem);
 
