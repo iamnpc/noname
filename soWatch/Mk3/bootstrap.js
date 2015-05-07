@@ -255,7 +255,7 @@ var Toolbar = {
           'youku': {
             label: 'Youku.com',
             tooltiptext: 'http://www.youku.com/',
-            target: /http:\/\/static\.youku\.com\/.+loaders?\.swf/i,
+            target: /http:\/\/static\.youku\.com\/.+player.*\.swf/i,
             url: /https?:\/\/[^\/]+youku\.com\//i,
           },
           'tudou': {
