@@ -2,6 +2,8 @@
 
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 Cu.import('resource:///modules/CustomizableUI.jsm'); // Require Gecko 29 and higher
+Cu.import('resource://gre/modules/osfile.jsm'); // Require Gecko 27 and higher
+Cu.import('resource://gre/modules/Downloads.jsm'); // Require Gecko 26 and higher
 Cu.import('resource://gre/modules/NetUtil.jsm');
 
 var Utilities = {}, PlayerRules = {}, FilterRules = {}, RefererRules = {};
@@ -14,20 +16,8 @@ var Services = {
   strings: Cc['@mozilla.org/intl/stringbundle;1'].getService(Ci.nsIStringBundleService),
 };
 
-var aURI = 'chrome://sowatchmk3/content/soWatch/';  //文件存放在content/soWatch文件夹中
-var aURL = aURI; //用户可以自己指定远程服务器的链接
-var aORG = 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/'; // bitbucket链接
-
 var PrefBranch = Services.prefs.getBranch('extensions.sowatchmk3.');
 var PrefValue = {
-  'remote': {
-    get: function () {
-      return PrefBranch.getBoolPref('remote_access.enable');
-    },
-    set: function () {
-      PrefBranch.setBoolPref('remote_access.enable', false);
-    },
-  },
   'youku_referer': {
     get: function () {
       return PrefBranch.getBoolPref('spoof_referer.youku');
@@ -116,6 +106,55 @@ var PrefValue = {
       PrefBranch.setCharPref('defined_rule.sina', 'filter');
     },
   },
+  'autoupdate': {
+    get: function () {
+      return PrefBranch.getBoolPref('autoupdate.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('autoupdate.enable', false);
+    },
+  },
+  'remote': {
+    get: function () {
+      return PrefBranch.getBoolPref('remote_access.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('remote_access.enable', false);
+    },
+  },
+  'override': {
+    get: function () {
+      return PrefBranch.getBoolPref('remote_override.enable');
+    },
+    set: function () {
+      PrefBranch.setBoolPref('remote_override.enable', false);
+    },
+  },
+  'directory': {
+    get: function () {
+      return PrefBranch.getCharPref('file_directory');
+    },
+    set: function () {
+      PrefBranch.setCharPref('file_directory', OS.Path.join(OS.Constants.Path.profileDir, 'soWatch'));
+    },
+  },
+  'server': {
+    get: function () {
+      return PrefBranch.getCharPref('remote_server');
+    },
+    set: function () {
+      if (Utilities.server) return;
+      else PrefBranch.setCharPref('remote_server', '');
+    },
+  },
+  'bitbucket': {
+    get: function () {
+      return PrefBranch.getCharPref('remote_bitbucket');
+    },
+    set: function () {
+      PrefBranch.setCharPref('remote_bitbucket', 'https://bitbucket.org/kafan15536900/haoutil/src/master/player/testmod/');
+    },
+  },
   'toolbar': {
     get: function () {
       return PrefBranch.getBoolPref('toolbar_button.enable');
@@ -133,76 +172,62 @@ var Preferences = {
 // 恢复默认设置(暂时未添加)
   setDefault: function () {
     for (var i in PrefValue) {
-      var rule = PrefValue[i];
-      rule.set();
+      PrefValue[i].set();
     }
   },
   pending: function () {
     for (var i in PrefValue) {
-      var rule = PrefValue[i];
       try {
-        rule.get();
+        PrefValue[i].get();
       } catch(e) {
-        rule.set();
+        PrefValue[i].set();
       }
+      Utilities[i] == PrefValue[i].get();
     }
     this.manifest();
   },
   manifest: function () {
-    var Youku = PrefValue['youku'].get();
-    var Tudou = PrefValue['tudou'].get();
-    if ((Youku == 'filter' && Tudou == 'none') || (Youku == 'none' && Tudou == 'filter')) {
+    if ((PrefValue['youku'].get() == 'filter' && PrefValue['tudou'].get() == 'none') || (PrefValue['youku'].get() == 'none' && PrefValue['tudou'].get() == 'filter')) {
       PrefBranch.setCharPref('defined_rule.youku', 'filter');
       PrefBranch.setCharPref('defined_rule.tudou', 'filter');
     }
+
     for (var i in PrefValue) {
-      if (i == 'remote') {
-        var aRemote = PrefValue['remote'].get();
-        if (aRemote == true) {
-          Utilities.remote = true;
+      if (i == 'server') {
+        Utilities[i] = PrefValue[i].get();
+        if (!Utilities[i]) PrefValue['override'].set();
+      } else if (i == 'bitbucket') {
+        PrefValue[i].set();
+      } else if (i == 'autoupdate' || i == 'remote' || i == 'override' || i == 'youku_referer' || i == 'iqiyi_referer') {
+        Utilities[i] = PrefValue[i].get();
+        if (PrefValue[i].get() == true) {
+          if (i == 'autoupdate') QueryFiles.process(); // 当Autoupdate为True则使用外部文件夹更新播放器
+          if (i == 'remote') PrefValue['autoupdate'].set(); // 当Remote Access为True时禁止Autoupdate
+          if (i == 'youku_referer') RuleResolver['youku'].refererOn();
+          if (i == 'iqiyi_referer') RuleResolver['iqiyi'].refererOn();
         } else {
-          Utilities.remote = false;
-        }
-      } else if (i == 'youku_referer') {
-        var YoukuReferer = PrefValue['youku_referer'].get();
-        if (YoukuReferer == true) {
-          Utilities[i] = true;
-          RuleResolver['youku'].refererOn();
-        } else {
-          Utilities[i] = false;
-          RuleResolver['youku'].refererOff();
-        }
-      } else if (i == 'iqiyi_referer') {
-        var QiyiReferer = PrefValue['iqiyi_referer'].get();
-        if (QiyiReferer == true) {
-          Utilities[i] = true;
-          RuleResolver['iqiyi'].refererOn();
-        } else {
-          Utilities[i] = false;
-          RuleResolver['iqiyi'].refererOff();
+          if (i == 'youku_referer') RuleResolver['youku'].refererOff();
+          if (i == 'iqiyi_referer') RuleResolver['iqiyi'].refererOff();
         }
       } else if (i == 'toolbar') {
-        if (PrefValue[i].get() == true) {
+        var aToolbar = PrefValue[i].get();
+        if (aToolbar == true) {
           Toolbar.addIcon();
         } else {
           Toolbar.removeIcon();
         }
       } else {
-        var rule = PrefValue[i];
-        var resolver = RuleResolver[i];
-        if (rule.get() == 'player') {
-          Utilities[i] = 'player';
-          resolver.playerOn();
-        } else if (rule.get() == 'filter') {
-          Utilities[i] = 'filter';
-          resolver.playerOff();
-          resolver.filterOn();
-        } else if (rule.get() == 'none'){
-          Utilities[i] = 'none';
-          resolver.playerOff();
-          resolver.filterOff();
+        Utilities[i] = PrefValue[i].get()
+        if (PrefValue[i].get() == 'player') {
+          RuleResolver[i].playerOn();
+        } else if (PrefValue[i].get() == 'filter') {
+          RuleResolver[i].playerOff();
+          RuleResolver[i].filterOn();
+        } else if (PrefValue[i].get() == 'none'){
+          RuleResolver[i].playerOff();
+          RuleResolver[i].filterOff();
         } else {
-          rule.set();
+          PrefValue[i].set();
         }
       }
     }
@@ -210,13 +235,116 @@ var Preferences = {
 };
 
 var FileIO = {
+  extDir: function () {
+    return PrefValue['directory'].get();
+  },
+  addFolder: function () {
+    OS.File.makeDir(this.extDir());
+  },
+  delFolder: function () {
+    OS.File.removeDir(this.extDir());
+  },
   link: function (aMode) {
-    if (aMode == 1) return aURL;
-    if (aMode == 0) return aORG;
+    if (aMode == 0) {
+      if (PrefValue['override'].get() == true) {
+        return PrefValue['server'].get();
+      } else {
+        return PrefValue['bitbucket'].get();
+      }
+    }
+    if (aMode == 1) {
+      if (PrefValue['server'].get()) {
+        return PrefValue['server'].get();
+      } else {
+        return 'chrome://sowatchmk3/content/players/';
+      }
+    }
   },
   path: function () {
-    if (Utilities.remote == true) return this.link();
-    return aURI;
+    if (PrefValue['autoupdate'].get() == true) {
+      return OS.Path.toFileURI(this.extDir()) + '/';
+    } else if (PrefValue['remote'].get() == true) {
+      return this.link();
+    } else {
+      return 'chrome://sowatchmk3/content/players/';
+    }
+  },
+};
+
+// Used for updating players,check every time when switching rules.
+// 用于更新播放器，现在将在每次切换规则时自动检测播放器是否需要更新
+var QueryFiles = {
+  hash: function (aLink, aFile, aName) {
+    var aClient = Cc['@mozilla.org/xmlextras/xmlhttprequest;1'].createInstance(Ci.nsIXMLHttpRequest);
+    aClient.open('HEAD', aLink, true);
+    aClient.timeout = 10000;
+    aClient.send();
+    aClient.onload = function () {
+      var aSize = new Number(aClient.getResponseHeader('Content-Length'));
+      if (aSize < 10000) return;
+      var aHash = aSize.toString(16);
+      QueryFiles.check(aLink, aFile, aName, aHash);
+    }
+  },
+  check: function (aLink, aFile, aName, aHash) {
+    try {
+      var xHash = PrefBranch.getCharPref('file_hash.' + aName);
+      if (xHash == aHash) return;
+      else QueryFiles.fetch(aLink, aFile, aName, aHash);
+    } catch (e) {
+      OS.File.stat(aFile).then(function onSuccess(aData) {
+        var xSize = aData.size;
+        var xHash = xSize.toString(16);
+        if (xHash == aHash) PrefBranch.setCharPref('file_hash.' + aName, aHash);
+        else QueryFiles.fetch(aLink, aFile, aName, aHash);
+      }, function onFailure(aReason) {
+        if (aReason instanceof OS.File.Error && aReason.becauseNoSuchFile) {
+          QueryFiles.fetch(aLink, aFile, aName, aHash);
+        }
+      });
+    }
+  },
+  fetch: function (aLink, aFile, aName, aHash) {
+    var aTemp = aFile + '_sw';
+    Downloads.fetch(aLink, aTemp, {
+      isPrivate: true
+    }).then(function onSuccess() {
+      OS.File.move(aTemp, aFile);
+      PrefBranch.setCharPref('file_hash.' + aName, aHash);
+    }, function onFailure() {
+      OS.File.remove(aTemp);
+    });
+  },
+  start: function (aPlayer) {
+    FileIO.addFolder();
+    var aLink = aPlayer['remote'];
+    var aFile = OS.Path.fromFileURI(aPlayer['object']);
+    var aName = OS.Path.split(aFile).components[OS.Path.split(aFile).components.length - 1];
+    QueryFiles.hash(aLink, aFile, aName);
+  },
+  process: function () {
+    if (Utilities.youku == 'player') {
+      QueryFiles.start(PlayerRules['youku_loader']);
+      QueryFiles.start(PlayerRules['youku_player']);
+    }
+    if (Utilities.tudou == 'player') {
+      QueryFiles.start(PlayerRules['tudou_portal']);
+      QueryFiles.start(PlayerRules['tudou_social']);
+    }
+    if (Utilities.iqiyi == 'player') {
+      QueryFiles.start(PlayerRules['iqiyi5']);
+      QueryFiles.start(PlayerRules['iqiyi_out']);
+    }
+    if (Utilities.letv == 'player') {
+      QueryFiles.start(PlayerRules['letv']);
+    }
+    if (Utilities.sohu == 'player') {
+      QueryFiles.start(PlayerRules['sohu']);
+    }
+    if (Utilities.pptv == 'player') {
+      QueryFiles.start(PlayerRules['pptv']);
+      QueryFiles.start(PlayerRules['pptv_live']);
+    }
   },
 };
 
@@ -236,6 +364,10 @@ var Toolbar = {
             tooltiptext: Utilities.strings.GetStringFromName('setDefaultDescription'),
           },
           S1: null,  // Menu separator
+          'autoupdate': {
+            label: Utilities.strings.GetStringFromName('updatePlayerLabel'),
+            tooltiptext: Utilities.strings.GetStringFromName('updatePlayerDescription'),
+          },
           'remote': {
             label: Utilities.strings.GetStringFromName('remoteAccessLabel'),
             tooltiptext: Utilities.strings.GetStringFromName('remoteAccessDescription'),
@@ -253,55 +385,55 @@ var Toolbar = {
 
         Utilities.sites = {
           'youku': {
-            label: 'Youku.com',
+            label: Utilities.strings.GetStringFromName('youkuSiteLabel'),
             tooltiptext: 'http://www.youku.com/',
             target: /http:\/\/static\.youku\.com\/.+player.*\.swf/i,
             url: /https?:\/\/[^\/]+youku\.com\//i,
           },
           'tudou': {
-            label: 'Tudou.com',
+            label: Utilities.strings.GetStringFromName('tudouSiteLabel'),
             tooltiptext: 'http://www.tudou.com/',
-            target: /http:\/\/js\.tudouui\.com\/.+player\.swf/i,
+            target: /http:\/\/js\.tudouui\.com\/.+player.+\.swf/i,
             url: /https?:\/\/[^\/]+tudou\.com\//i,
           },
           'iqiyi': {
-            label: 'iQiyi.com',
+            label: Utilities.strings.GetStringFromName('iqiyiSiteLabel'),
             tooltiptext: 'http://www.iqiyi.com/',
-            target: /http:\/\/www\.iqiyi\.com\/.+player\.swf/i,
+            target: /http:\/\/www\.iqiyi\.com\/.+player.+\.swf/i,
             url: /https?:\/\/[^\/]+(iqiyi\.com|pps\.tv)\//i,
           },
           'letv': {
-            label: 'Letv.com',
+            label: Utilities.strings.GetStringFromName('letvSiteLabel'),
             tooltiptext: 'http://www.letv.com/',
             target: /http:\/\/player\.letvcdn\.com\/.+player\.swf/i,
             url: /https?:\/\/[^\/]+letv\.com\//i,
           },
           'sohu': {
-            label: 'Sohu.com',
+            label: Utilities.strings.GetStringFromName('sohuSiteLabel'),
             tooltiptext: 'http://tv.sohu.com/',
             target: /http:\/\/tv\.sohu\.com\/.+main\.swf/i,
             url: /https?:\/\/[^\/]+(sohu|56)\.com\//i,
           },
           'pptv': {
-            label: 'PPTV.com',
+            label: Utilities.strings.GetStringFromName('pptvSiteLabel'),
             tooltiptext: 'http://www.pptv.com/',
             target: /http:\/\/player\.pplive\.cn\/.+(player|live).+\.swf/i,
             url: /https?:\/\/[^\/]+pptv\.com\//i,
           },
           'qq': {
-            label: 'QQ.com',
+            label: Utilities.strings.GetStringFromName('qqSiteLabel'),
             tooltiptext: 'http://v.qq.com/',
             target: /http:\/\/imgcache\.qq\.com\/.+mediaplugin\.swf/i,
             url: /https?:\/\/[^\/]+qq\.com\//i,
           },
           '163': {
-            label: '163.com',
+            label: Utilities.strings.GetStringFromName('163SiteLabel'),
             tooltiptext: 'http://v.163.com/',
             target: /http:\/\/v\.163\.com\/.+player.+\.swf/i,
             url: /https?:\/\/[^\/]+163\.com\//i,
           },
           'sina': {
-            label: 'Sina.com.cn',
+            label: Utilities.strings.GetStringFromName('sinaSiteLabel'),
             tooltiptext: 'http://video.sina.com.cn/',
             target: /http:\/\/[^/]+\.sina\.com\.cn\/.+player.+\.swf/i,
             url: /https?:\/\/[^\/]+sina\.com\.cn\//i,
@@ -346,7 +478,7 @@ var Toolbar = {
             aItem.setAttribute('label', aLists[i].label);
             aItem.setAttribute('tooltiptext', aLists[i].tooltiptext);
             aItem.setAttribute('class', 'menuitem-iconic');
-            if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') aItem.setAttribute('type', 'checkbox');
+            if (i == 'autoupdate' || i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') aItem.setAttribute('type', 'checkbox');
             aPopup.appendChild(aItem);
           }
         }
@@ -378,94 +510,84 @@ var Toolbar = {
         return aMenu;
       },
       onClick: function (aEvent) {
+        if (aEvent.target.id == 'sowatchmk3-default') Preferences.setDefault();
+
         for (var i in Utilities) {
-          if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
-            switch (aEvent.target.id) {
-              case 'sowatchmk3-default':
-                Preferences.setDefault();
-                break;
-              case 'sowatchmk3-remote':
-                if (Utilities.remote == true) {
-                  PrefBranch.setBoolPref('remote_access.enable', false);
-                  } else {
-                  PrefBranch.setBoolPref('remote_access.enable', true);
-                  }
-                break;
-              case 'sowatchmk3-youku_referer':
-                if (Utilities.youku_referer == true) {
-                  PrefBranch.setBoolPref('spoof_referer.youku', false);
-                  } else {
-                  PrefBranch.setBoolPref('spoof_referer.youku', true);
-                  }
-                break;
-              case 'sowatchmk3-iqiyi_referer':
-                if (Utilities.iqiyi_referer == true) {
-                  PrefBranch.setBoolPref('spoof_referer.iqiyi', false);
-                  } else {
-                  PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
-                  }
-                break;
+          if (i == 'autoupdate' && aEvent.target.id == 'sowatchmk3-' +i) {
+            if (Utilities[i] == true) {
+            PrefBranch.setBoolPref('autoupdate.enable', false);
+            } else {
+            PrefBranch.setBoolPref('autoupdate.enable', true);
+            }
+          }
+          if (i == 'remote' && aEvent.target.id == 'sowatchmk3-' +i) {
+            if (Utilities[i] == true) {
+            PrefBranch.setBoolPref('remote_access.enable', false);
+            } else {
+            PrefBranch.setBoolPref('remote_access.enable', true);
+            }
+          }
+          if (i == 'youku_referer' && aEvent.target.id == 'sowatchmk3-' +i) {
+            if (Utilities[i] == true) {
+            PrefBranch.setBoolPref('spoof_referer.youku', false);
+            } else {
+            PrefBranch.setBoolPref('spoof_referer.youku', true);
+            }
+          }
+          if (i == 'iqiyi_referer' && aEvent.target.id == 'sowatchmk3-' +i) {
+            if (Utilities[i] == true) {
+            PrefBranch.setBoolPref('spoof_referer.iqiyi', false);
+            } else {
+            PrefBranch.setBoolPref('spoof_referer.iqiyi', true);
             }
           }
         }
+
         for (var x in Utilities.sites) {
-          switch (aEvent.target.id) {
-            case 'sowatchmk3-' + x + '-player':
-              PrefBranch.setCharPref('defined_rule.' + x, 'player');
-              break;
-            case 'sowatchmk3-' + x + '-filter':
-              PrefBranch.setCharPref('defined_rule.' + x, 'filter');
-              break;
-            case 'sowatchmk3-' + x + '-none':
-              PrefBranch.setCharPref('defined_rule.' + x, 'none');
-              break;
+          if (aEvent.target.id == 'sowatchmk3-' + x + '-player') {
+            PrefBranch.setCharPref('defined_rule.' + x, 'player');
+          } else if (aEvent.target.id == 'sowatchmk3-' + x + '-filter') {
+            PrefBranch.setCharPref('defined_rule.' + x, 'filter');
+          } else if (aEvent.target.id == 'sowatchmk3-' + x + '-none') {
+            PrefBranch.setCharPref('defined_rule.' + x, 'none');
           }
         }
       },
       onPopup: function (aEvent) {
         for (var i in Utilities) {
-          if (i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
-            switch (aEvent.target.id) {
-              case 'sowatchmk3-popup':
-                if (Utilities[i] == true) {
-                  aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'true');
-                } else {
-                  aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'false');
-                }
-                break;
+          if (aEvent.target.id == 'sowatchmk3-popup') {
+            if (i == 'autoupdate' || i == 'remote' || i == 'youku_referer' || i == 'iqiyi_referer') {
+              if (Utilities[i] == true) {
+                aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'true');
+                if (i == 'remote') aEvent.target.querySelector('#sowatchmk3-autoupdate').setAttribute('disabled', 'true');
+              } else {
+                aEvent.target.querySelector('#sowatchmk3-' + i).setAttribute('checked', 'false');
+                if (i == 'remote') aEvent.target.querySelector('#sowatchmk3-autoupdate').setAttribute('disabled', 'false');
+              }
             }
           }
         }
+
         for (var x in Utilities.sites) {
-          switch (aEvent.target.id) {
-            case 'sowatchmk3-popup':
-              if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
-                aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'true');
-                if (x == 'youku') {
-                  aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'true');
-                }
-                if (x == 'iqiyi') {
-                  aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'true');
-                }
-              } else {
-                aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'false');
-                if (x == 'youku') {
-                  aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'false');
-                }
-                if (x == 'iqiyi') {
-                  aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'false');
-                }
-              }
-              break;
-            case 'sowatchmk3-popup-' + x:
-              if (Utilities[x] == 'player') {
-                aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
-              } else if (Utilities[x] == 'filter') {
-                aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
-              } else if (Utilities[x] == 'none') {
-                aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
-              }
-              break;
+          if (aEvent.target.id == 'sowatchmk3-popup') {
+            if (!Utilities.sites[x].url.test(aEvent.target.ownerDocument.defaultView.content.location.href) && Utilities.sites[x].popup != true) {
+              aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'true');
+              if (x == 'youku') aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'true');
+              if (x == 'iqiyi') aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'true');
+            } else {
+              aEvent.target.querySelector('#sowatchmk3-' + x).setAttribute('hidden', 'false');
+              if (x == 'youku') aEvent.target.querySelector('#sowatchmk3-youku_referer').setAttribute('hidden', 'false');
+              if (x == 'iqiyi') aEvent.target.querySelector('#sowatchmk3-iqiyi_referer').setAttribute('hidden', 'false');
+            }
+          }
+          if (aEvent.target.id == 'sowatchmk3-popup-' + x) {
+            if (Utilities[x] == 'player') {
+              aEvent.target.querySelector('#sowatchmk3-' + x + '-player').setAttribute('checked', 'true');
+            } else if (Utilities[x] == 'filter') {
+              aEvent.target.querySelector('#sowatchmk3-' + x + '-filter').setAttribute('checked', 'true');
+            } else if (Utilities[x] == 'none') {
+              aEvent.target.querySelector('#sowatchmk3-' + x + '-none').setAttribute('checked', 'true');
+            }
           }
         }
       },
